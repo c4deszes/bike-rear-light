@@ -1,0 +1,13 @@
+Sphinx
+schemdraw[matplotlib,svgmath]
+UliEngineering
+sphinx-needs
+jupyter-sphinx
+matplotlib
+sphinx-rtd-theme
+sphinxcontrib-jsmath
+sphinxcontrib-kroki
+sphinxcontrib-mermaid
+sphinxcontrib-plantuml
+sphinxcontrib-wavedrom
+linuxdoc
