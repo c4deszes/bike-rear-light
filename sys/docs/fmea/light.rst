@@ -9,8 +9,8 @@ Tail light
     :status: draft
     :probability: occasional
     :severity: catastrophic
-    :detection: low
-    :mitigation: redundant controllers
+    :detection: high
+    :mitigation: multichannel layout
 
     Light failure could be caused by:
 
@@ -21,8 +21,6 @@ Tail light
     Mitigation should include hardware and software redundancy to ensure that the light doesn't
     turn off when it should be on.
 
-    * Separate controllers powering different segments of the tail light
-    * Separate microcontroller pins controlling the LEDs
     * Hardware should provide a default-on behavior, so the light is on even with certain software
       faults
 
@@ -67,7 +65,7 @@ Brake light
 
     * Validation and filtering of the accelerometer data
     * Software limit on how often and how many times the brake light can turn on
-    * Protection of the driver's control pins to ensure a default on or off behavior
+    * Protection of the driver's control pins to ensure a default off behavior
 
     The brake light turning on when not actually braking can confuse the drivers behind.
 
