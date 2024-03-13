@@ -38,12 +38,12 @@ Brake light
 .. req-sys:: Brake light
     :id: SYS_REQ_BRAKE_LIGHT_PERFORMANCE
     :status: draft
-    :tags: legal, safety
+    :tags: legal, safety, gen1.0
 
     The brake light shall be the color red, with a minimum brightness of 10 candela and a maximum
     brightness of 400 candela.
 
-    The brake light shall turn on when the bicycle is decelerating with ``5 m/s^2`` and above.
+    The brake light shall turn on when the bicycle is decelerating with ``2.5 m/s^2`` and above.
 
 Signal lights
 -------------
@@ -69,7 +69,7 @@ Light control
 
 .. req-sys:: Light control
     :id: SYS_REQ_LIGHT_CONTROL
-    :status: draft
+    :status: draft, gen1.0
 
     All light elements shall be synchronized in their switching frequency that's in the visible
     range (``120Hz - 1000Hz``).
