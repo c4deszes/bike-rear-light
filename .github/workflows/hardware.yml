@@ -19,6 +19,11 @@ jobs:
         working-directory: hw
         run: pip install -r docs/requirements.txt
 
+      - name: Intall draw.io dependencies
+        run: |
+          wget -O drawio.deb https://github.com/jgraph/drawio-desktop/releases/download/v20.6.2/drawio-amd64-20.6.2.deb
+          sudo apt install xvfb ./drawio.deb
+
       - name: Build
         working-directory: hw
         run: python -m sphinx docs docs/_build
