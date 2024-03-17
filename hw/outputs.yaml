@@ -1,0 +1,57 @@
+kibot:
+  version: 1
+
+outputs:
+  - name: 'gerbers'
+    comment: 'Generate Gerbers'
+    type: gerber
+    dir: build/gerbers
+    layers: 'all'
+
+  - name: 'drill'
+    comment: 'Generate drill file'
+    type: excellon
+    dir: build/gerbers
+
+  - name: 'bom'
+    comment: 'Generate BOM'
+    type: bom
+    dir: build/bom
+    options:
+      csv:
+        hide_pcb_info: true
+        hide_stats_info: true
+
+  - name: 'schematic-pdf'
+    comment: 'Generate schematic PDF'
+    type: pdf_sch_print
+    dir: build
+    options:
+      output: schematic.pdf
+
+  - name: 'layout-pdf'
+    comment: 'Generate layout PDF'
+    type: pdf_pcb_print
+    dir: build
+    layers:
+      - copper
+    options:
+      output: layout.pdf
+      separated: true
+
+  - name: 'pcb_edge'
+    comment: 'Generate layout DXF'
+    type: dxf
+    dir: build
+    layers:
+      - 'Edge.Cuts'
+    options:
+      output: pcb_edge.dxf
+
+  - name: 'render3d'
+    comment: 'Generate 3D Model'
+    type: step
+    dir: build
+    options:
+      output: pcb.step
+      download: true
