@@ -17,7 +17,7 @@ Challenges
 * Keeping the device efficient in a wide operating voltage range
 
 Conclusions
----------
+-----------
 
 * 2 channel drivers don't make sense if redundancy is important due to package size constraints
 * To minimize footprint the optimal driver is either:

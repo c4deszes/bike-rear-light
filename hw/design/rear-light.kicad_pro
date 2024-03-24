@@ -462,7 +462,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "rear-light.step",
       "vrml": "rear-light.wrl"
     },
     "page_layout_descr_file": ""

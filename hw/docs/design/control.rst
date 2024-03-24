@@ -1,6 +1,13 @@
 Controller
 ==========
 
+The device uses the ATSAMD21E18A microcontroller, below are the pin assigments.
+
+* Tail and brake light elements all have their separate IO, in future versions some pins could be
+  made common (PWM, Enable)
+* Accelerometer is used in SPI mode and both interrupt pins are connected, the number of pins used
+  could be reduced by using I2C mode and not using interrupts
+
 Pinout
 ------
 
