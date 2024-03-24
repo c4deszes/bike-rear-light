@@ -1,0 +1,61 @@
+name: Hardware
+
+on:
+  pull_request:
+    paths:
+      - 'hw/**'
+      - '.github/workflows/hardware*.yml'
+
+jobs:
+  documentation:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install requirements
+        working-directory: hw
+        run: pip install -r docs/requirements.txt
+
+      - name: Intall draw.io dependencies
+        run: |
+          wget -O drawio.deb https://github.com/jgraph/drawio-desktop/releases/download/v20.6.2/drawio-amd64-20.6.2.deb
+          sudo apt install xvfb ./drawio.deb
+
+      - name: Build
+        working-directory: hw
+        run: python -m sphinx docs docs/_build
+
+      - name: Archive documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: hw/docs/_build/
+          if-no-files-found: error
+          retention-days: 5
+
+  hardware:
+    name: Manufacturing
+    runs-on: ubuntu-latest
+    container: ghcr.io/inti-cmnb/kicad7_auto:1.6.4
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Generate documents
+      working-directory: hw
+      run: kibot -b design/rear-light.kicad_pcb -e design/rear-light.kicad_sch -c outputs.yaml schematic-pdf gerbers drill render3d
+
+    - name: Archive Output
+      uses: actions/upload-artifact@v4
+      with:
+        name: hw
+        path: hw/build/
+        if-no-files-found: error
+        retention-days: 5
