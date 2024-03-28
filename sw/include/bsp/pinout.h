@@ -1,0 +1,74 @@
+#if !defined(BSP_PINOUT_H_)
+#define BSP_PINOUT_H_
+
+#include "hal/gpio.h"
+#include "hal/sercom_usart.h"
+
+// TODO: isn't that great that we include it, since it could transitively end up in the app
+#include "atsamd21e18a.h"
+
+/** Tail light LED driver IC pins */
+#define TLD2331_ENABLE_PORT PORT_GROUP_A
+#define TLD2331_ENABLE_PIN 8
+
+#define TLD2331_ERROR_PORT PORT_GROUP_A
+#define TLD2331_ERROR_PIN 2
+
+#define TLD2331_PWMI_PORT PORT_GROUP_A
+#define TLD2331_PWMI_PIN 10
+#define TLD2331_PWMI_PINMUX MUX_PA10E_TCC1_WO0
+
+// TODO: inset pins
+
+/** Brake light LED driver IC pins */
+#define TLD2132_ENABLE_PORT PORT_GROUP_A
+#define TLD2132_ENABLE_PIN 9
+
+#define TLD2132_ERROR_PORT PORT_GROUP_A
+#define TLD2132_ERROR_PIN 3
+
+#define TLD2132_PWMI_PORT PORT_GROUP_A
+#define TLD2132_PWMI_PIN 11
+#define TLD2132_PWMI_PINMUX MUX_PA11E_TCC1_WO1
+
+// TODO: inset pins
+
+/** BMA456 3-axis accelerometer pins */
+// TODO: PINMUX setup and pad assignment
+#define BMA456_ACC1_INT_PORT PORT_GROUP_A
+#define BMA456_ACC1_INT_PIN 14
+
+#define BMA456_ACC2_INT_PORT PORT_GROUP_A
+#define BMA456_ACC2_INT_PIN 15
+
+#define BMA456_SPI_MISO_PORT PORT_GROUP_A
+#define BMA456_SPI_MISO_PIN 19
+
+#define BMA456_SPI_SCK_PORT PORT_GROUP_A
+#define BMA456_SPI_SCK_PIN 17
+
+#define BMA456_SPI_CS_ACC_PORT PORT_GROUP_A
+#define BMA456_SPI_CS_ACC_PIN 18
+
+#define BMA456_SPI_MOSI_PORT PORT_GROUP_A
+#define BMA456_SPI_MOSI_PIN 16
+
+/** UART pins */
+#define UART_RX_PORT PORT_GROUP_A
+#define UART_RX_PIN 25
+#define UART_RX_PINMUX MUX_PA25C_SERCOM3_PAD3
+
+#define UART_TX_PORT PORT_GROUP_A
+#define UART_TX_PIN 24
+#define UART_TX_PINMUX MUX_PA24C_SERCOM3_PAD2
+
+#define UART_CS_PORT PORT_GROUP_A
+#define UART_CS_PIN 22
+
+#define UART_TXE_PORT PORT_GROUP_A
+#define UART_TXE_PIN 23
+
+#define UART_TX_PAD SERCOM_USART_TX_PAD2
+#define UART_RX_PAD SERCOM_USART_RX_PAD3
+
+#endif // BSP_PINOUT_H_
