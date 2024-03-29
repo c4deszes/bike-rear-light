@@ -38,8 +38,8 @@ static void TAILLIGHT_Init(void) {
 }
 
 static void BRAKELIGHT_Init(void) {
-    GPIO_PinWrite(TLD2132_ENABLE_PORT, TLD2132_ENABLE_PIN, LOW);
     GPIO_SetupPinOutput(TLD2132_ENABLE_PORT, TLD2132_ENABLE_PIN, &output);
+    GPIO_PinWrite(TLD2132_ENABLE_PORT, TLD2132_ENABLE_PIN, LOW);
 
     GPIO_SetupPinInput(TLD2132_ERROR_PORT, TLD2132_ERROR_PIN, &input);
     // TODO: setup interrupt, pinmux
@@ -69,37 +69,33 @@ void LIGHTCONTROL_Init() {
     TCC1_REGS->TCC_WEXCTRL = TCC_WEXCTRL_OTMX(0x00);
 
     // Period
-    TCC1_REGS->TCC_PERB = TCC_PERB_PERB(999);   // GCLK 1MHz div 1 -> 1kHz
-    while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_PERB_Msk) != 0);
+    TCC1_REGS->TCC_PER = TCC_PER_PER(999);   // GCLK 1MHz div 1 -> 1kHz
+    //while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_PERB_Msk) != 0);
 
     // 2. Wavegen
 
     // 3. Wavegen polarity and drive control invert
     //TCC1_REGS->TCC_DRVCTRL = TCC_DRVCTRL_INVEN0_Msk;    // Enable output inversion for tail light as it's enabled by default with pullup
     TCC1_REGS->TCC_WAVE = TCC_WAVE_WAVEGEN_NPWM;
-    while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_WAVE_Msk) != 0);
+    //while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_WAVE_Msk) != 0);
 
-    TCC1_REGS->TCC_CCB[0] = TCC_CCB_CCB(900);
-    TCC1_REGS->TCC_CCB[1] = TCC_CCB_CCB(900);
+    TCC1_REGS->TCC_CC[0] = TCC_CC_CC(900);
+    TCC1_REGS->TCC_CC[1] = TCC_CC_CC(900);
 
-    TCC1_REGS->TCC_INTENSET = TCC_INTENSET_OVF_Msk;
+    //TCC1_REGS->TCC_INTENSET = TCC_INTENSET_OVF_Msk;
     TCC1_REGS->TCC_INTFLAG = TCC_INTFLAG_Msk;
 
-    while (TCC1_REGS->TCC_SYNCBUSY != 0U)
-    {
-        /* Wait for sync */
-    }
-
-    TAILLIGHT_Init();
-    BRAKELIGHT_Init();
+    // while (TCC1_REGS->TCC_SYNCBUSY != 0U)
+    // {
+    //     /* Wait for sync */
+    // }
 
         // Enable
     TCC1_REGS->TCC_CTRLA |= TCC_CTRLA_ENABLE_Msk;
     while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_ENABLE_Msk) != 0);
-}
 
-void TCC1_Interrupt(void) {
-
+    TAILLIGHT_Init();
+    BRAKELIGHT_Init();
 }
 
 void LIGHTCONTROL_SetTailState(bool enabled) {
