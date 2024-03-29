@@ -22,8 +22,16 @@ void SCH_Task10ms_A(void) {
     counter++;
 
     if (counter > 100) {
-        LIGHTCONTROL_SetTailState(state);
-        LIGHTCONTROL_SetBrakeState(!state);
+        LIGHTCONTROL_SetTailState(true);
+        LIGHTCONTROL_SetBrakeState(true);
+        if (state) {
+            LIGHTCONTROL_SetTailBrightness(100);
+            LIGHTCONTROL_SetBrakeBrightness(900);
+        }
+        else {
+            LIGHTCONTROL_SetTailBrightness(900);
+            LIGHTCONTROL_SetBrakeBrightness(100);
+        }
 
         state = !state;
         counter = 0;

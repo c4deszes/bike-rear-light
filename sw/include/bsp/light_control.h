@@ -9,8 +9,8 @@ void LIGHTCONTROL_SetTailState(bool enabled);
 
 void LIGHTCONTROL_SetBrakeState(bool enabled);
 
-//void LIGHTCONTROL_SetTailBrightness(uint8_t brightness);
+void LIGHTCONTROL_SetTailBrightness(uint16_t brightness);
 
-//void LIGHTCONTROL_SetBrakeBrightness(uint8_t brightness);
+void LIGHTCONTROL_SetBrakeBrightness(uint16_t brightness);
 
 #endif // BSP_LIGHT_CONTROL_H_

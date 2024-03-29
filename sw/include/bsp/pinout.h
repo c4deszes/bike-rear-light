@@ -4,7 +4,7 @@
 #include "hal/gpio.h"
 #include "hal/sercom_usart.h"
 
-// TODO: isn't that great that we include it, since it could transitively end up in the app
+// TODO: isn't great that we include it, since it could transitively end up in the app
 #include "atsamd21e18a.h"
 
 /** Tail light LED driver IC pins */
@@ -18,7 +18,17 @@
 #define TLD2331_PWMI_PIN 10
 #define TLD2331_PWMI_PINMUX MUX_PA10E_TCC1_WO0
 
-// TODO: inset pins
+#define TLD2331_INSET1_PORT PORT_GROUP_A
+#define TLD2331_INSET1_PIN 6
+// TCC3 is not available on this chip
+
+#define TLD2331_INSET2_PORT PORT_GROUP_A
+#define TLD2331_INSET2_PIN 5
+// TCC3 is not available on this chip
+
+#define TLD2331_INSET3_PORT PORT_GROUP_A
+#define TLD2331_INSET3_PIN 4
+// TCC3 is not available on this chip
 
 /** Brake light LED driver IC pins */
 #define TLD2132_ENABLE_PORT PORT_GROUP_A
@@ -31,7 +41,9 @@
 #define TLD2132_PWMI_PIN 11
 #define TLD2132_PWMI_PINMUX MUX_PA11E_TCC1_WO1
 
-// TODO: inset pins
+#define TLD2132_INSET1_PORT PORT_GROUP_A
+#define TLD2132_INSET1_PIN 7
+// TCC3 is not available on this chip
 
 /** BMA456 3-axis accelerometer pins */
 // TODO: PINMUX setup and pad assignment
