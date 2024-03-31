@@ -1,10 +1,6 @@
 #if !defined(APP_COMM_H_)
 #define APP_COMM_H_
 
-#include "common/ringbuffer.h"
-
-DECLARE_RINGBUFFER_8(COMM_UsartBuffer);
-
 /**
  * @brief Initializes the communication stack
  * - Application protocol

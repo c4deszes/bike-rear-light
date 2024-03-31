@@ -8,15 +8,20 @@
 #include "bl/api.h"
 #include "hal/dsu.h"
 
+#include "common/ringbuffer.h"
+
 RINGBUFFER_8(COMM_UsartBufferTx, 128);
 RINGBUFFER_8(COMM_UsartBufferRx, 128);
 
+// TODO: data should be dynamic based on actual current figures 
 static LINE_Diag_PowerStatus_t power_status = {
     .U_status = LINE_DIAG_POWER_STATUS_VOLTAGE_OK,
     .BOD_status = LINE_DIAG_POWER_STATUS_BOD_NONE,
     .I_operating = LINE_DIAG_POWER_STATUS_OP_CURRENT(100),
     .I_sleep = LINE_DIAG_POWER_STATUS_SLEEP_CURRENT(100)
 };
+
+// TODO: data should be dynamic based CMake config (copy from samd21-line-bootloader)
 static LINE_Diag_SoftwareVersion_t sw_version = {
     .major = 0,
     .minor = 1,
@@ -46,7 +51,7 @@ void COMM_Initialize(void) {
     LINE_Transport_Init(true);
     LINE_App_Init();
     LINE_Diag_SetAddress(LINE_NODE_RearLight_DIAG_ADDRESS);
-    FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
+    //FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
 }
 
 void COMM_UpdatePhy(void) {
@@ -75,6 +80,10 @@ uint8_t FLASH_BL_EnterBoot(void) {
 
     return FLASH_LINE_BOOT_ENTRY_SUCCESS;
 }
+
+// bool COMM_BusIdle(void) {
+//     return true;
+// }
 
 void COMM_UpdateSignals(void) {
     
