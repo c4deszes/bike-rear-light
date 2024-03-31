@@ -36,14 +36,15 @@ add_executable(
 
     src/app/brake.c
     src/app/brightness.c
-    src/app/strobe.c
     src/app/comm.c
     src/app/init.c
     src/app/main.c
+    src/app/strobe.c
+    src/app/sys_state.c
     src/app/tasks.c
 
-    src/bsp/light_control.c
     src/bsp/board.c
+    src/bsp/light_control.c
     src/bsp/usart.c
 )
 target_include_directories(application PRIVATE include)

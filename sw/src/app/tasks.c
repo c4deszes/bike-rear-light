@@ -1,17 +1,22 @@
 #include "common/scheduler.h"
+#include "common/swtimer.h"
 #include "hal/wdt.h"
 
 #include <stdint.h>
 
 #include "app/comm.h"
-#include "common/swtimer.h"
-
 #include "app/brightness.h"
 #include "app/brake.h"
-#include "bsp/light_control.h"
+#include "app/strobe.h"
+#include "app/sys_state.h"
 
 void SCH_Task1ms(void) {
     SWTIMER_Update1ms();
+
+    STROBE_Update1ms();
+
+    // TODO: comm update
+    COMM_UpdatePhy();
 }
 
 uint8_t counter = 0;
@@ -19,7 +24,11 @@ bool state = false;
 
 void SCH_Task10ms_A(void) {
 
-    counter++;
+    //SYSSTATE_Update10ms();
+
+    //BRIGHTNESS_Update10ms();
+
+        counter++;
 
     if (counter > 100) {
         LIGHTCONTROL_SetTailState(true);
@@ -37,12 +46,9 @@ void SCH_Task10ms_A(void) {
         counter = 0;
     }
 
-    //BRIGHTNESS_Update10ms();
+    // TODO: brake update
+
     //WDT_Acknowledge();
-
-    //IET_Update();
-
-    //ITPMS_Update();
 
     //COMM_UpdateSignals();
 }

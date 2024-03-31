@@ -12,6 +12,7 @@
 #include "app/strobe.h"
 #include "app/brightness.h"
 #include "app/brake.h"
+#include "app/sys_state.h"
 
 #include <stddef.h>
 
@@ -37,13 +38,13 @@ void APP_Initialize() {
     LIGHTCONTROL_Init();
 
     // Initializing application services
+    SYSSTATE_Init();
     BRIGHTNESS_Init();
     STROBE_Init();
     BRAKE_Init();
 
-
     // Initializing communication
-    //COMM_Initialize();
+    COMM_Initialize();
 
     // Setting up scheduler
     SCH_Init();
