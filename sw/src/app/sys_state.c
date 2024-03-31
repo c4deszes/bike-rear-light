@@ -45,7 +45,7 @@ void SYSSTATE_Update10ms(void) {
     }
     else if (sys_state == sys_state_safety) {
         // TODO: source should be based on STROBE_SAFETY_SOURCE
-        STROBE_SetSource(strobe_source_internal_single);
+        STROBE_SetSource(strobe_source_disabled);
         BRIGHTNESS_SetMode(brightness_mode_safety);
 
         // if not bus idle/ new frame -> go back to normal

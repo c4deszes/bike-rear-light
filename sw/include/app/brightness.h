@@ -21,8 +21,6 @@ void BRIGHTNESS_SetTarget(uint16_t target);
 
 void BRIGHTNESS_SetBraking(bool brake);
 
-void BRIGHTNESS_SetBlinking(bool blink);
-
 void BRIGHTNESS_Strobe(bool strobe);
 
 void BRIGHTNESS_Update10ms(void);

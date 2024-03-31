@@ -6,14 +6,12 @@
 static brightness_mode_t brightness_mode;
 static uint16_t brightness_target;
 static bool brightness_brake;
-static bool brightness_blinking;
 static bool brightness_strobe;
 
 void BRIGHTNESS_Init(void) {
     brightness_mode = brightness_mode_max;
     brightness_target = 1000;
     brightness_brake = false;
-    brightness_blinking = false;
     brightness_strobe = true;
 }
 
@@ -53,18 +51,16 @@ void BRIGHTNESS_Update10ms(void) {
             brake_target = tail_target;
         }
         else {
-            if (brightness_blinking) {
-                // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
-                if (brightness_strobe) {
-                    tail_target += CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET;
+            // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
+            if (brightness_strobe) {
+                tail_target += CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET;
+            }
+            else {
+                if (tail_target < CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET) {
+                    tail_target = 0;
                 }
                 else {
-                    if (tail_target < CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET) {
-                        tail_target = 0;
-                    }
-                    else {
-                        tail_target -= CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET;
-                    }
+                    tail_target -= CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET;
                 }
             }
         }
@@ -85,18 +81,16 @@ void BRIGHTNESS_Update10ms(void) {
         // TODO: use brake signal
         uint16_t tail_target = CONFIG_BRIGHTNESS_SAFETY_LEVEL;
 
-        if (brightness_blinking) {
-            // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
-            if (brightness_strobe) {
-                tail_target += CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET;
+        // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
+        if (brightness_strobe) {
+            tail_target += CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET;
+        }
+        else {
+            if (tail_target < CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET) {
+                tail_target = 0;
             }
             else {
-                if (tail_target < CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET) {
-                    tail_target = 0;
-                }
-                else {
-                    tail_target -= CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET;
-                }
+                tail_target -= CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET;
             }
         }
 
@@ -127,10 +121,6 @@ void BRIGHTNESS_SetTarget(uint16_t target) {
 
 void BRIGHTNESS_SetBraking(bool brake) {
     brightness_brake = brake;
-}
-
-void BRIGHTNESS_SetBlinking(bool blink) {
-    brightness_blinking = blink;
 }
 
 void BRIGHTNESS_Strobe(bool strobe) {
