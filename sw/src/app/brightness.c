@@ -59,10 +59,13 @@ void BRIGHTNESS_Update10ms(void) {
                     tail_target += CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET;
                 }
                 else {
-                    tail_target -= CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET;
+                    if (tail_target < CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET) {
+                        tail_target = 0;
+                    }
+                    else {
+                        tail_target -= CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET;
+                    }
                 }
-            }
-            else {
             }
         }
 
@@ -80,10 +83,27 @@ void BRIGHTNESS_Update10ms(void) {
         /* In emergency mode the brake light reacts to accelerometer data */
         // TODO: use strobe signal
         // TODO: use brake signal
+        uint16_t tail_target = CONFIG_BRIGHTNESS_SAFETY_LEVEL;
+
+        if (brightness_blinking) {
+            // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
+            if (brightness_strobe) {
+                tail_target += CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET;
+            }
+            else {
+                if (tail_target < CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET) {
+                    tail_target = 0;
+                }
+                else {
+                    tail_target -= CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET;
+                }
+            }
+        }
+
         LIGHTCONTROL_SetBrightness(lightcontrol_feature_brake_segment, LIGHTCONTROL_BRIGHTNESS_MIN);
 
         /* And tail light is set to safety brightness */
-        LIGHTCONTROL_SetBrightness(lightcontrol_feature_tail_segment, CONFIG_BRIGHTNESS_EMERGENCY_LEVEL);
+        LIGHTCONTROL_SetBrightness(lightcontrol_feature_tail_segment, tail_target);
     }
     else if (brightness_mode == brightness_mode_max) {
         /* In max mode all segments are set to their hardware default level */

@@ -31,7 +31,7 @@ void SYSSTATE_Update10ms(void) {
 
         // if bus idle then safety
         // else go normal
-        sys_state = sys_state_normal;
+        sys_state = sys_state_safety;
     }
     else if (sys_state == sys_state_normal) {
         // brightness mode should be set to adaptive/standard/emergency/off
@@ -44,7 +44,8 @@ void SYSSTATE_Update10ms(void) {
         BRIGHTNESS_SetTarget(LINE_Request_LightSynchronization_data.fields.TargetBrightness * 10u);
     }
     else if (sys_state == sys_state_safety) {
-        // brightness mode should be set to safety
+        // TODO: source should be based on STROBE_SAFETY_SOURCE
+        STROBE_SetSource(strobe_source_internal_single);
         BRIGHTNESS_SetMode(brightness_mode_safety);
 
         // if not bus idle/ new frame -> go back to normal
