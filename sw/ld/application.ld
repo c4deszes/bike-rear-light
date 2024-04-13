@@ -1,4 +1,4 @@
-INCLUDE memory.ld
+INCLUDE app_memory.ld
 
 SECTIONS
 {
@@ -27,6 +27,11 @@ SECTIONS
     .text :
     {
         . = ALIGN(4);
+        *(.text)           /* .text sections (code) */
+        *(.text*)          /* .text* sections (code) */
+        *(.rodata)         /* .rodata sections (constants, strings, etc.) */
+        *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+
         *(.glue_7t) *(.glue_7)
         *(.gnu.linkonce.r.*)
         *(.ARM.extab* .gnu.linkonce.armextab.*)

@@ -1,3 +1,6 @@
 [submodule "customer"]
 	path = customer
 	url = https://github.com/c4deszes/bike-electronics-system
+[submodule "sw/lib/bma456"]
+	path = sw/lib/bma456
+	url = https://github.com/boschsensortec/BMA456_SensorAPI.git

@@ -30,6 +30,15 @@ line_codegen(
     ADAPTER
 )
 
+add_library(
+    bma456mm INTERFACE
+)
+target_sources(bma456mm INTERFACE
+    lib/bma456/bma4.c
+    lib/bma456/bma456mm.c
+)
+target_include_directories(bma456mm INTERFACE lib/bma456)
+
 add_executable(
     application
     EXCLUDE_FROM_ALL
@@ -46,6 +55,7 @@ add_executable(
     src/bsp/board.c
     src/bsp/light_control.c
     src/bsp/usart.c
+    src/bsp/spi.c
 )
 target_include_directories(application PRIVATE include)
 target_link_libraries(application PRIVATE   cmsis
@@ -55,9 +65,11 @@ target_link_libraries(application PRIVATE   cmsis
                                             samd21-hal-options
                                             flash-line-api flash-line-sources
                                             protocol-stack-api
-                                            bootloader-api)
+                                            bootloader-api
+                                            bma456mm)
 
 set_target_properties(application PROPERTIES SUFFIX ".elf")
+target_link_directories(application PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ld)
 target_link_options(application PRIVATE -T${CMAKE_CURRENT_SOURCE_DIR}/ld/application.ld)
 target_link_options(application PRIVATE -Wl,-Map=application.map -Wl,--gc-sections)
 

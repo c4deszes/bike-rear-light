@@ -31,6 +31,8 @@ void SCH_Task10ms_A(void) {
 
     BRIGHTNESS_Update10ms();
 
+    BRAKE_Update10ms();
+
     // counter++;
 
     // uint16_t brightness = LINE_Request_LightSynchronization_data.fields.TargetBrightness * 10;
