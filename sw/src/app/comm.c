@@ -74,13 +74,13 @@ void COMM_UpdatePhy(void) {
     LINE_Transport_Update(1);
 
     // TODO: LINE Request frame flags
-    //if (LINE_Request_LightSynchronization_flag() || LINE_Request_RearLightSetting_flag()) {
+    if (LINE_Request_LightSynchronization_flag() || LINE_Request_RearLightSetting_flag()) {
         SWTIMER_Setup(comm_lightrequest_timer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
-    //}
+    }
 
-    //if (LINE_Request_SpeedStatus_flag()) {
+    if (LINE_Request_SpeedStatus_flag()) {
         SWTIMER_Setup(comm_speedstatus_timer, FEATURE_COMM_SPEEDSTATUS_TIMEOUT);
-    //}
+    }
 }
 
 void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checksum) {
