@@ -1,6 +1,8 @@
 #if !defined(APP_STROBE_H_)
 #define APP_STROBE_H_
 
+#include <stdint.h>
+
 typedef enum {
     strobe_source_disabled,
     strobe_source_internal_single,
@@ -12,6 +14,8 @@ typedef enum {
 void STROBE_Init(void);
 
 void STROBE_SetSource(strobe_source_t source);
+
+strobe_source_t STROBE_ConvertSource(uint8_t config);
 
 /**
  * @brief Uses the current strobe signal source to blink the lights, this

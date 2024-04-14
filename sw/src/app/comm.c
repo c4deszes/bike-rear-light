@@ -8,6 +8,9 @@
 #include "bl/api.h"
 #include "hal/dsu.h"
 
+#include "app/config.h"
+
+#include "common/swtimer.h"
 #include "common/ringbuffer.h"
 
 RINGBUFFER_8(COMM_UsartBufferTx, 128);
@@ -27,6 +30,9 @@ static LINE_Diag_SoftwareVersion_t sw_version = {
     .minor = 1,
     .patch = 0
 };
+
+static swtimer_t* comm_lightrequest_timer;
+static swtimer_t* comm_speedstatus_timer;
 
 uint8_t LINE_Diag_GetOperationStatus(void) {
     return LINE_DIAG_OP_STATUS_OK;
@@ -51,7 +57,10 @@ void COMM_Initialize(void) {
     LINE_Transport_Init(true);
     LINE_App_Init();
     LINE_Diag_SetAddress(LINE_NODE_RearLight_DIAG_ADDRESS);
-    //FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
+    FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
+
+    comm_lightrequest_timer = SWTIMER_Create();
+    comm_speedstatus_timer = SWTIMER_Create();
 }
 
 void COMM_UpdatePhy(void) {
@@ -63,6 +72,15 @@ void COMM_UpdatePhy(void) {
     }
 
     LINE_Transport_Update(1);
+
+    // TODO: LINE Request frame flags
+    //if (LINE_Request_LightSynchronization_flag() || LINE_Request_RearLightSetting_flag()) {
+        SWTIMER_Setup(comm_lightrequest_timer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
+    //}
+
+    //if (LINE_Request_SpeedStatus_flag()) {
+        SWTIMER_Setup(comm_speedstatus_timer, FEATURE_COMM_SPEEDSTATUS_TIMEOUT);
+    //}
 }
 
 void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checksum) {
@@ -76,15 +94,59 @@ void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checks
     USART_FlushOutput();
 }
 
+static bool comm_bootrequest = false;
+
 uint8_t FLASH_BL_EnterBoot(void) {
+
+    // TODO: when do we reject boot entry requests?
+    comm_bootrequest = true;
 
     return FLASH_LINE_BOOT_ENTRY_SUCCESS;
 }
 
-// bool COMM_BusIdle(void) {
-//     return true;
-// }
+bool COMM_BootRequest(void) {
+    return comm_bootrequest;
+}
+
+uint16_t COMM_GetTargetBrightness(void) {
+    return LINE_Request_LightSynchronization_data.fields.TargetBrightness * 10U;
+}
+
+bool COMM_LightRequestTimeout(void) {
+    return SWTIMER_Elapsed(comm_lightrequest_timer);
+}
+
+uint8_t COMM_LightMode(void) {
+    return LINE_Request_LightSynchronization_data.fields.LightMode;
+}
+
+uint8_t COMM_LightBehavior(void) {
+    return LINE_Request_RearLightSetting_data.fields.Behavior;
+}
+
+bool COMM_SpeedStatusTimeout(void) {
+    return SWTIMER_Elapsed(comm_speedstatus_timer);
+}
+
+bool COMM_SpeedStatusBraking(void) {
+    if (LINE_Request_SpeedStatus_data.fields.GlobalSpeedState == LINE_ENCODER_GlobalSpeedStateEncoder_Ok) {
+        if (LINE_Request_SpeedStatus_data.fields.BrakeState == LINE_ENCODER_BrakeStateEncoder_Braking) {
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
 
 void COMM_UpdateSignals(void) {
-    
+    // TODO: check errors in LightController, report off if disabled
+    LINE_Request_RearLightStatus_data.fields.BrakeLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
+    LINE_Request_RearLightStatus_data.fields.TailLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
+    LINE_Request_RearLightStatus_data.fields.SignalLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
+
+    LINE_Request_RearLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
+}
+
+void COMM_UpdateDebugSignals(void) {
+    // TODO: copy x,y,z, sensor code, brake status
 }

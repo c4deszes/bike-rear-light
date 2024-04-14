@@ -33,31 +33,7 @@ void SCH_Task10ms_A(void) {
 
     BRAKE_Update10ms();
 
-    // counter++;
-
-    // uint16_t brightness = LINE_Request_LightSynchronization_data.fields.TargetBrightness * 10;
-
-    // LIGHTCONTROL_SetBrightness(lightcontrol_feature_tail_segment, brightness);
-
-    // if (counter > 100) {
-    //     LIGHTCONTROL_SetState(lightcontrol_feature_tail_segment, true);
-    //     LIGHTCONTROL_SetState(lightcontrol_feature_brake_segment, false);
-    //     if (state) {
-    //         //LIGHTCONTROL_SetBrightness(lightcontrol_feature_tail_segment, 0);
-    //         //LIGHTCONTROL_SetBrightness(lightcontrol_feature_brake_segment, 1000);
-    //     }
-    //     else {
-    //         //LIGHTCONTROL_SetBrightness(lightcontrol_feature_tail_segment, 100);
-    //         //LIGHTCONTROL_SetBrightness(lightcontrol_feature_brake_segment, 0);
-    //     }
-
-    //     state = !state;
-    //     counter = 0;
-    // }
-
-    // TODO: brake update
-
     //WDT_Acknowledge();
 
-    //COMM_UpdateSignals();
+    COMM_UpdateSignals();
 }

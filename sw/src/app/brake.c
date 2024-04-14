@@ -8,6 +8,8 @@
 #include "hal/gpio.h"
 #include "bsp/pinout.h"
 
+#include "app/config.h"
+
 // Concept: use MM feature set
 // - configure High G detection
 // - configure range 2/4G
@@ -68,22 +70,6 @@ static void delayMicroseconds( uint32_t usec, void* ptr )
     return ;
   }
 
-  /*
-   *  The following loop:
-   *
-   *    for (; ul; ul--) {
-   *      __asm__ volatile("");
-   *    }
-   *
-   *  produce the following assembly code:
-   *
-   *    loop:
-   *      subs r3, #1        // 1 Core cycle
-   *      bne.n loop         // 1 Core cycle + 1 if branch is taken
-   */
-
-  // VARIANT_MCK / 1000000 == cycles needed to delay 1uS
-  //                     3 == cycles used in a loop
   uint32_t n = usec * (48000000 / 1000000) / 3;
   __asm__ __volatile__(
     "1:              \n"
@@ -116,6 +102,7 @@ void BRAKE_Init(void) {
     GPIO_PinWrite(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, HIGH);
     GPIO_SetupPinOutput(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, &output);
 
+    // TODO: consider pullup/pulldown on MISO, there's capacitive discharge at the end of transcations
     GPIO_EnableFunction(BMA456_SPI_MISO_PORT, BMA456_SPI_MISO_PIN, BMA456_SPI_MISO_PINMUX);
     GPIO_EnableFunction(BMA456_SPI_SCK_PORT, BMA456_SPI_SCK_PIN, BMA456_SPI_SCK_PINMUX);
     GPIO_EnableFunction(BMA456_SPI_MOSI_PORT, BMA456_SPI_MOSI_PIN, BMA456_SPI_MOSI_PINMUX);
@@ -123,8 +110,6 @@ void BRAKE_Init(void) {
     SERCOM_SPI_SetupMaster(SERCOM1, 8000000UL, 1000000UL, 0, 0);
     SERCOM_SPI_Enable(SERCOM1);
 }
-
-// (int8_t)coines_write(COINES_SENSOR_INTF_SPI, dev_addr, 0, reg_addr, reg_data, count);
 
 static int8_t BRAKE_SetupSensor(void) {
     int8_t rslt;
@@ -182,27 +167,35 @@ void BRAKE_Update10ms(void) {
         }
     }
 
+    bool internal_brake = false;
+
+#if FEATURE_BRAKE_USE_INTERNAL_SIGNAL == 1
     if (brake_signal_state == brake_signal_status_ok) {
         int8_t result = bma4_read_accel_xyz(&sens_data, &bma456);
+
+        // TODO: determine braking
     }
+#else
 
-    // else if (brake_signal_state == brake_signal_status_ok) {
+#endif
 
-    // }
-    // else if (brake_signal_state == brake_signal_status_perm_error) {
+    bool external_brake = false;
 
-    // }
-    // else {
+#if FEATURE_BRAKE_USE_EXTERNAL_SIGNAL == 1
+    // TODO: implement
+    // 1. if last speed state was received within 500ms?
+    //    and GlobalSpeedState.SpeedState is Ok
+    //    and SpeedStatus.BrakeState is Braking
+        // then set
+    // otherwise 
+#else
 
-    // }
+#endif
 
-
-    // rslt = bma4_read_accel_xyz(&sens_data, &bma);
-
-    // 1. if we trust the brake signal from the speed sensor then use that
-
-    // 2. else if we trust the accelerometer
-
-    // otherwise turn off the brake light and set error?
-
+    if (internal_brake || external_brake) {
+        BRIGHTNESS_SetBraking(true);
+    }
+    else {
+        BRIGHTNESS_SetBraking(false);
+    }
 }
