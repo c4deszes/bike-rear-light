@@ -9,6 +9,7 @@
 #include "bsp/pinout.h"
 
 #include "app/config.h"
+#include "app/comm.h"
 
 // Concept: use MM feature set
 // - configure High G detection
@@ -88,14 +89,6 @@ void BRAKE_Init(void) {
 
     accel_conf.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
     accel_conf.range = BMA4_ACCEL_RANGE_2G;
-
-    /* The bandwidth parameter is used to configure the number of sensor samples that are averaged
-     * if it is set to 2, then 2^(bandwidth parameter) samples
-     * are averaged, resulting in 4 averaged samples
-     * Note1 : For more information, refer the datasheet.
-     * Note2 : A higher number of averaged samples will result in a less noisier signal, but
-     * this has an adverse effect on the power consumed.
-     */
     accel_conf.bandwidth = BMA4_ACCEL_NORMAL_AVG4;
     accel_conf.perf_mode = BMA4_CIC_AVG_MODE;
 
@@ -182,12 +175,9 @@ void BRAKE_Update10ms(void) {
     bool external_brake = false;
 
 #if FEATURE_BRAKE_USE_EXTERNAL_SIGNAL == 1
-    // TODO: implement
-    // 1. if last speed state was received within 500ms?
-    //    and GlobalSpeedState.SpeedState is Ok
-    //    and SpeedStatus.BrakeState is Braking
-        // then set
-    // otherwise 
+    if (!COMM_SpeedStatusTimeout() && COMM_SpeedStatusBraking()) {
+        external_brake = true;
+    }
 #else
 
 #endif

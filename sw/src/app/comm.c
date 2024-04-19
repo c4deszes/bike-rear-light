@@ -34,6 +34,7 @@ static LINE_Diag_SoftwareVersion_t sw_version = {
 static swtimer_t* comm_lightrequest_timer;
 static swtimer_t* comm_speedstatus_timer;
 
+// TODO: support op. mode (error in case all drivers fail, warning if IMU or single segment fails)
 uint8_t LINE_Diag_GetOperationStatus(void) {
     return LINE_DIAG_OP_STATUS_OK;
 }
@@ -73,7 +74,6 @@ void COMM_UpdatePhy(void) {
 
     LINE_Transport_Update(1);
 
-    // TODO: LINE Request frame flags
     if (LINE_Request_LightSynchronization_flag() || LINE_Request_RearLightSetting_flag()) {
         SWTIMER_Setup(comm_lightrequest_timer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
     }

@@ -103,4 +103,11 @@ void LIGHTCONTROL_SetBrightness(lightcontrol_feature_t feature, uint16_t brightn
         TCC1_REGS->TCC_CCB[TLD2132_PWMI_WO] = TCC_CCB_CCB(brightness);
         while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_CCB_Msk) != 0);
     }
+
+    if (brightness == LIGHTCONTROL_BRIGHTNESS_MIN) {
+        LIGHTCONTROL_SetState(feature, false);
+    }
+    else {
+        LIGHTCONTROL_SetState(feature, true);
+    }
 }

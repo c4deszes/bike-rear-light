@@ -8,6 +8,9 @@
 
 #include "line_api.h"
 
+#include "bl/api.h"
+#include "atsamd21e18a.h"
+
 typedef enum {
     sys_state_init,         /* When starting up */
     sys_state_normal,       /* When target signal is valid */
@@ -24,6 +27,17 @@ void SYSSTATE_Init(void) {
     sys_state = sys_state_init;
     sys_transition_timer = SWTIMER_Create();
     SWTIMER_Setup(sys_transition_timer, FEATURE_SYSTEM_TIME_INIT);
+}
+
+uint64_t boot_entry_key __attribute__((section(".bl_shared_ram")));
+static void SYSSTATE_BootEntry(void) {
+    boot_entry_key = BOOT_ENTRY_MAGIC;
+
+    NVIC_SystemReset();
+}
+
+static void SYSSTATE_Reset(void) {
+    NVIC_SystemReset();
 }
 
 void SYSSTATE_Update10ms(void) {
@@ -89,6 +103,10 @@ void SYSSTATE_Update10ms(void) {
         else if (COMM_BootRequest()) {
             sys_state = sys_state_goto_boot;
         }
+    }
+    // TODO: go to boot state, self reset
+    else if (sys_state == sys_state_goto_boot) {
+        SYSSTATE_BootEntry();
     }
 }
 
