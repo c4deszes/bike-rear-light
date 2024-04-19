@@ -50,3 +50,7 @@ uint8_t USART_Read(void) {
 void USART_FlushOutput(void) {
     SERCOM_USART_FlushOutput(SERCOM3);
 }
+
+void SERCOM3_Interrupt(void) {
+    SERCOM_USART_InterruptHandler(SERCOM3);
+}

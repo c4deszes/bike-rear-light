@@ -3,7 +3,7 @@
 
 #include "bma456mm.h"
 
-#include "bsp/spi.h"
+#include "hal/sercom_spi.h"
 
 #include "hal/gpio.h"
 #include "bsp/pinout.h"
@@ -100,7 +100,10 @@ void BRAKE_Init(void) {
     GPIO_EnableFunction(BMA456_SPI_SCK_PORT, BMA456_SPI_SCK_PIN, BMA456_SPI_SCK_PINMUX);
     GPIO_EnableFunction(BMA456_SPI_MOSI_PORT, BMA456_SPI_MOSI_PIN, BMA456_SPI_MOSI_PINMUX);
 
-    SERCOM_SPI_SetupMaster(SERCOM1, 8000000UL, 1000000UL, 0, 0);
+    SERCOM_SPI_SetupMaster(SERCOM1, 8000000UL, 1000000UL,
+                           sercom_spi_dataorder_msb,
+                           sercom_spi_cpha_trailing, sercom_spi_cpol_idle_high,
+                           SERCOM_SPI_MOSI_PAD0, SERCOM_SPI_MISO_PAD3);
     SERCOM_SPI_Enable(SERCOM1);
 }
 

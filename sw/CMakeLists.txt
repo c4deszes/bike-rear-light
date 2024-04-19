@@ -55,7 +55,6 @@ add_executable(
     src/bsp/board.c
     src/bsp/light_control.c
     src/bsp/usart.c
-    src/bsp/spi.c
 )
 target_include_directories(application PRIVATE include)
 target_link_libraries(application PRIVATE   cmsis
