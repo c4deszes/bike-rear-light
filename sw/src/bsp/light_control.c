@@ -1,6 +1,7 @@
 #include "bsp/pinout.h"
 
 #include "bsp/light_control.h"
+#include "hal/tcc.h"
 
 static const gpio_pin_input_configuration input = {
     .pull = FLOATING,
@@ -46,25 +47,22 @@ static void BRAKELIGHT_Init(void) {
     GPIO_SetupPinOutput(TLD2132_INSET1_PORT, TLD2132_INSET1_PIN, &output);
 }
 
+tcc_channel_setting_t pwm_channels[4];
+
 static void PWM_TIMER_Setup(void) {
-    // TODO: move this to the HAL library
-    TCC1_REGS->TCC_CTRLA = TCC_CTRLA_SWRST_Msk;
-    while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_SWRST_Msk) != 0);
+    TCC_Reset(TCC1);
 
-    TCC1_REGS->TCC_CTRLA = TCC_CTRLA_PRESCALER_DIV1 |
-                           TCC_CTRLA_PRESCSYNC_PRESC ;
-    TCC1_REGS->TCC_WEXCTRL = TCC_WEXCTRL_OTMX(0x00);
-    // TODO: externally adjustable frequency
-    TCC1_REGS->TCC_DRVCTRL = TCC_DRVCTRL_INVEN0_Msk | TCC_DRVCTRL_INVEN1_Msk;
-    TCC1_REGS->TCC_PER = TCC_PER_PER(999);   // GCLK 1MHz div 1 -> 1kHz
-    TCC1_REGS->TCC_WAVE = TCC_WAVE_WAVEGEN_NPWM;
+    pwm_channels[TLD2331_PWMI_WO].cc = LIGHTCONTROL_BRIGHTNESS_MAX;
+    pwm_channels[TLD2331_PWMI_WO].drv_inv = true;
+    pwm_channels[TLD2132_PWMI_WO].cc = LIGHTCONTROL_BRIGHTNESS_MAX;   // TODO: try PWM set to MIN
+    pwm_channels[TLD2132_PWMI_WO].drv_inv = true;
 
-    TCC1_REGS->TCC_CC[TLD2331_PWMI_WO] = TCC_CC_CC(LIGHTCONTROL_BRIGHTNESS_MAX);
-    TCC1_REGS->TCC_CC[TLD2132_PWMI_WO] = TCC_CC_CC(LIGHTCONTROL_BRIGHTNESS_MAX);    //TODO: why dummy handler when set to 100?
-    TCC1_REGS->TCC_INTFLAG = TCC_INTFLAG_Msk;
+    // TODO: for some reason dummy handler is reached when we write one
+    pwm_channels[2].cc = LIGHTCONTROL_BRIGHTNESS_MAX;
+    pwm_channels[3].cc = LIGHTCONTROL_BRIGHTNESS_MAX;
 
-    TCC1_REGS->TCC_CTRLA |= TCC_CTRLA_ENABLE_Msk;
-    while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_ENABLE_Msk) != 0);
+    TCC_SetupNormalPwm(TCC1, 999, pwm_channels);
+    TCC_Enable(TCC1);
 }
 
 void LIGHTCONTROL_Init() {
@@ -95,13 +93,12 @@ void LIGHTCONTROL_SetState(lightcontrol_feature_t feature, bool enabled) {
 
 void LIGHTCONTROL_SetBrightness(lightcontrol_feature_t feature, uint16_t brightness) {
     // TODO: clamp brightness, if needed disable PWM function and use high/low for 100% / 0%
+    // TODO: check if PWM 0 and PWM 100% are achievable
     if (feature == lightcontrol_feature_tail_segment) {
-        TCC1_REGS->TCC_CCB[TLD2331_PWMI_WO] = TCC_CCB_CCB(brightness);
-        while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_CCB_Msk) != 0);
+        TCC_SetCompareCapture(TCC1, TLD2331_PWMI_WO, brightness);
     }
     else if(feature == lightcontrol_feature_brake_segment) {
-        TCC1_REGS->TCC_CCB[TLD2132_PWMI_WO] = TCC_CCB_CCB(brightness);
-        while((TCC1_REGS->TCC_SYNCBUSY & TCC_SYNCBUSY_CCB_Msk) != 0);
+        TCC_SetCompareCapture(TCC1, TLD2132_PWMI_WO, brightness);
     }
 
     if (brightness == LIGHTCONTROL_BRIGHTNESS_MIN) {
