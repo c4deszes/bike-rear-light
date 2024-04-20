@@ -11,16 +11,16 @@ typedef enum {
     lightcontrol_feature_brake_segment
 } lightcontrol_feature_t;
 
+typedef enum {
+    lightcontrol_feature_state_off,
+    lightcontrol_feature_state_ok,
+    lightcontrol_feature_state_partial_error,
+    lightcontrol_feature_state_error
+} lightcontrol_feature_state_t;
+
 void LIGHTCONTROL_Init(void);
 
-/**
- * @brief Sets the state of the given feature, a state of `false` is equivalent to the feature being
- *        off and `true` being on.
- * 
- * @param feature Feature specification
- * @param enabled Feature's state
- */
-void LIGHTCONTROL_SetState(lightcontrol_feature_t feature, bool enabled);
+void LIGHTCONTROL_Update10ms(void);
 
 /**
  * @brief Sets the brightness of the given feature, the brightness `LIGHTCONTROL_BRIGHTNESS_MIN` is
@@ -31,5 +31,9 @@ void LIGHTCONTROL_SetState(lightcontrol_feature_t feature, bool enabled);
  * @param brightness 
  */
 void LIGHTCONTROL_SetBrightness(lightcontrol_feature_t feature, uint16_t brightness);
+
+void LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_t feature);
+
+lightcontrol_feature_state_t LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_t feature);
 
 #endif // BSP_LIGHT_CONTROL_H_

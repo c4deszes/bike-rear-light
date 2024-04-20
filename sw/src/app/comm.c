@@ -7,6 +7,8 @@
 #include "flash_line_diag.h"
 #include "bl/api.h"
 #include "hal/dsu.h"
+#include "app/brake.h"
+#include "bsp/light_control.h"
 
 #include "app/config.h"
 
@@ -138,15 +140,38 @@ bool COMM_SpeedStatusBraking(void) {
     return false;
 }
 
+static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
+    if (state == lightcontrol_feature_state_off) {
+        return LINE_ENCODER_LightStatusEncoder_Off;
+    }
+    else if (state == lightcontrol_feature_state_ok) {
+        return LINE_ENCODER_LightStatusEncoder_Ok;
+    }
+    else if(state == lightcontrol_feature_state_partial_error) {
+        return LINE_ENCODER_LightStatusEncoder_PartialError;
+    }
+    else if(state == lightcontrol_feature_state_error) {
+        return LINE_ENCODER_LightStatusEncoder_Error;
+    }
+    else {
+        return LINE_ENCODER_LightStatusEncoder_Error;
+    }
+}
+
 void COMM_UpdateSignals(void) {
     // TODO: check errors in LightController, report off if disabled
-    LINE_Request_RearLightStatus_data.fields.BrakeLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
-    LINE_Request_RearLightStatus_data.fields.TailLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
-    LINE_Request_RearLightStatus_data.fields.SignalLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
+    LINE_Request_RearLightStatus_data.fields.BrakeLightStatus = COMM_EncodeLightStatus(LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_brake_segment));
+    LINE_Request_RearLightStatus_data.fields.TailLightStatus = COMM_EncodeLightStatus(LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_tail_segment));
 
+    LINE_Request_RearLightStatus_data.fields.SignalLightStatus = LINE_ENCODER_LightStatusEncoder_Off;   // Not present on Gen1.0
+
+    // TODO: measure MCU temp. and return accordingly
     LINE_Request_RearLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
 }
 
 void COMM_UpdateDebugSignals(void) {
     // TODO: copy x,y,z, sensor code, brake status
+    LINE_Request_RearLightSensorDebug_data.fields.AccelerationX = BRAKE_GetAccelerationX();
+    LINE_Request_RearLightSensorDebug_data.fields.AccelerationY = BRAKE_GetAccelerationY();
+    LINE_Request_RearLightSensorDebug_data.fields.AccelerationZ = BRAKE_GetAccelerationZ();
 }

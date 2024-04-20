@@ -38,14 +38,6 @@ void BSP_ClockInitialize (void) {
                     PM_APBCSEL_APBCDIV_DIV1);
 
     /* Configure the APBC Bridge Clocks */
-        
-    // APBA peripherals (eic, rtc, wdt, gclk, sysctrl, pm, pac0) are enabled on reset
-    // PM_REGS->PM_APBAMASK = PM_APBAMASK_Msk;
-    
-    // APBB peripherals (usb, dmac, port, nvmctrl, dsu, pac1) are enabled on reset
-    // TODO: maybe disable usb?
-    // PM_REGS->PM_APBBMASK = PM_APBBMASK_Msk;
-
     PM_REGS->PM_APBCMASK = PM_APBCMASK_EVSYS_Msk |
                            //PM_APBCMASK_TCC0_Msk |
                            PM_APBCMASK_TCC1_Msk |

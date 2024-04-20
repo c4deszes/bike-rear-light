@@ -16,7 +16,7 @@ static const gpio_pin_output_configuration output = {
 void USART_Initialize(uint32_t baudrate, ringbuffer8_t* tx_buffer, ringbuffer8_t* rx_buffer) {
     GPIO_EnableFunction(UART_TX_PORT, UART_TX_PIN, UART_TX_PINMUX);
     GPIO_EnableFunction(UART_RX_PORT, UART_RX_PIN, UART_RX_PINMUX);
-    // TODO: reenable once transmission and sleep mode is needed
+
     GPIO_SetupPinOutput(UART_CS_PORT, UART_CS_PIN, &output);
     GPIO_PinWrite(UART_CS_PORT, UART_CS_PIN, HIGH);
 
@@ -30,6 +30,8 @@ void USART_Initialize(uint32_t baudrate, ringbuffer8_t* tx_buffer, ringbuffer8_t
         rx_buffer
     );
 }
+
+// TODO: function to deep sleep (LIN CS pin low)
 
 void USART_Enable(void) {
     SERCOM_USART_Enable(SERCOM3);

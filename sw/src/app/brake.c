@@ -149,7 +149,17 @@ static int8_t BRAKE_SetupSensor(void) {
     return rslt;
 }
 
-static uint8_t counter = 0;
+int16_t BRAKE_GetAccelerationX(void) {
+    return sens_data.x;
+}
+
+int16_t BRAKE_GetAccelerationY(void) {
+    return sens_data.y;
+}
+
+int16_t BRAKE_GetAccelerationZ(void) {
+    return sens_data.z;
+}
 
 void BRAKE_Update10ms(void) {
     if (brake_signal_state == brake_signal_status_na) {

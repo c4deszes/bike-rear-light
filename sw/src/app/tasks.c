@@ -36,4 +36,16 @@ void SCH_Task10ms_A(void) {
     //WDT_Acknowledge();
 
     COMM_UpdateSignals();
+
+    // TODO: only do if debugging is enabled
+    COMM_UpdateDebugSignals();
+
+    if (counter > 1000) {   // every 10 seconds
+        LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_tail_segment);
+        LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_brake_segment);
+        counter = 0;
+    }
+    counter++;
+
+    LIGHTCONTROL_Update10ms();
 }
