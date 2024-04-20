@@ -92,7 +92,7 @@ static void PWM_TIMER_Setup(void) {
 
     pwm_channels[TLD2331_PWMI_WO].cc = LIGHTCONTROL_BRIGHTNESS_MAX;
     pwm_channels[TLD2331_PWMI_WO].drv_inv = true;
-    pwm_channels[TLD2132_PWMI_WO].cc = LIGHTCONTROL_BRIGHTNESS_MAX;   // TODO: try PWM set to MIN
+    pwm_channels[TLD2132_PWMI_WO].cc = LIGHTCONTROL_BRIGHTNESS_MIN;   // TODO: try PWM set to MIN
     pwm_channels[TLD2132_PWMI_WO].drv_inv = true;
 
     TCC_SetupNormalPwm(TCC1, 999, pwm_channels);
@@ -247,11 +247,11 @@ static void LIGHTCONTROL_Brakelight_DiagRun(void) {
         else if (brakelight_diag_state == lightcontrol_brake_diag_state_in1) {
             GPIO_PinWrite(TLD2132_INSET1_PORT, TLD2132_INSET1_PIN, HIGH);
 
-            brakelight_diag_state = lightcontrol_brake_diag_state_in1;
+            brakelight_diag_state = lightcontrol_brake_diag_state_in1_post;
             SWTIMER_Setup(brakelight_diag_timer, LIGHT_DIAG_CHANNEL_DURATION);
         }
         else if (brakelight_diag_state == lightcontrol_brake_diag_state_in1_post) {
-            if (GPIO_PinRead(TLD2132_ERROR_PORT, TLD2132_ERROR_PIN)) {
+            if (GPIO_PinRead(TLD2132_ERROR_PORT, TLD2132_ERROR_PIN) == LOW) {
                 brakelight_state = lightcontrol_feature_state_error;
             }
             brake_diag_complete = true;
@@ -260,7 +260,7 @@ static void LIGHTCONTROL_Brakelight_DiagRun(void) {
             /* Restoring original state */
             LIGHTCONTROL_SetBrightness(lightcontrol_feature_brake_segment, brake_brightness);
 
-            GPIO_PinWrite(TLD2132_PWMI_PORT, TLD2132_PWMI_PIN, LOW);
+            GPIO_PinWrite(TLD2132_PWMI_PORT, TLD2132_PWMI_PIN, HIGH);
             GPIO_EnableFunction(TLD2132_PWMI_PORT, TLD2132_PWMI_PIN, TLD2132_PWMI_PINMUX);
             GPIO_PinWrite(TLD2132_INSET1_PORT, TLD2132_INSET1_PIN, HIGH);
         }
@@ -268,8 +268,6 @@ static void LIGHTCONTROL_Brakelight_DiagRun(void) {
 }
 
 void LIGHTCONTROL_Update10ms(void) {
-
-    // TODO: brake light measures error while off?
     // If diagnostics was not run yet or diagnostics indicate that 
     // this logic makes sure that errors are detected but for example in the case of a partial failure (single led short or single channel short/open)
     // the partial error state stays until diagnostics indicate otherwise
