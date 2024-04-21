@@ -4,9 +4,9 @@
 #include "hal/tcc.h"
 #include "common/swtimer.h"
 
-#define LIGHT_DIAG_ENABLE_DURATION 500
-#define LIGHT_DIAG_CHANNEL_DURATION 500
-#define LIGHT_DIAG_POST_DURATION 500
+#define LIGHT_DIAG_ENABLE_DURATION 10
+#define LIGHT_DIAG_CHANNEL_DURATION 10
+#define LIGHT_DIAG_POST_DURATION 10
 
 static const gpio_pin_input_configuration input = {
     .pull = FLOATING,

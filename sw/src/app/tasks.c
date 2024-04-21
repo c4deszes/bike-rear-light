@@ -18,7 +18,6 @@ void SCH_Task1ms(void) {
 
     STROBE_Update1ms();
 
-    // TODO: comm update
     COMM_UpdatePhy();
 }
 
@@ -33,6 +32,7 @@ void SCH_Task10ms_A(void) {
 
     BRAKE_Update10ms();
 
+    // TODO: enable watchdog
     //WDT_Acknowledge();
 
     COMM_UpdateSignals();
@@ -40,9 +40,11 @@ void SCH_Task10ms_A(void) {
     // TODO: only do if debugging is enabled
     COMM_UpdateDebugSignals();
 
-    if (counter > 1000) {   // every 10 seconds
-        //LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_tail_segment);
+    if (counter == 500) {   // every 5 seconds
         LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_brake_segment);
+    }
+    if (counter >= 1000) {      // every 10 seconds
+        LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_tail_segment);
         counter = 0;
     }
     counter++;
