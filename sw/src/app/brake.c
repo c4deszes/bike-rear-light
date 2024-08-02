@@ -187,6 +187,7 @@ void BRAKE_Update10ms(void) {
 
     bool external_brake = false;
 
+// TODO: in safety mode we should ignore the external signal (assume that comms are bad)
 #if FEATURE_BRAKE_USE_EXTERNAL_SIGNAL == 1
     if (!COMM_SpeedStatusTimeout() && COMM_SpeedStatusBraking()) {
         external_brake = true;

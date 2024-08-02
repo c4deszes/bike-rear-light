@@ -53,6 +53,11 @@ LINE_Diag_SoftwareVersion_t* LINE_Diag_GetSoftwareVersion(void) {
     return &sw_version;
 }
 
+// TODO: remove later
+void LINE_Transport_WriteRequest(uint16_t request) {
+
+}
+
 void COMM_Initialize(void) {
     USART_Initialize(LINE_NETWORK_BicycleNetwork1_BAUDRATE, &COMM_UsartBufferTx, &COMM_UsartBufferRx);
     USART_Enable();

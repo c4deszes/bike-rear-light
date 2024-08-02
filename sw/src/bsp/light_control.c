@@ -152,6 +152,7 @@ static void LIGHTCONTROL_Taillight_DiagRun(void) {
             SWTIMER_Setup(taillight_diag_timer, LIGHT_DIAG_ENABLE_DURATION);
         }
         else if (taillight_diag_state == lightcontrol_tail_diag_state_in1) {
+            GPIO_PinWrite(TLD2331_ENABLE_PORT, TLD2331_ENABLE_PIN, HIGH);
             GPIO_PinWrite(TLD2331_INSET1_PORT, TLD2331_INSET1_PIN, HIGH);
             GPIO_PinWrite(TLD2331_INSET2_PORT, TLD2331_INSET2_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET3_PORT, TLD2331_INSET3_PIN, LOW);
@@ -164,6 +165,7 @@ static void LIGHTCONTROL_Taillight_DiagRun(void) {
                 tail_segment_states |= (1 << 0);
             }
 
+            GPIO_PinWrite(TLD2331_ENABLE_PORT, TLD2331_ENABLE_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET1_PORT, TLD2331_INSET1_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET2_PORT, TLD2331_INSET2_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET3_PORT, TLD2331_INSET3_PIN, LOW);
@@ -172,6 +174,7 @@ static void LIGHTCONTROL_Taillight_DiagRun(void) {
             SWTIMER_Setup(taillight_diag_timer, LIGHT_DIAG_POST_DURATION);
         }
         else if (taillight_diag_state == lightcontrol_tail_diag_state_in2) {
+            GPIO_PinWrite(TLD2331_ENABLE_PORT, TLD2331_ENABLE_PIN, HIGH);
             GPIO_PinWrite(TLD2331_INSET1_PORT, TLD2331_INSET1_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET2_PORT, TLD2331_INSET2_PIN, HIGH);
             GPIO_PinWrite(TLD2331_INSET3_PORT, TLD2331_INSET3_PIN, LOW);
@@ -184,6 +187,7 @@ static void LIGHTCONTROL_Taillight_DiagRun(void) {
                 tail_segment_states |= (1 << 1);
             }
 
+            GPIO_PinWrite(TLD2331_ENABLE_PORT, TLD2331_ENABLE_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET1_PORT, TLD2331_INSET1_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET2_PORT, TLD2331_INSET2_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET3_PORT, TLD2331_INSET3_PIN, LOW);
@@ -192,6 +196,7 @@ static void LIGHTCONTROL_Taillight_DiagRun(void) {
             SWTIMER_Setup(taillight_diag_timer, LIGHT_DIAG_POST_DURATION);
         }
         else if (taillight_diag_state == lightcontrol_tail_diag_state_in3) {
+            GPIO_PinWrite(TLD2331_ENABLE_PORT, TLD2331_ENABLE_PIN, HIGH);
             GPIO_PinWrite(TLD2331_INSET1_PORT, TLD2331_INSET1_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET2_PORT, TLD2331_INSET2_PIN, LOW);
             GPIO_PinWrite(TLD2331_INSET3_PORT, TLD2331_INSET3_PIN, HIGH);
