@@ -16,20 +16,6 @@
 
 #include <stddef.h>
 
-// ****************************************************************************
-// ****************************************************************************
-// Section: Configuration Bits
-// ****************************************************************************
-// ****************************************************************************
-// #pragma config NVMCTRL_BOOTPROT = SIZE_0BYTES
-// #pragma config NVMCTRL_EEPROM_SIZE = SIZE_0BYTES
-// #pragma config BOD33USERLEVEL = 0x7 // Enter Hexadecimal value
-// #pragma config BOD33_EN = ENABLED
-// #pragma config BOD33_ACTION = RESET
-
-// #pragma config BOD33_HYST = DISABLED
-// #pragma config NVMCTRL_REGION_LOCKS = 0xffff // Enter Hexadecimal value
-
 void APP_Initialize() {
     // Low level init
     BSP_ClockInitialize();

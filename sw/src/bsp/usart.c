@@ -53,6 +53,10 @@ void USART_FlushOutput(void) {
     SERCOM_USART_FlushOutput(SERCOM3);
 }
 
+void USART_GoToSleep(void) {
+    GPIO_PinWrite(UART_CS_PORT, UART_CS_PIN, LOW);
+}
+
 void SERCOM3_Interrupt(void) {
     SERCOM_USART_InterruptHandler(SERCOM3);
 }

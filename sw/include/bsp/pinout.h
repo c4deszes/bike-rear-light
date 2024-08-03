@@ -21,15 +21,12 @@
 
 #define TLD2331_INSET1_PORT PORT_GROUP_A
 #define TLD2331_INSET1_PIN 6
-// TCC3 is not available on this chip
 
 #define TLD2331_INSET2_PORT PORT_GROUP_A
 #define TLD2331_INSET2_PIN 5
-// TCC3 is not available on this chip
 
 #define TLD2331_INSET3_PORT PORT_GROUP_A
 #define TLD2331_INSET3_PIN 4
-// TCC3 is not available on this chip
 
 /** Brake light LED driver IC pins */
 #define TLD2132_ENABLE_PORT PORT_GROUP_A
@@ -45,10 +42,8 @@
 
 #define TLD2132_INSET1_PORT PORT_GROUP_A
 #define TLD2132_INSET1_PIN 7
-// TCC3 is not available on this chip
 
 /** BMA456 3-axis accelerometer pins */
-// TODO: PINMUX setup and pad assignment
 #define BMA456_ACC1_INT_PORT PORT_GROUP_A
 #define BMA456_ACC1_INT_PIN 14
 

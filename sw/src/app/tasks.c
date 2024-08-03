@@ -21,9 +21,6 @@ void SCH_Task1ms(void) {
     COMM_UpdatePhy();
 }
 
-uint16_t counter = 0;
-bool state = false;
-
 void SCH_Task10ms_A(void) {
 
     SYSSTATE_Update10ms();
@@ -39,15 +36,6 @@ void SCH_Task10ms_A(void) {
 
     // TODO: only do if debugging is enabled
     COMM_UpdateDebugSignals();
-
-    if (counter == 500) {   // every 5 seconds
-        LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_brake_segment);
-    }
-    if (counter >= 1000) {      // every 10 seconds
-        LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_tail_segment);
-        counter = 0;
-    }
-    counter++;
 
     LIGHTCONTROL_Update10ms();
 }

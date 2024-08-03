@@ -36,14 +36,8 @@ static void SYSSTATE_BootEntry(void) {
     NVIC_SystemReset();
 }
 
-static void SYSSTATE_Reset(void) {
-    NVIC_SystemReset();
-}
-
 void SYSSTATE_Update10ms(void) {
     if (sys_state == sys_state_init && SWTIMER_Elapsed(sys_transition_timer)) {
-        // transition into safety or normal
-
         if (COMM_LightRequestTimeout()) {
             sys_state = sys_state_safety;
         }
@@ -104,7 +98,6 @@ void SYSSTATE_Update10ms(void) {
             sys_state = sys_state_goto_boot;
         }
     }
-    // TODO: go to boot state, self reset
     else if (sys_state == sys_state_goto_boot) {
         SYSSTATE_BootEntry();
     }
