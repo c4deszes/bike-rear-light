@@ -1,0 +1,36 @@
+name: Software
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/software*.yml'
+      - 'sw/**'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/c4deszes/arm-gcc-docker:v1.3.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - name: Install dependencies
+        working-directory: software
+        run: python -m pip install -r tools/requirements.txt
+
+      - name: GCC Problem Matcher
+        uses: ammaraskar/gcc-problem-matcher@0.3.0
+
+      - name: Configure build
+        working-directory: software
+        run: |
+          cmake --preset=armgcc-release-unix .
+
+      - name: Build application
+        working-directory: software
+        run: |
+          cmake --build --preset=build-app-unix
