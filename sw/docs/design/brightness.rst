@@ -49,12 +49,12 @@ Brightness curve
 
     # Plot the cutoff and maximum points
     crossover_x = (min_level - cutoff_y) * (max_x - cutoff_x) / (max_y - cutoff_y) + cutoff_x
-    plt.plot([0, cutoff_x, cutoff_x, max_x, 1000], [0, 0, cutoff_y, max_y, max_y], 'bo-', color='green', label='Adaptive')
-    plt.plot([0, crossover_x, max_x, 1000], [min_level, min_level, max_y, max_y], 'bo-', color='blue', label='Standard')
+    plt.plot([0, cutoff_x, cutoff_x, max_x, 1000], [0, 0, cutoff_y, max_y, max_y], 'o-', color='green', label='Adaptive')
+    plt.plot([0, crossover_x, max_x, 1000], [min_level, min_level, max_y, max_y], 'o-', color='blue', label='Standard')
 
     # Add horizontal lines for fixed brightness levels
-    plt.axhline(y=emergency_level, color='green', linestyle='--', label='Emergency')
-    plt.axhline(y=safety_level, color='orange', linestyle='--', label='Safety')
+    plt.axhline(y=emergency_level, color='orange', linestyle='--', label='Emergency')
+    plt.axhline(y=safety_level, color='red', linestyle='--', label='Safety')
 
     # Add labels and title
     plt.xlabel('Target Brightness')

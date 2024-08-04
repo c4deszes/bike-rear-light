@@ -3,19 +3,18 @@ cmake_minimum_required(VERSION 3.20)
 project(
     rear-light
     DESCRIPTION "Rear Light"
-    LANGUAGES C CXX ASM)
-set(PROJECT_VERSION "0.1.0")
+    LANGUAGES C CXX ASM
+    VERSION "0.1.0")
 
 find_package(Python REQUIRED)
 
 include(tools/cmake/CPM.cmake)
 
-CPMAddPackage("gh:c4deszes/samd21-hal#feature/tcc-improvements")
+CPMAddPackage("gh:c4deszes/samd21-hal@0.2.0")
 CPMAddPackage("gh:c4deszes/bike-line-protocol#feature/python-tool-improvements")
-CPMAddPackage("gh:c4deszes/bike-flash-tool#master")
-CPMAddPackage("gh:c4deszes/samd21-line-bootloader#master")
+CPMAddPackage("gh:c4deszes/bike-flash-tool@0.1.0")
+CPMAddPackage("gh:c4deszes/samd21-line-bootloader@0.2.1")
 
-# Test configuration
 enable_testing()
 include(CTest)
 set(CTEST_OUTPUT_ON_FAILURE ON)
@@ -39,6 +38,10 @@ target_sources(bma456mm INTERFACE
 )
 target_include_directories(bma456mm INTERFACE lib/bma456)
 
+set(APP_GENCODE_DIR ${CMAKE_CURRENT_BINARY_DIR}/gencode)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/app/metainfo.h.in
+               ${APP_GENCODE_DIR}/metainfo.h)
+
 add_executable(
     application
     EXCLUDE_FROM_ALL
@@ -56,7 +59,7 @@ add_executable(
     src/bsp/light_control.c
     src/bsp/usart.c
 )
-target_include_directories(application PRIVATE include)
+target_include_directories(application PRIVATE include ${APP_GENCODE_DIR})
 target_link_libraries(application PRIVATE   cmsis
                                             atsamd21e18a-dfp
                                             samd21-hal-api

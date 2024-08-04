@@ -273,7 +273,7 @@ static void LIGHTCONTROL_Brakelight_DiagRun(void) {
 }
 
 void LIGHTCONTROL_Update10ms(void) {
-    // If diagnostics was not run yet or diagnostics indicate that 
+    // If diagnostics were not run yet or diagnostics indicate that 
     // this logic makes sure that errors are detected but for example in the case of a partial failure (single led short or single channel short/open)
     // the partial error state stays until diagnostics indicate otherwise
     if ((!tail_diag_complete || taillight_state == lightcontrol_feature_state_ok) && GPIO_PinRead(TLD2331_ERROR_PORT, TLD2331_ERROR_PIN) == LOW) {
@@ -283,6 +283,9 @@ void LIGHTCONTROL_Update10ms(void) {
     if ((!brake_diag_complete || brakelight_state  == lightcontrol_feature_state_ok) && GPIO_PinRead(TLD2132_ERROR_PORT, TLD2132_ERROR_PIN) == LOW) {
         brakelight_state = lightcontrol_feature_state_error;
     }
+
+    // TODO: if full error then run diagnostics automatically given the retry amount and delays
+    // TODO: if partial error then run diagnostics automatically but only occasionally
 
     LIGHTCONTROL_Taillight_DiagRun();
     LIGHTCONTROL_Brakelight_DiagRun();

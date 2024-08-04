@@ -45,7 +45,8 @@ needs_types = [
     dict(directive="req-sw", title="Software Requirement", prefix="REQ_SW_", color="#BFD8D2", style="node"),
     dict(directive="drs-sw", title="Design Requirement", prefix="DRS_SW_", color="#BFD8D2", style="node"),
     dict(directive="fmea", title="Failure mode", prefix="FMEA_SW_", color="#DF744A", style="node"),
-    dict(directive="test", title="Hardware Test Case", prefix="TC_SW_", color="#DCB239", style="node"),
+    dict(directive="test", title="Software Test Case", prefix="TC_SW_", color="#DCB239", style="node"),
+    dict(directive="param-sw", title="Software Parameter", prefix="PARAM_SW_", color="#DCB239", style="node"),
 ]
 # needs_statuses = [
 #     dict(name="draft", description="Still under work or waiting for review"),
@@ -57,10 +58,17 @@ needs_tags = [
     dict(name="safety", description="tag for safety requirements")
 ]
 needs_extra_options = [
+    # FMEA entry options
     "probability",      # valid values: none, remote, occasional, frequent
     "severity",         # valid values: none, minor, critical, catastrophic
     "detection",        # valid values: always, high, low, undetected,
     "mitigation",       # free text
+
+    # Software parameter options
+    "variable",         # variable type, e.g.: uint16, uint32
+    "unit",             # physical unit, e.g.: ms, mv/A
+    "range",            # format: x-y
+    "control",          # build, signal, eeprom
 ]
 needs_extra_links = [
     {

@@ -4,4 +4,4 @@ Architecture design
 Block diagram
 -------------
 
-.. drawio:: block-diagram.drawio
+.. drawio-image:: block-diagram.drawio

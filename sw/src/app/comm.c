@@ -11,6 +11,7 @@
 #include "bsp/light_control.h"
 
 #include "app/config.h"
+#include "metainfo.h"
 
 #include "common/swtimer.h"
 #include "common/ringbuffer.h"
@@ -26,11 +27,10 @@ static LINE_Diag_PowerStatus_t power_status = {
     .I_sleep = LINE_DIAG_POWER_STATUS_SLEEP_CURRENT(100)
 };
 
-// TODO: data should be dynamic based CMake config (copy from samd21-line-bootloader)
 static LINE_Diag_SoftwareVersion_t sw_version = {
-    .major = 0,
-    .minor = 1,
-    .patch = 0
+    .major = APP_SW_MAJOR,
+    .minor = APP_SW_MINOR,
+    .patch = APP_SW_PATCH
 };
 
 static swtimer_t* comm_lightrequest_timer;
@@ -167,7 +167,6 @@ void COMM_UpdateSignals(void) {
     // TODO: check errors in LightController, report off if disabled
     LINE_Request_RearLightStatus_data.fields.BrakeLightStatus = COMM_EncodeLightStatus(LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_brake_segment));
     LINE_Request_RearLightStatus_data.fields.TailLightStatus = COMM_EncodeLightStatus(LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_tail_segment));
-
     LINE_Request_RearLightStatus_data.fields.SignalLightStatus = LINE_ENCODER_LightStatusEncoder_Off;   // Not present on Gen1.0
 
     // TODO: measure MCU temp. and return accordingly

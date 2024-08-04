@@ -25,9 +25,40 @@ Component is updated every 10ms, in this call:
 Diagnosis
 ---------
 
+Tail light
+~~~~~~~~~~
+
 Tail light is evaluated segment by segment, initially all segments are off then the driver cycles
 through them identifying the segments with short or open circuits. Afterwards if all segments are
 good the status will be `ok`, if all segments are bad the status will be `error` otherwise the
 status is `partial_error`.
 
+Below is the timing diagram showing how each segment is individually enabled and the error pin
+is sampled.
+
+.. kroki::
+    :type: wavedrom
+
+    { signal: [
+        { name: "!ERR",   wave: "x1314151x", data: ["S1", "S2", "S3"] },
+        { name: "ENABLE", wave: "x0101010x" },
+        { name: "!PWMI",  wave: "x10....1x" },
+        { name: "INSET1", wave: "x010....x" },
+        { name: "INSET2", wave: "x0..10..x" },
+        { name: "INSET3", wave: "x0....10x" }
+    ]}
+
+Brake light
+~~~~~~~~~~~
+
 Brake light diagnosis is currently disabled.
+
+.. kroki::
+    :type: wavedrom
+
+    { signal: [
+        { name: "!ERR",   wave: "x131x", data: ["S1"] },
+        { name: "ENABLE", wave: "x010x" },
+        { name: "!PWMI",  wave: "x101x" },
+        { name: "INSET",  wave: "x010x" },
+    ]}
