@@ -6,6 +6,7 @@
 - Fixing brake light error scenario determination
 - Microcontroller temperature measurement and derating
 - Accelerometer data processing and internal brake signal
+- Diagnostic op. status and power status responses
 
 ## Deferred tasks
 
