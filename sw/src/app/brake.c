@@ -149,6 +149,10 @@ static int8_t BRAKE_SetupSensor(void) {
     return rslt;
 }
 
+int8_t BRAKE_GetAccelerometerErrorCode(void) {
+    return sensor_init_code;
+}
+
 int16_t BRAKE_GetAccelerationX(void) {
     return sens_data.x;
 }
@@ -180,6 +184,7 @@ void BRAKE_Update10ms(void) {
         int8_t result = bma4_read_accel_xyz(&sens_data, &bma456);
 
         // TODO: determine braking
+        // TODO: if error result then put signal status to error
     }
 #else
 

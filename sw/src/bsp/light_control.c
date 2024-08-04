@@ -52,6 +52,8 @@ static lightcontrol_brake_diag_state_t brakelight_diag_state;
 static lightcontrol_feature_state_t brakelight_state;
 
 static void TAILLIGHT_Init(void) {
+    tail_brightness = LIGHTCONTROL_BRIGHTNESS_MAX;
+
     GPIO_PinWrite(TLD2331_ENABLE_PORT, TLD2331_ENABLE_PIN, HIGH);
     GPIO_SetupPinOutput(TLD2331_ENABLE_PORT, TLD2331_ENABLE_PIN, &output);
 
@@ -73,6 +75,8 @@ static void TAILLIGHT_Init(void) {
 }
 
 static void BRAKELIGHT_Init(void) {
+    brake_brightness = LIGHTCONTROL_BRIGHTNESS_MIN;
+
     GPIO_SetupPinOutput(TLD2132_ENABLE_PORT, TLD2132_ENABLE_PIN, &output);
     GPIO_PinWrite(TLD2132_ENABLE_PORT, TLD2132_ENABLE_PIN, LOW);
 
@@ -92,7 +96,7 @@ static void PWM_TIMER_Setup(void) {
 
     pwm_channels[TLD2331_PWMI_WO].cc = LIGHTCONTROL_BRIGHTNESS_MAX;
     pwm_channels[TLD2331_PWMI_WO].drv_inv = true;
-    pwm_channels[TLD2132_PWMI_WO].cc = LIGHTCONTROL_BRIGHTNESS_MIN;   // TODO: try PWM set to MIN
+    pwm_channels[TLD2132_PWMI_WO].cc = LIGHTCONTROL_BRIGHTNESS_MIN;
     pwm_channels[TLD2132_PWMI_WO].drv_inv = true;
 
     TCC_SetupNormalPwm(TCC1, 999, pwm_channels);
@@ -132,6 +136,16 @@ void LIGHTCONTROL_SetBrightness(lightcontrol_feature_t feature, uint16_t brightn
     else if(feature == lightcontrol_feature_brake_segment) {
         brake_brightness = brightness;
     }
+}
+
+uint16_t LIGHTCONTROL_GetBrightness(lightcontrol_feature_t feature) {
+    if (feature == lightcontrol_feature_tail_segment) {
+        return tail_brightness;
+    }
+    else if(feature == lightcontrol_feature_brake_segment) {
+        return brake_brightness;
+    }
+    return LIGHTCONTROL_BRIGHTNESS_MIN;
 }
 
 static void LIGHTCONTROL_Taillight_DiagRun(void) {

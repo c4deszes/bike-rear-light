@@ -91,7 +91,7 @@ void COMM_UpdatePhy(void) {
 }
 
 void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checksum) {
-    const uint8_t fix = 69;
+    uint8_t fix = 69;
     USART_WriteData(&size, sizeof(uint8_t));
     // TODO: fix for skipped 3rd byte
     USART_WriteData(payload, 1);
@@ -146,10 +146,7 @@ bool COMM_SpeedStatusBraking(void) {
 }
 
 static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
-    if (state == lightcontrol_feature_state_off) {
-        return LINE_ENCODER_LightStatusEncoder_Off;
-    }
-    else if (state == lightcontrol_feature_state_ok) {
+    if (state == lightcontrol_feature_state_ok) {
         return LINE_ENCODER_LightStatusEncoder_Ok;
     }
     else if(state == lightcontrol_feature_state_partial_error) {
@@ -164,18 +161,31 @@ static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
 }
 
 void COMM_UpdateSignals(void) {
-    // TODO: check errors in LightController, report off if disabled
-    LINE_Request_RearLightStatus_data.fields.BrakeLightStatus = COMM_EncodeLightStatus(LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_brake_segment));
-    LINE_Request_RearLightStatus_data.fields.TailLightStatus = COMM_EncodeLightStatus(LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_tail_segment));
-    LINE_Request_RearLightStatus_data.fields.SignalLightStatus = LINE_ENCODER_LightStatusEncoder_Off;   // Not present on Gen1.0
+    // TODO: fix brake light status flag
+    /* Since the Brake light is rarely on we report ok status in most cases */
+    LINE_Request_RearLightStatus_data.fields.BrakeLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
+    
+    /* Tail light state equals the diagnostic state if there were errors, otherwise it's ok when off, and off when brightness is 0 */
+    lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_tail_segment);
+    if (tail_state != lightcontrol_feature_state_ok) {
+        LINE_Request_RearLightStatus_data.fields.TailLightStatus = COMM_EncodeLightStatus(tail_state);
+    } else if (LIGHTCONTROL_GetBrightness(lightcontrol_feature_tail_segment) > LIGHTCONTROL_BRIGHTNESS_MIN) {
+        LINE_Request_RearLightStatus_data.fields.TailLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
+    }
+    else {
+        LINE_Request_RearLightStatus_data.fields.TailLightStatus = LINE_ENCODER_LightStatusEncoder_Off;
+    }
+
+    /* Turn Signal light is not present in Gen1.0 */
+    LINE_Request_RearLightStatus_data.fields.TurnSignalLightStatus = LINE_ENCODER_LightStatusEncoder_Off;
 
     // TODO: measure MCU temp. and return accordingly
     LINE_Request_RearLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
 }
 
 void COMM_UpdateDebugSignals(void) {
-    // TODO: copy x,y,z, sensor code, brake status
-    LINE_Request_RearLightSensorDebug_data.fields.AccelerationX = BRAKE_GetAccelerationX();
-    LINE_Request_RearLightSensorDebug_data.fields.AccelerationY = BRAKE_GetAccelerationY();
-    LINE_Request_RearLightSensorDebug_data.fields.AccelerationZ = BRAKE_GetAccelerationZ();
+    LINE_Request_RearLightDebug_data.fields.SensorErrorCode = (uint8_t) BRAKE_GetAccelerometerErrorCode();
+
+    // TODO: use actual temperature measurement
+    LINE_Request_RearLightDebug_data.fields.EcuTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
 }

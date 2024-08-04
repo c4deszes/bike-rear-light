@@ -13,6 +13,8 @@ void BRAKE_Init(void);
 
 void BRAKE_Update10ms(void);
 
+int8_t BRAKE_GetAccelerometerErrorCode(void);
+
 int16_t BRAKE_GetAccelerationX(void);
 
 int16_t BRAKE_GetAccelerationY(void);

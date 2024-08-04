@@ -12,7 +12,6 @@ typedef enum {
 } lightcontrol_feature_t;
 
 typedef enum {
-    lightcontrol_feature_state_off,
     lightcontrol_feature_state_ok,
     lightcontrol_feature_state_partial_error,
     lightcontrol_feature_state_error
@@ -31,6 +30,8 @@ void LIGHTCONTROL_Update10ms(void);
  * @param brightness 
  */
 void LIGHTCONTROL_SetBrightness(lightcontrol_feature_t feature, uint16_t brightness);
+
+uint16_t LIGHTCONTROL_GetBrightness(lightcontrol_feature_t feature);
 
 void LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_t feature);
 

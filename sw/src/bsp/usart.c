@@ -3,11 +3,6 @@
 
 #include "bsp/usart.h"
 
-static const gpio_pin_input_configuration input = {
-    .pull = FLOATING,
-    .sample = CONTINUOUS
-};
-
 static const gpio_pin_output_configuration output = {
     .drive = NORMAL,
     .input = ONDEMAND
@@ -30,8 +25,6 @@ void USART_Initialize(uint32_t baudrate, ringbuffer8_t* tx_buffer, ringbuffer8_t
         rx_buffer
     );
 }
-
-// TODO: function to deep sleep (LIN CS pin low)
 
 void USART_Enable(void) {
     SERCOM_USART_Enable(SERCOM3);

@@ -17,6 +17,8 @@ void BRIGHTNESS_Init(void);
 
 void BRIGHTNESS_SetMode(brightness_mode_t mode);
 
+brightness_mode_t BRIGHTNESS_GetMode(void);
+
 void BRIGHTNESS_SetTarget(uint16_t target);
 
 void BRIGHTNESS_SetBraking(bool brake);

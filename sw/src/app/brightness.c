@@ -79,7 +79,6 @@ void BRIGHTNESS_Update10ms(void) {
         uint16_t brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
 
         if (brightness_brake) {
-            // TODO: in adaptive mode during braking the tail target should be at minimum CONFIG_BRIGHTNESS_STANDARD_MIN_LEVEL
             tail_target += CONFIG_BRIGHTNESS_BRAKE_OFFSET;
             brake_target = tail_target;
         }
@@ -115,6 +114,10 @@ void BRIGHTNESS_Update10ms(void) {
 
 void BRIGHTNESS_SetMode(brightness_mode_t mode) {
     brightness_mode = mode;
+}
+
+brightness_mode_t BRIGHTNESS_GetMode(void) {
+    return brightness_mode;
 }
 
 void BRIGHTNESS_SetTarget(uint16_t target) {
