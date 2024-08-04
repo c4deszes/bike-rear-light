@@ -4,7 +4,7 @@ project(
     rear-light
     DESCRIPTION "Rear Light"
     LANGUAGES C CXX ASM
-    VERSION "0.2.0")
+    VERSION "1.0.0")
 
 find_package(Python REQUIRED)
 
