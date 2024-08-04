@@ -102,6 +102,8 @@ void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checks
 }
 
 static bool comm_bootrequest = false;
+static bool comm_shutdown_request = false;
+static bool comm_idle_request = false;
 
 uint8_t FLASH_BL_EnterBoot(void) {
 
@@ -113,6 +115,28 @@ uint8_t FLASH_BL_EnterBoot(void) {
 
 bool COMM_BootRequest(void) {
     return comm_bootrequest;
+}
+
+bool COMM_ShutdownRequest(void) {
+    return comm_shutdown_request;
+}
+
+bool COMM_IdleRequest(void) {
+    comm_idle_request = true;
+}
+
+void COMM_ClearPendingRequests(void) {
+    comm_bootrequest = false;
+    comm_shutdown_request = false;
+    comm_idle_request = false;
+}
+
+void LINE_Diag_OnIdle(void) {
+    comm_idle_request = true;
+}
+
+void LINE_Diag_OnShutdown(void) {
+    comm_shutdown_request = true;
 }
 
 uint16_t COMM_GetTargetBrightness(void) {

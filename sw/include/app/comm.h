@@ -54,4 +54,10 @@ bool COMM_SpeedStatusBraking(void);
  */
 bool COMM_BootRequest(void);
 
+bool COMM_ShutdownRequest(void);
+
+bool COMM_IdleRequest(void);
+
+void COMM_ClearPendingRequests(void);
+
 #endif // APP_COMM_H_

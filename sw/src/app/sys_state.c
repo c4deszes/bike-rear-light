@@ -5,6 +5,7 @@
 #include "app/brightness.h"
 #include "app/strobe.h"
 #include "app/comm.h"
+#include "bsp/usart.h"
 
 #include "line_api.h"
 
@@ -83,8 +84,15 @@ void SYSSTATE_Update10ms(void) {
             /* If the master's last instruction was emergency mode then we don't transition out  */
             sys_state = sys_state_safety;
         }
+
+        if (COMM_ShutdownRequest()) {
+            sys_state = sys_state_goto_sleep;
+        }
         else if (COMM_BootRequest()) {
             sys_state = sys_state_goto_boot;
+        }
+        else if (COMM_IdleRequest()) {
+            // TODO: either safety mode or emergency mode
         }
     }
     else if (sys_state == sys_state_safety) {
@@ -94,12 +102,24 @@ void SYSSTATE_Update10ms(void) {
         if (!COMM_LightRequestTimeout()) {
             sys_state = sys_state_normal;
         }
+
+        if (COMM_ShutdownRequest()) {
+            sys_state = sys_state_goto_sleep;
+        }
         else if (COMM_BootRequest()) {
             sys_state = sys_state_goto_boot;
+        }
+        else if (COMM_IdleRequest()) {
+            // TODO: either safety mode or emergency mode
         }
     }
     else if (sys_state == sys_state_goto_boot) {
         SYSSTATE_BootEntry();
+    }
+    else if (sys_state == sys_state_goto_sleep) {
+        USART_GoToSleep();
+
+        while(1);
     }
 }
 
