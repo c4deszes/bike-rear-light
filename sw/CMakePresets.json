@@ -1,0 +1,101 @@
+{
+    "version": 2,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "armgcc-default",
+            "binaryDir": "${sourceDir}/_build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/armgcc-toolchain.cmake"
+            },
+            "hidden": true
+        },
+        {
+            "name": "armgcc-release-unix",
+            "inherits": "armgcc-default",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "armgcc-release-mingw",
+            "inherits": "armgcc-default",
+            "generator": "MinGW Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "armgcc-debug-unix",
+            "inherits": "armgcc-default",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "armgcc-debug-mingw",
+            "inherits": "armgcc-default",
+            "generator": "MinGW Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "mingw-default",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/_build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/mingw-toolchain.cmake"
+            },
+            "hidden": true
+        },
+        {
+            "name": "mingw-debug",
+            "inherits": [ "mingw-default" ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "gcc-default",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/_build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/gcc-toolchain.cmake"
+            },
+            "hidden": true
+        },
+        {
+            "name": "gcc-debug",
+            "inherits": [ "gcc-default" ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-app",
+            "targets": [ "application-full"],
+            "hidden": true
+        },
+        {
+            "name": "build-docs",
+            "targets": [ "Sphinx" ],
+            "hidden": true
+        },
+        {
+            "name": "build-app-unix",
+            "inherits": "build-app",
+            "configurePreset": "armgcc-release-unix"
+        }
+    ],
+    "testPresets": [
+    ]
+}
