@@ -1,2 +1,2 @@
 intelhex
-line-protocol[dev]@git+https://github.com/c4deszes/bike-line-protocol.git#subdirectory=python-lib@bugfix/template-load-error
+line-protocol[dev]@git+https://github.com/c4deszes/bike-line-protocol.git@bugfix/template-load-error#subdirectory=python-lib
