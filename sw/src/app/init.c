@@ -34,13 +34,13 @@ void APP_Initialize() {
 
     // Setting up scheduler
     SCH_Init();
-    TCC_Reset(TCC2);
-    TCC_SetupTrigger(TCC2, 1000);   // 1000us period
-    TCC_Enable(TCC2);
+    TCC_Reset(TCC0);
+    TCC_SetupTrigger(TCC0, 1000);   // 1000us period
+    TCC_Enable(TCC0);
 
     NVIC_Initialize();
 }
 
-void TCC2_Interrupt(void) {
+void TCC0_Interrupt(void) {
     SCH_Trigger();
 }

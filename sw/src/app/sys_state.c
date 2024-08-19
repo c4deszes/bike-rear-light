@@ -9,9 +9,6 @@
 
 #include "line_api.h"
 
-#include "bl/api.h"
-#include "atsamd21e18a.h"
-
 typedef enum {
     sys_state_init,         /* When starting up */
     sys_state_normal,       /* When target signal is valid */
@@ -30,12 +27,12 @@ void SYSSTATE_Init(void) {
     SWTIMER_Setup(sys_transition_timer, FEATURE_SYSTEM_TIME_INIT);
 }
 
-uint64_t boot_entry_key __attribute__((section(".bl_shared_ram")));
-static void SYSSTATE_BootEntry(void) {
-    boot_entry_key = BOOT_ENTRY_MAGIC;
+// uint64_t boot_entry_key __attribute__((section(".bl_shared_ram")));
+// static void SYSSTATE_BootEntry(void) {
+//     boot_entry_key = BOOT_ENTRY_MAGIC;
 
-    NVIC_SystemReset();
-}
+//     NVIC_SystemReset();
+// }
 
 void SYSSTATE_Update10ms(void) {
     if (sys_state == sys_state_init && SWTIMER_Elapsed(sys_transition_timer)) {
@@ -89,7 +86,7 @@ void SYSSTATE_Update10ms(void) {
             sys_state = sys_state_goto_sleep;
         }
         else if (COMM_BootRequest()) {
-            sys_state = sys_state_goto_boot;
+            // sys_state = sys_state_goto_boot;
         }
         else if (COMM_IdleRequest()) {
             // TODO: either safety mode or emergency mode
@@ -107,14 +104,15 @@ void SYSSTATE_Update10ms(void) {
             sys_state = sys_state_goto_sleep;
         }
         else if (COMM_BootRequest()) {
-            sys_state = sys_state_goto_boot;
+            // sys_state = sys_state_goto_boot;
         }
         else if (COMM_IdleRequest()) {
             // TODO: either safety mode or emergency mode
         }
     }
     else if (sys_state == sys_state_goto_boot) {
-        SYSSTATE_BootEntry();
+        //SYSSTATE_BootEntry();
+        while(1);
     }
     else if (sys_state == sys_state_goto_sleep) {
         USART_GoToSleep();
