@@ -13,7 +13,7 @@ include(tools/cmake/CPM.cmake)
 CPMAddPackage("gh:c4deszes/samd21-hal#feature/atsamc21-support")
 CPMAddPackage("gh:c4deszes/bike-line-protocol@0.1.0")
 CPMAddPackage("gh:c4deszes/bike-flash-tool@0.1.0")
-CPMAddPackage("gh:c4deszes/bike-uds-tool#master")
+CPMAddPackage("gh:c4deszes/bike-uds-tool@0.1.0")
 
 enable_testing()
 include(CTest)
