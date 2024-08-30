@@ -34,7 +34,6 @@ void SCH_Task10ms_A(void) {
 
     COMM_UpdateSignals();
 
-    // TODO: only do if debugging is enabled
     COMM_UpdateDebugSignals();
 
     LIGHTCONTROL_Update10ms();

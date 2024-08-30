@@ -1,0 +1,147 @@
+{
+    "services": {
+        
+    },
+    "properties": {
+        "AutomaticDiagnostics": {
+            "id": "0x4000",
+            "type": "bool",
+            "default": true
+        },
+        "BrightnessCurve_Cutoff_X": {
+            "id": "0x4010",
+            "type": "uint16",
+            "min": 0,
+            "max": 400,
+            "default": 100
+        },
+        "BrightnessCurve_Cutoff_Y": {
+            "id": "0x4011",
+            "type": "uint16",
+            "min": 0,
+            "max": 1000,
+            "default": 100
+        },
+        "BrightnessCurve_Max_X": {
+            "id": "0x4012",
+            "type": "uint16",
+            "min": 500,
+            "max": 1000,
+            "default": 800
+        },
+        "BrightnessCurve_Max_Y": {
+            "id": "0x4013",
+            "type": "uint16",
+            "min": 0,
+            "max": 1000,
+            "default": 700
+        },
+        "Brightness_Standard_Level": {
+            "id": "0x4020",
+            "type": "uint16",
+            "min": 10,
+            "max": 800,
+            "default": 150
+        },
+        "Brightness_Emergency_Level": {
+            "id": "0x4021",
+            "type": "uint16",
+            "min": 10,
+            "max": 500,
+            "default": 200
+        },
+        "Brightness_Safety_Level": {
+            "id": "0x4023",
+            "type": "uint16",
+            "min": 10,
+            "max": 1000,
+            "default": 350
+        },
+        "Brightness_BrakeLow": {
+            "id": "0x4026",
+            "type": "uint16",
+            "min": 100,
+            "max": 1000,
+            "default": 500
+        },
+        "Brightness_BrakeHigh": {
+            "id": "0x4027",
+            "type": "uint16",
+            "min": 100,
+            "max": 1000,
+            "default": 1000
+        },
+        "Strobe_LevelLow": {
+            "id": "0x4030",
+            "type": "uint16",
+            "min": 0,
+            "max": 1000,
+            "default": 1000
+        },
+        "Strobe_LevelHigh": {
+            "id": "0x4031",
+            "type": "uint16",
+            "min": 0,
+            "max": 1000,
+            "default": 1000
+        },
+        "Strobe_LevelEmergency": {
+            "id": "0x4032",
+            "type": "uint16",
+            "min": 0,
+            "max": 1000,
+            "default": 1000
+        },
+        "Strobe_LevelSafety": {
+            "id": "0x4033",
+            "type": "uint16",
+            "min": 0,
+            "max": 1000,
+            "default": 1000
+        },
+        "Strobe_DefaultMode": {
+            "id": "0x4038",
+            "type": "enum",
+            "values": [
+                "DISABLED",
+                "INTERNAL_SINGLE",
+                "INTERNAL_RAPID",
+                "EXTERNAL_POS",
+                "EXTERNAL_NEG"
+            ],
+            "default": "DISABLED"
+        },
+        "Strobe_PrimaryMode": {
+            "id": "0x4039",
+            "type": "enum",
+            "values": [
+                "DISABLED",
+                "INTERNAL_SINGLE",
+                "INTERNAL_RAPID",
+                "EXTERNAL_POS",
+                "EXTERNAL_NEG"
+            ],
+            "default": "INTERNAL_SINGLE"
+        },
+        "Strobe_SafetyMode": {
+            "id": "0x4040",
+            "type": "enum",
+            "values": [
+                "DISABLED",
+                "INTERNAL_SINGLE",
+                "INTERNAL_RAPID"
+            ],
+            "default": "DISABLED"
+        },
+        "Strobe_EmergencyMode": {
+            "id": "0x4041",
+            "type": "enum",
+            "values": [
+                "DISABLED",
+                "INTERNAL_SINGLE",
+                "INTERNAL_RAPID"
+            ],
+            "default": "DISABLED"
+        }
+    }
+}

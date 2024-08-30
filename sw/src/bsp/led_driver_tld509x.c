@@ -41,22 +41,22 @@ void LIGHTCONTROL_Init(void) {
     TCC_Reset(TCC2);
     pwm_channels[TLD509x_PWMI_WO].cc = LIGHTCONTROL_BRIGHTNESS_MAX;
     pwm_channels[TLD509x_PWMI_WO].drv_inv = false;
-    TCC_SetupNormalPwm(TCC2, FEATURE_LED_DRIVER_PWM_FREQUENCY- 1, pwm_channels);
+    TCC_SetupNormalPwm(TCC2, FEATURE_LED_DRIVER_PWM_FREQUENCY - 1, pwm_channels);
     TCC_Enable(TCC2);
 
     /* DAC setup */
     DAC_REGS->DAC_CTRLA = DAC_CTRLA_SWRST_Msk;
-    while(DAC_REGS->DAC_SYNCBUSY & DAC_SYNCBUSY_SWRST_Msk != 0);
+    while((DAC_REGS->DAC_SYNCBUSY & DAC_SYNCBUSY_SWRST_Msk) != 0);
 
     DAC_REGS->DAC_CTRLB = DAC_CTRLB_REFSEL_AVCC | DAC_CTRLB_EOEN_Msk | DAC_CTRLB_LEFTADJ(0);
 
     DAC_REGS->DAC_CTRLA = DAC_CTRLA_ENABLE_Msk;
-    while(DAC_REGS->DAC_SYNCBUSY & DAC_SYNCBUSY_ENABLE_Msk != 0);
+    while((DAC_REGS->DAC_SYNCBUSY & DAC_SYNCBUSY_ENABLE_Msk) != 0);
 
     driver_state = tld509x_state_startup;
     transition_timer = SWTIMER_Create();
     SWTIMER_Setup(transition_timer, FEATURE_LED_DRIVER_STARTUP_DELAY);
-    set_brightness = CONFIG_BRIGHTNESS_SAFETY_LEVEL;
+    set_brightness = LIGHTCONTROL_BRIGHTNESS_MAX;
 }
 
 void LIGHTCONTROL_SetBrightness(uint16_t brightness) {
@@ -103,6 +103,8 @@ void LIGHTCONTROL_Update10ms(void) {
     else if (driver_state == tld509x_state_drive) {
         // TODO: drive SET pin using DAC or use PWM
         DAC_REGS->DAC_DATA = set_brightness / 2;
+
+        // TODO: rail to rail operation so that the minimum brightness is 0
 
         GPIO_EnableFunction(TLD509x_ISET_PORT, TLD509x_ISET_PIN, TLD509x_ISET_PINMUX);
 

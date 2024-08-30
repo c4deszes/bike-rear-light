@@ -13,7 +13,7 @@ include(tools/cmake/CPM.cmake)
 CPMAddPackage("gh:c4deszes/samd21-hal#feature/atsamc21-support")
 CPMAddPackage("gh:c4deszes/bike-line-protocol@0.1.0")
 CPMAddPackage("gh:c4deszes/bike-flash-tool@0.1.0")
-# CPMAddPackage("gh:c4deszes/samd21-line-bootloader@0.2.1")
+CPMAddPackage("gh:c4deszes/bike-uds-tool#master")
 
 enable_testing()
 include(CTest)
@@ -29,16 +29,21 @@ line_codegen(
     ADAPTER
 )
 
+uds_codegen(
+    TARGET uds-lib
+    PROFILE tools/line/uds_profile.json
+)
+
 samx21_hal(samc21-hal ATSAMC21E18A)
 
-add_library(
-    bma456mm INTERFACE
-)
-target_sources(bma456mm INTERFACE
-    lib/bma456/bma4.c
-    lib/bma456/bma456mm.c
-)
-target_include_directories(bma456mm INTERFACE lib/bma456)
+# add_library(
+#     bma456mm INTERFACE
+# )
+# target_sources(bma456mm INTERFACE
+#     lib/bma456/bma4.c
+#     lib/bma456/bma456mm.c
+# )
+# target_include_directories(bma456mm INTERFACE lib/bma456)
 
 set(APP_GENCODE_DIR ${CMAKE_CURRENT_BINARY_DIR}/gencode)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/app/metainfo.h.in
@@ -66,6 +71,7 @@ target_link_libraries(application PRIVATE   cmsis
                                             samc21-hal
                                             flash-line-api flash-line-sources
                                             protocol-stack-api
+                                            uds-lib
                                             # bootloader-api
                                             # bma456mm
                                             )

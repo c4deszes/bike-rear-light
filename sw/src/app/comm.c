@@ -5,6 +5,9 @@
 #include "line_api.h"
 #include "flash_line_api.h"
 #include "flash_line_diag.h"
+#include "uds_api.h"
+#include "uds_gen.h"
+
 #include "hal/dsu.h"
 #include "app/brake.h"
 #include "bsp/light_control.h"
@@ -66,6 +69,12 @@ void COMM_Initialize(void) {
     LINE_App_Init();
     LINE_Diag_SetAddress(LINE_NODE_RearLight_DIAG_ADDRESS);
     FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
+
+    UDS_Init();
+    UDS_LINE_Init();
+
+    // TODO: remove later
+    UDS_AppContainer.Brightness_Safety_Level = 300;
 
     comm_lightrequest_timer = SWTIMER_Create();
     comm_speedstatus_timer = SWTIMER_Create();
@@ -184,7 +193,7 @@ static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
     }
 }
 
-void COMM_UpdateSignals(void) {    
+void COMM_UpdateSignals(void) {
     /* Tail light state equals the diagnostic state if there were errors, otherwise it's ok when off, and off when brightness is 0 */
     // lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState();
     LINE_Request_RearLightStatus_data.fields.TailLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
@@ -195,6 +204,7 @@ void COMM_UpdateSignals(void) {
 
     // TODO: measure MCU temp. and return accordingly
     LINE_Request_RearLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
+    UDS_AppContainer.Brightness_Emergency_Level = 100;
 }
 
 void COMM_UpdateDebugSignals(void) {

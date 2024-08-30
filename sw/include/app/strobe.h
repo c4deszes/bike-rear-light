@@ -15,8 +15,6 @@ void STROBE_Init(void);
 
 void STROBE_SetSource(strobe_source_t source);
 
-strobe_source_t STROBE_ConvertSource(uint8_t config);
-
 /**
  * @brief Uses the current strobe signal source to blink the lights, this
  *        function also decides whether blinking is needed

@@ -1,10 +1,5 @@
 #include "app/brake.h"
 #include "app/brightness.h"
-
-#include "hal/gpio.h"
-#include "bsp/pinout.h"
-
-#include "app/config.h"
 #include "app/comm.h"
 
 void BRAKE_Init(void) {
