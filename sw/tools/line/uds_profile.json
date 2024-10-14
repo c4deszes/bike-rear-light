@@ -1,6 +1,22 @@
 {
     "services": {
-        
+        "ReloadConfiguration": {
+            "id": "0x3000",
+            "args": [],
+            "returns": "uint8"
+        },
+        "CalibrateBrightness": {
+            "id": "0x3020",
+            "args": [
+                {"name": "Brightness", "type": "uint16"}
+            ],
+            "returns": "uint8"
+        },
+        "EndBrightnessCalibration": {
+            "id": "0x3021",
+            "args": [],
+            "returns": "uint8"
+        }
     },
     "properties": {
         "AutomaticDiagnostics": {
@@ -13,42 +29,42 @@
             "type": "uint16",
             "min": 0,
             "max": 400,
-            "default": 100
+            "default": 10
         },
         "BrightnessCurve_Cutoff_Y": {
             "id": "0x4011",
             "type": "uint16",
             "min": 0,
             "max": 1000,
-            "default": 100
+            "default": 10
         },
         "BrightnessCurve_Max_X": {
             "id": "0x4012",
             "type": "uint16",
             "min": 500,
             "max": 1000,
-            "default": 800
+            "default": 1000
         },
         "BrightnessCurve_Max_Y": {
             "id": "0x4013",
             "type": "uint16",
             "min": 0,
             "max": 1000,
-            "default": 700
+            "default": 350
         },
         "Brightness_Standard_Level": {
             "id": "0x4020",
             "type": "uint16",
             "min": 10,
             "max": 800,
-            "default": 150
+            "default": 50
         },
         "Brightness_Emergency_Level": {
             "id": "0x4021",
             "type": "uint16",
             "min": 10,
             "max": 500,
-            "default": 200
+            "default": 150
         },
         "Brightness_Safety_Level": {
             "id": "0x4023",
@@ -62,42 +78,42 @@
             "type": "uint16",
             "min": 100,
             "max": 1000,
-            "default": 500
+            "default": 200
         },
         "Brightness_BrakeHigh": {
             "id": "0x4027",
             "type": "uint16",
             "min": 100,
             "max": 1000,
-            "default": 1000
+            "default": 500
         },
         "Strobe_LevelLow": {
             "id": "0x4030",
             "type": "uint16",
             "min": 0,
             "max": 1000,
-            "default": 1000
+            "default": 0
         },
         "Strobe_LevelHigh": {
             "id": "0x4031",
             "type": "uint16",
             "min": 0,
             "max": 1000,
-            "default": 1000
+            "default": 100
         },
         "Strobe_LevelEmergency": {
             "id": "0x4032",
             "type": "uint16",
             "min": 0,
             "max": 1000,
-            "default": 1000
+            "default": 0
         },
         "Strobe_LevelSafety": {
             "id": "0x4033",
             "type": "uint16",
             "min": 0,
             "max": 1000,
-            "default": 1000
+            "default": 0
         },
         "Strobe_DefaultMode": {
             "id": "0x4038",
