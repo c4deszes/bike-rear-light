@@ -1,4 +1,6 @@
-INCLUDE app_memory.ld
+APP_SIZE = 0xA000;
+
+INCLUDE memory.ld
 
 SECTIONS
 {
@@ -84,66 +86,37 @@ SECTIONS
     PROVIDE_HIDDEN (__exidx_end = .);
 
     . = ALIGN(4);
-    __etext = .;
+    _etext = .;
 
-    .data :
-	{
-		__data_start__ = .;
-		*(vtable)
-		*(.data*)
+    .relocate : AT (_etext)
+    {
+        . = ALIGN(4);
+        _srelocate = .;
+        *(.ramfunc .ramfunc.*);
+        *(.data .data.*);
+        . = ALIGN(4);
+        _erelocate = .;
+    } > ram
 
-		. = ALIGN(4);
-		/* preinit data */
-		PROVIDE_HIDDEN (__preinit_array_start = .);
-		KEEP(*(.preinit_array))
-		PROVIDE_HIDDEN (__preinit_array_end = .);
-
-		. = ALIGN(4);
-		/* init data */
-		PROVIDE_HIDDEN (__init_array_start = .);
-		KEEP(*(SORT(.init_array.*)))
-		KEEP(*(.init_array))
-		PROVIDE_HIDDEN (__init_array_end = .);
-
-
-		. = ALIGN(4);
-		/* finit data */
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		KEEP(*(SORT(.fini_array.*)))
-		KEEP(*(.fini_array))
-		PROVIDE_HIDDEN (__fini_array_end = .);
-
-		KEEP(*(.jcr*))
-		. = ALIGN(16);
-		/* All data end */
-		__data_end__ = .;
-        _data_sizeof = SIZEOF(.data);
-	} > ram AT > app_rom
-
-    .app_rom_fill : {
+    .app_rom_fill : AT (_etext + SIZEOF(.relocate)) {
         FILL(0xFFFFFFFF);
         . = ORIGIN(app_rom) + LENGTH(app_rom) - 4;
         __approm_end = .;
         LONG(0xFFFFFFFF)
     } > app_rom
 
-    /*
-     *  Align here to ensure that the .bss section occupies space up to
-     *  _end.  Align after .bss to ensure correct alignment even if the
-     *  .bss section disappears because there are no input sections.
-     *
-     *  Note that input sections named .bss* are no longer mapped here.
-     *  The best-fit allocator locates them, so that they may flow
-     *  around absolute sections as needed.
-     */
-    .bss :
+    .bss (NOLOAD) :
 	{
 		. = ALIGN(4);
+        _sbss = . ;
+        _szero = .;
 		__bss_start__ = .;
 		*(.bss*)
 		*(COMMON)
 		. = ALIGN(4);
 		__bss_end__ = .;
+        _ebss = . ;
+        _ezero = .;
 	} > ram
 
     .bl_shared_ram (NOLOAD) :

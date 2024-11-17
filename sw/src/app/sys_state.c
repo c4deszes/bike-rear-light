@@ -10,7 +10,7 @@
 #include "line_api.h"
 
 #include "bl/api.h"
-#include "atsamd21e18a.h"
+#include "sam.h"
 
 typedef enum {
     sys_state_init,         /* When starting up */

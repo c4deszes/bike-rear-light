@@ -7,13 +7,12 @@ project(
     VERSION "1.0.0")
 
 find_package(Python REQUIRED)
-
 include(tools/cmake/CPM.cmake)
 
-CPMAddPackage("gh:c4deszes/samd21-hal@0.2.0")
+CPMAddPackage("gh:c4deszes/samd21-hal@0.3.0")
 CPMAddPackage("gh:c4deszes/bike-line-protocol@0.1.0")
 CPMAddPackage("gh:c4deszes/bike-flash-tool@0.1.0")
-CPMAddPackage("gh:c4deszes/samd21-line-bootloader@0.2.1")
+CPMAddPackage("gh:c4deszes/samd21-line-bootloader#feature/extended-sercom")
 
 enable_testing()
 include(CTest)
@@ -21,6 +20,8 @@ set(CTEST_OUTPUT_ON_FAILURE ON)
 
 include(CTest)
 include(GoogleTest)
+
+samx21_hal(samd21e18a ATSAMD21E18A)
 
 line_codegen(
     TARGET protocol-stack-api
@@ -60,11 +61,7 @@ add_executable(
     src/bsp/usart.c
 )
 target_include_directories(application PRIVATE include ${APP_GENCODE_DIR})
-target_link_libraries(application PRIVATE   cmsis
-                                            atsamd21e18a-dfp
-                                            samd21-hal-api
-                                            samd21-hal-sources
-                                            samd21-hal-options
+target_link_libraries(application PRIVATE   samd21e18a
                                             flash-line-api flash-line-sources
                                             protocol-stack-api
                                             bootloader-api

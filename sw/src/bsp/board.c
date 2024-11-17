@@ -4,7 +4,7 @@
 #include "hal/gclk.h"
 #include "hal/pm.h"
 
-#include "atsamd21e18a.h"
+#include "sam.h"
 
 void BSP_ClockInitialize (void) {
     NVMCTRL_REGS->NVMCTRL_CTRLB |= NVMCTRL_CTRLB_RWS_HALF_Val ;
