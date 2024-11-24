@@ -100,7 +100,7 @@ SECTIONS
 
     .app_rom_fill : AT (_etext + SIZEOF(.relocate)) {
         FILL(0xFFFFFFFF);
-        . = ORIGIN(app_rom) + LENGTH(app_rom) - 4;
+        . = ORIGIN(app_rom) + LENGTH(app_rom) - SIZEOF(.relocate) - 4;
         __approm_end = .;
         LONG(0xFFFFFFFF)
     } > app_rom
