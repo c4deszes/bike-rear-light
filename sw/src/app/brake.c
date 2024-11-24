@@ -22,9 +22,14 @@
 // - Road bumps might cause inadvertent brake activation
 
 static struct bma4_dev bma456 = { 0 };
-static struct bma4_accel sens_data = { 0 };
 static struct bma4_accel_config accel_conf = { 0 };
 static int8_t sensor_init_code;
+
+static const float alpha = 0.1; // Low pass filter coefficient
+
+static struct bma4_accel previous_data = { 0 };
+static struct bma4_accel current_data = { 0 };
+static struct bma4_accel gravity_vector = { 0 };
 static brake_signal_status_t brake_signal_state;
 
 static const gpio_pin_output_configuration output = {
@@ -88,7 +93,7 @@ void BRAKE_Init(void) {
     brake_signal_state = brake_signal_status_na;
 
     accel_conf.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
-    accel_conf.range = BMA4_ACCEL_RANGE_2G;
+    accel_conf.range = BMA4_ACCEL_RANGE_4G;
     accel_conf.bandwidth = BMA4_ACCEL_NORMAL_AVG4;
     accel_conf.perf_mode = BMA4_CIC_AVG_MODE;
 
@@ -154,15 +159,15 @@ int8_t BRAKE_GetAccelerometerErrorCode(void) {
 }
 
 int16_t BRAKE_GetAccelerationX(void) {
-    return sens_data.x;
+    return current_data.x;
 }
 
 int16_t BRAKE_GetAccelerationY(void) {
-    return sens_data.y;
+    return current_data.y;
 }
 
 int16_t BRAKE_GetAccelerationZ(void) {
-    return sens_data.z;
+    return current_data.z;
 }
 
 void BRAKE_Update10ms(void) {
@@ -181,10 +186,35 @@ void BRAKE_Update10ms(void) {
 
 #if FEATURE_BRAKE_USE_INTERNAL_SIGNAL == 1
     if (brake_signal_state == brake_signal_status_ok) {
-        int8_t result = bma4_read_accel_xyz(&sens_data, &bma456);
+        int8_t result = bma4_read_accel_xyz(&current_data, &bma456);
 
         // TODO: determine braking
         // TODO: if error result then put signal status to error
+        if (result == BMA4_OK) {
+
+            gravity_vector.x = (int16_t)(alpha * current_data.x + (1 - alpha) * previous_data.x);
+            gravity_vector.y = (int16_t)(alpha * current_data.y + (1 - alpha) * previous_data.y);
+            gravity_vector.z = (int16_t)(alpha * current_data.z + (1 - alpha) * previous_data.z);
+
+            previous_data.x = current_data.x;
+            previous_data.y = current_data.y;
+            previous_data.z = current_data.z;
+
+            struct bma4_accel difference = { 0 };
+            difference.x = current_data.x - gravity_vector.x;
+            difference.y = current_data.y - gravity_vector.y;
+            difference.z = current_data.z - gravity_vector.z;
+
+            if (difference.z < -1000) {
+                internal_brake = true;
+            }
+            else {
+                internal_brake = false;
+            }
+
+        } else {
+            brake_signal_state = brake_signal_status_perm_error;
+        }
     }
 #else
 

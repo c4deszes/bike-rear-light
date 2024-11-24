@@ -5,7 +5,7 @@
 #include "hal/sercom_usart.h"
 
 // TODO: isn't great that we include it, since it could transitively end up in the app
-#include "atsamd21e18a.h"
+#include "sam.h"
 
 /** Tail light LED driver IC pins */
 #define TLD2331_ENABLE_PORT PORT_GROUP_A
