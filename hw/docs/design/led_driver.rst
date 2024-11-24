@@ -114,3 +114,4 @@ Turn indication is not implemented in Gen1, but here are few possible choices fo
 * TPS92391: 6 channel, i2c, qfn32, boost/sepic with current sink
 * LP8862-Q1: 2 channel, pwm (single channel), fault detection
 * TPS92638-Q1: 8 channel, pwm (four channel), current source
+* TLD7002-16ES: 16 channel, current source, fault detection, specifically for animations
