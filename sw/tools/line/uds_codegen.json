@@ -1,0 +1,6 @@
+{
+    "RearLight": {
+        "channel": 0,
+        "profile": "../../../customer/uds/rear_light.json"
+    }
+}

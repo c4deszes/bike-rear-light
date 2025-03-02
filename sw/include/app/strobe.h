@@ -13,9 +13,12 @@ typedef enum {
 
 void STROBE_Init(void);
 
+/**
+ * @brief Sets the source of the strobe signal
+ * 
+ * @param source The source of the strobe signal
+ */
 void STROBE_SetSource(strobe_source_t source);
-
-strobe_source_t STROBE_ConvertSource(uint8_t config);
 
 /**
  * @brief Uses the current strobe signal source to blink the lights, this

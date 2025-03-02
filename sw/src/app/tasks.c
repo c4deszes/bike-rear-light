@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "app/feature.h"
 #include "app/comm.h"
 #include "app/brightness.h"
 #include "app/brake.h"
@@ -25,17 +26,20 @@ void SCH_Task10ms_A(void) {
 
     SYSSTATE_Update10ms();
 
-    BRIGHTNESS_Update10ms();
-
+#if FEATURE_BRAKE_USE_EXTERNAL_SIGNAL == 1 || FEATURE_BRAKE_USE_INTERNAL_SIGNAL == 1
     BRAKE_Update10ms();
+#endif
 
     // TODO: enable watchdog
     //WDT_Acknowledge();
 
     COMM_UpdateSignals();
 
-    // TODO: only do if debugging is enabled
+#if FEATURE_COMM_ENABLE_DEBUG_SIGNALS == 1
     COMM_UpdateDebugSignals();
+#endif
+
+    BRIGHTNESS_Update10ms();
 
     LIGHTCONTROL_Update10ms();
 }

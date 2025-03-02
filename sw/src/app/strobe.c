@@ -17,25 +17,11 @@ void STROBE_Init(void) {
     strobe_rapid_cycle = 0;
     strobe_source = strobe_source_disabled;
     strobe_internal_timer = SWTIMER_Create();
-    SWTIMER_Setup(strobe_internal_timer, CONFIG_BRIGHTNESS_STROBE_SINGLE_OFF_TIME);
+    SWTIMER_Setup(strobe_internal_timer, CONFIG_Props.Strobe_SingleOffTime);
 }
 
 void STROBE_SetSource(strobe_source_t source) {
     strobe_source = source;
-}
-
-strobe_source_t STROBE_ConvertSource(uint8_t config) {
-    if (config == CONFIG_STROBE_SOURCE_DISABLED) {
-        return strobe_source_disabled;
-    }
-    else if (config == CONFIG_STROBE_SOURCE_INTERNAL_SINGLE) {
-        return strobe_source_internal_single;
-    }
-    else if (config == CONFIG_STROBE_SOURCE_INTERNAL_RAPID) {
-        return strobe_source_internal_rapid;
-    }
-    // TODO: support for negative and positive
-    return strobe_source_disabled;
 }
 
 void STROBE_Update1ms(void) {
@@ -47,10 +33,10 @@ void STROBE_Update1ms(void) {
         if (SWTIMER_Elapsed(strobe_internal_timer)) {
             strobe_internal_flag = !strobe_internal_flag;
             if (strobe_internal_flag) {
-                SWTIMER_Setup(strobe_internal_timer, CONFIG_BRIGHTNESS_STROBE_SINGLE_ON_TIME);
+                SWTIMER_Setup(strobe_internal_timer, CONFIG_Props.Strobe_SingleOnTime);
             }
             else {
-                SWTIMER_Setup(strobe_internal_timer, CONFIG_BRIGHTNESS_STROBE_SINGLE_OFF_TIME);
+                SWTIMER_Setup(strobe_internal_timer, CONFIG_Props.Strobe_SingleOffTime);
             }
             BRIGHTNESS_Strobe(strobe_internal_flag);
         }
@@ -65,11 +51,11 @@ void STROBE_Update1ms(void) {
 
             uint8_t timer = 0;
             if (strobe_rapid_cycle == 0) {
-                timer = CONFIG_BRIGHTNESS_STROBE_RAPID_OFF_TIME;
+                timer = CONFIG_Props.Strobe_RapidOffTime;
                 strobe_internal_flag = false;
             }
             else {
-                timer = CONFIG_BRIGHTNESS_STROBE_RAPID_SWITCH_TIME;
+                timer = CONFIG_Props.Strobe_RapidOnTime;
                 strobe_internal_flag = !strobe_internal_flag;
             }
 

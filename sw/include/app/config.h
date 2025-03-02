@@ -1,59 +1,50 @@
 #if !defined(APP_CONFIG_H_)
 #define APP_CONFIG_H_
 
-/* --------------- Features ------------------- */
-#define FEATURE_SYSTEM_TIME_INIT 2500
+#include "strobe.h"
+#include <stdint.h>
+#include <stdbool.h>
 
-#define FEATURE_BRAKE_USE_EXTERNAL_SIGNAL 1
-#define FEATURE_BRAKE_USE_INTERNAL_SIGNAL 1
+typedef struct {
+    bool AutomaticDiagnostics;
 
-#define FEATURE_COMM_ENABLE_DEBUG_SIGNALS 1
-#define FEATURE_COMM_LIGHTREQUEST_TIMEOUT 4000
-#define FEATURE_COMM_SPEEDSTATUS_TIMEOUT 500
+    uint16_t BrightnessCurve_Cutoff_X;
+    uint16_t BrightnessCurve_Cutoff_Y;
+    uint16_t BrightnessCurve_Max_X;
+    uint16_t BrightnessCurve_Max_Y;
 
-#define FEATURE_LED_ENABLE_AUTODIAG 0
+    uint16_t Brightness_LevelStandard;
+    uint16_t Brightness_LevelEmergency;
+    uint16_t Brightness_LevelSafety;
 
-/* --------------- Settings ------------------- */
-/* Brightness curve points */
-#define CONFIG_BRIGHTNESS_CURVE_CUTOFF_X 100
-#define CONFIG_BRIGHTNESS_CURVE_CUTOFF_Y 100
-#define CONFIG_BRIGHTNESS_CURVE_MAX_X 900
-#define CONFIG_BRIGHTNESS_CURVE_MAX_Y 900
+    uint16_t Brightness_BrakeLow;
+    uint16_t Brightness_BrakeHigh;
 
-/* Fixed brightness levels */
-#define CONFIG_BRIGHTNESS_STANDARD_MIN_LEVEL 300
-#define CONFIG_BRIGHTNESS_EMERGENCY_LEVEL 300
-#define CONFIG_BRIGHTNESS_SAFETY_LEVEL 800
+    uint16_t Strobe_LevelLow;
+    uint16_t Strobe_LevelHigh;
+    uint16_t Strobe_LevelEmergency;
+    uint16_t Strobe_LevelSafety;
 
-/* Brake light settings */
-#define CONFIG_BRIGHTNESS_BRAKE_OFFSET 200  // Increase in overall brightness when braking
+    strobe_source_t Strobe_ModeDefault;
+    strobe_source_t Strobe_ModePrimary;
+    strobe_source_t Strobe_ModeEmergency;
+    strobe_source_t Strobe_ModeSafety;
 
-#define CONFIG_BRAKE_HOLDOFF_TIME 100       // After braking the brake lights are not activated for this long
-#define CONFIG_BRAKE_HOLDON_TIME 500        // After braking the brake lights are kept active for this long
-#define CONFIG_BRAKE_MINIMUM_TIME 30        // The internal braking signal must be active for this long before lights are turned on
+    uint16_t Strobe_SingleOnTime;
+    uint16_t Strobe_SingleOffTime;
+    uint16_t Strobe_RapidOnTime;
+    uint16_t Strobe_RapidOffTime;
+} config_properties_t;
 
-/* Strobe light settings */
-// TODO: should emergency mode use different values? usually there the brightness is low
-//       alternatively this could be a ratio instead of offset (e.g.: 1.0 -> CurrentTarget, 0.5 -> 50% of the target)
-#define CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET 1000
-#define CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET 0          // note: when disabled high offset is constantly applied, so it should be 0 for most cases
+extern config_properties_t CONFIG_Props;
 
-// Single strobe frequency: 30Hz
-#define CONFIG_BRIGHTNESS_STROBE_SINGLE_ON_TIME 160
-#define CONFIG_BRIGHTNESS_STROBE_SINGLE_OFF_TIME 160
+/**
+ * @brief Loads properties from flash memory into the UDS container
+ */
+void CONFIG_LoadFlashProperties(void);
 
-// Rapid strobe pattern _______/¨\_/¨\_/¨\__
-#define CONFIG_BRIGHTNESS_STROBE_RAPID_OFF_TIME 200
-#define CONFIG_BRIGHTNESS_STROBE_RAPID_SWITCH_TIME 60
+void CONFIG_ReloadUdsProperties(void);
 
-#define CONFIG_STROBE_SOURCE_DISABLED 0
-#define CONFIG_STROBE_SOURCE_INTERNAL_SINGLE 1
-#define CONFIG_STROBE_SOURCE_INTERNAL_RAPID 2
-//TODO: external positive and negative
-
-#define CONFIG_DEFAULT_STROBE_SOURCE CONFIG_STROBE_SOURCE_DISABLED
-#define CONFIG_PRIMARY_STROBE_SOURCE CONFIG_STROBE_SOURCE_INTERNAL_SINGLE
-#define CONFIG_SAFETY_STROBE_SOURCE CONFIG_STROBE_SOURCE_DISABLED
-#define CONFIG_EMERGENCY_STROBE_SOURCE CONFIG_STROBE_SOURCE_DISABLED
+void CONFIG_Save(void);
 
 #endif // APP_CONFIG_H_

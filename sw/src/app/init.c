@@ -8,6 +8,7 @@
 
 #include "bsp/light_control.h"
 
+#include "app/config.h"
 #include "app/comm.h"
 #include "app/strobe.h"
 #include "app/brightness.h"
@@ -32,7 +33,11 @@ void APP_Initialize() {
     // Initializing communication
     COMM_Initialize();
 
+    CONFIG_LoadFlashProperties();
+    CONFIG_ReloadUdsProperties();
+
     // Setting up scheduler
+    // TODO: replace with SysTick
     SCH_Init();
     TCC_Reset(TCC2);
     TCC_SetupTrigger(TCC2, 1000);   // 1000us period
