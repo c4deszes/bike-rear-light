@@ -7,10 +7,10 @@
 #include "app/comm.h"
 #include "bsp/usart.h"
 
-//#include "line_api.h"
+#include "line_api.h"
 
-//#include "bl/api.h"
-//#include "sam.h"
+#include "bl/api.h"
+#include "sam.h"
 
 typedef enum {
     sys_state_init,         /* When starting up */
@@ -30,12 +30,12 @@ void SYSSTATE_Init(void) {
     SWTIMER_Setup(sys_transition_timer, FEATURE_SYSTEM_TIME_INIT);
 }
 
-// uint64_t boot_entry_key __attribute__((section(".bl_shared_ram")));
-// static void SYSSTATE_BootEntry(void) {
-//     boot_entry_key = BOOT_ENTRY_MAGIC;
+uint64_t boot_entry_key __attribute__((section(".bl_shared_ram")));
+static void SYSSTATE_BootEntry(void) {
+    boot_entry_key = BOOT_ENTRY_MAGIC;
 
-//     NVIC_SystemReset();
-// }
+    NVIC_SystemReset();
+}
 
 void SYSSTATE_Update10ms(void) {
     if (sys_state == sys_state_init && SWTIMER_Elapsed(sys_transition_timer)) {
@@ -59,8 +59,7 @@ void SYSSTATE_Update10ms(void) {
             sys_state = sys_state_goto_sleep;
         }
         else if (COMM_BootRequest()) {
-            // TODO: reenable once bootloader is implemented
-            //sys_state = sys_state_goto_boot;
+            sys_state = sys_state_goto_boot;
         }
         else if (COMM_IdleRequest()) {
             // TODO: either safety mode or emergency mode
@@ -81,8 +80,7 @@ void SYSSTATE_Update10ms(void) {
             sys_state = sys_state_goto_sleep;
         }
         else if (COMM_BootRequest()) {
-            // TODO: reenable once bootloader is implemented
-            //sys_state = sys_state_goto_boot;
+            sys_state = sys_state_goto_boot;
         }
         else if (COMM_IdleRequest()) {
             // TODO: either safety mode or emergency mode
@@ -95,12 +93,13 @@ void SYSSTATE_Update10ms(void) {
     }
     else if (sys_state == sys_state_goto_boot) {
         // TODO: reenable once bootloader is implemented
-        //SYSSTATE_BootEntry();
+        SYSSTATE_BootEntry();
 
         while(1);
     }
     else if (sys_state == sys_state_goto_sleep) {
         // TODO: optional save config call
+        CONFIG_Save();
 
         USART_GoToSleep();
 

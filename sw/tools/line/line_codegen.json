@@ -2,7 +2,7 @@
     "BicycleNetwork": {
         "channel": 0,
         "oneWire": true,
-        "network": "../customer/network.json",
+        "network": "../../../customer/network.json",
         "nodes": {
             "RearLight": {
                 "enabled": true,

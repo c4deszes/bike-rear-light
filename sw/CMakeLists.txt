@@ -10,10 +10,10 @@ find_package(Python REQUIRED)
 include(tools/cmake/CPM.cmake)
 
 CPMAddPackage("gh:c4deszes/samd21-hal@0.3.0")
-CPMAddPackage("gh:c4deszes/bike-line-protocol#feature/multichannel-support")
-#CPMAddPackage("gh:c4deszes/bike-flash-tool@0.1.0")
+CPMAddPackage("gh:c4deszes/bike-line-protocol@0.2.0")
+CPMAddPackage("gh:c4deszes/bike-flash-tool#feature/line-lib-update")
 CPMAddPackage("gh:c4deszes/samd21-line-bootloader@0.3.0")
-CPMAddPackage("gh:c4deszes/bike-uds-tool#feature/line-lib-update")
+CPMAddPackage("gh:c4deszes/bike-uds-tool@0.2.0")
 
 enable_testing()
 include(CTest)
@@ -21,6 +21,12 @@ set(CTEST_OUTPUT_ON_FAILURE ON)
 
 include(CTest)
 include(GoogleTest)
+include(tools/cmake/Pytest.cmake)
+
+pytest_discover_tests(
+    TEST_PREFIX "PYTEST_"
+    TEST_SUFFIX ""
+)
 
 samx21_hal(samd21e18a ATSAMD21E18A)
 
@@ -66,7 +72,7 @@ add_executable(
 )
 target_include_directories(application PRIVATE include ${APP_GENCODE_DIR})
 target_link_libraries(application PRIVATE   samd21e18a
-                                            #flash-line-api flash-line-sources
+                                            flash-line-api flash-line-sources
                                             uds-lib
                                             protocol-stack-api
                                             bootloader-api

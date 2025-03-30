@@ -62,6 +62,8 @@ void BRIGHTNESS_Update10ms(void) {
 
         /* And tail light is disabled as well */
         LIGHTCONTROL_SetBrightness(lightcontrol_feature_tail_segment, LIGHTCONTROL_BRIGHTNESS_MIN);
+
+        // TODO: brake light can actually come on
     }
     else if (brightness_mode == brightness_mode_standard || brightness_mode == brightness_mode_adaptive) {
         uint16_t tail_target = BRIGHTNESS_MapTargetAdaptive(brightness_target);

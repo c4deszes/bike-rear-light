@@ -2,9 +2,10 @@
 #include "uds_gen.h"
 
 #include "hal/dsu.h"
+#include "hal/nvmctrl.h"
 
-#define CONFIG_FLASH_ADDRESS 0x3F000
-#define CONFIG_FLASH_SIZE (64 * 4)
+#define CONFIG_FLASH_ADDRESS 0x3F000u
+#define CONFIG_FLASH_SIZE (64u * 4u)
 
 typedef struct {
     UDS_Properties_RearLight_t properties;
@@ -12,20 +13,21 @@ typedef struct {
     uint32_t crc32;
 } config_memlayout_t;
 
-static config_memlayout_t* config = (config_memlayout_t*)CONFIG_FLASH_ADDRESS;
+static config_memlayout_t* config_memory = (config_memlayout_t*)CONFIG_FLASH_ADDRESS;
+config_memlayout_t config_shadow __attribute__((aligned(4)));
+uint32_t config_calculatedCrc;
 
 void CONFIG_LoadFlashProperties(void) {
+    config_calculatedCrc = DSU_CalculateCRC32(0xFFFFFFFFUL,
+                                                (void*)CONFIG_FLASH_ADDRESS,
+                                                256u-4u);
 
-    // uint32_t calculatedCrc = DSU_CalculateCRC32(0xFFFFFFFFUL,
-    //                                             (void*)CONFIG_FLASH_ADDRESS,
-    //                                             CONFIG_FLASH_SIZE);
-
-    // if (calculatedCrc == config->crc32) {
-    //     UDS_Properties_RearLight = config->properties;
-    // }
-    // else {
-
-    // }
+    if (config_calculatedCrc == config_memory->crc32) {
+        UDS_Properties_RearLight = config_memory->properties;
+    }
+    else {
+        // TODO: handle config memory corruption
+    }
 }
 
 config_properties_t CONFIG_Props;
@@ -45,11 +47,6 @@ static strobe_source_t STROBE_ConvertSource(uint8_t config) {
 }
 
 void CONFIG_ReloadUdsProperties(void) {
-    // Takes the UDS container
-    // for every property checks whether it's valid
-    // if it's not valid, it loads the default value
-    // if it's valid, it loads the value from the container
-    // it also does typecasting
     CONFIG_Props.AutomaticDiagnostics = UDS_Properties_RearLight.AutomaticDiagnostics;
     CONFIG_Props.BrightnessCurve_Cutoff_X = UDS_App_GetValidProperty_RearLight_BrightnessCurve_Cutoff_X();
     CONFIG_Props.BrightnessCurve_Cutoff_Y = UDS_App_GetValidProperty_RearLight_BrightnessCurve_Cutoff_Y();
@@ -74,13 +71,34 @@ void CONFIG_ReloadUdsProperties(void) {
     CONFIG_Props.Strobe_RapidOffTime = UDS_App_GetValidProperty_RearLight_Strobe_RapidOffTime();
 }
 
-void CONFIG_Save(void) {
-    // copy uds properties
-    // calculate crc
-    // write to flash
+static uint32_t crc32(const uint8_t *data, uint32_t length) {
+    uint32_t crc = 0xFFFFFFFF;
+    for (uint32_t i = 0; i < length; i++) {
+        crc ^= data[i];
+        for (int j = 0; j < 8; j++) {
+            crc = (crc >> 1) ^ (0xEDB88320 & -(crc & 1));
+        }
+    }
+    return crc ^ 0xFFFFFFFF;
+}
 
-    // config->properties = UDS_Properties_RearLight;
-    // config->crc32 = DSU_CalculateCRC32(0xFFFFFFFFUL,
-    //                                    (void*)CONFIG_FLASH_ADDRESS,
-    //                                    CONFIG_FLASH_SIZE);
+// TODO: need callback for when properties are changed
+// only save when changed
+void CONFIG_Save(void) {
+    config_shadow.properties = UDS_Properties_RearLight;
+    for (uint16_t i = 0; i < sizeof(config_shadow.padding); i++) {
+        config_shadow.padding[i] = 0xFF;
+    }
+    config_shadow.crc32 = crc32((uint8_t*)(&config_shadow), 256u-4u);
+
+    NVMCTRL_EraseRow(CONFIG_FLASH_ADDRESS);
+
+    // // TODO: don't hardcode page size
+    for (uint16_t i = 0; i < sizeof(config_memlayout_t) / 64u; i += 1) {
+        NVMCTRL_PageBufferClear();
+        for (uint16_t j = 0; j < 64u; j += 4) {
+            *((uint32_t*)(CONFIG_FLASH_ADDRESS + i * 64u + j)) = *((uint32_t*)(((uint8_t*)&config_shadow) + i * 64u + j));
+        }
+        NVMCTRL_WritePage(CONFIG_FLASH_ADDRESS + i * 64u);
+    }
 }

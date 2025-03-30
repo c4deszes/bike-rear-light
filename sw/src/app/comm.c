@@ -3,9 +3,8 @@
 
 #include "line_protocol.h"
 #include "line_api.h"
-//#include "flash_line_api.h"
-//#include "flash_line_diag.h"
-//#include "bl/api.h"
+#include "flash_line_api.h"
+#include "flash_line_diag.h"
 #include "app/feature.h"
 #include "uds_gen.h"
 #include "hal/dsu.h"
@@ -75,7 +74,8 @@ void COMM_Initialize(void) {
     LINE_App_Init();
     UDS_Init();
 
-    //FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
+    // TODO: change channel number
+    FLASH_LINE_Init(0, FLASH_LINE_APPLICATION_MODE);
 
     comm_lightrequest_timer = SWTIMER_Create();
     comm_speedstatus_timer = SWTIMER_Create();
@@ -112,13 +112,17 @@ void LINE_Transport_WriteResponse(uint8_t channel, uint8_t size, uint8_t* payloa
     USART_FlushOutput();
 }
 
-// uint8_t FLASH_BL_EnterBoot(void) {
+fl_BootEntryResponse_t FLASH_BL_EnterBoot(void) {
+    fl_BootEntryResponse_t response;
+    
+    // TODO: when do we reject boot entry requests?
+    comm_bootrequest = true;
 
-//     // TODO: when do we reject boot entry requests?
-//     comm_bootrequest = true;
+    response.entry_status = FLASH_LINE_BOOT_ENTRY_SUCCESS;
+    response.serial_number = LINE_Diag_BicycleNetwork_RearLight_GetSerialNumber();
 
-//     return FLASH_LINE_BOOT_ENTRY_SUCCESS;
-// }
+    return response;
+}
 
 bool COMM_BootRequest(void) {
     // TODO: clear flag before returning
