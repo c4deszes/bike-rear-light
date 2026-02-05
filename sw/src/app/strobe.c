@@ -24,20 +24,6 @@ void STROBE_SetSource(strobe_source_t source) {
     strobe_source = source;
 }
 
-strobe_source_t STROBE_ConvertSource(uint8_t config) {
-    if (config == CONFIG_STROBE_SOURCE_DISABLED) {
-        return strobe_source_disabled;
-    }
-    else if (config == CONFIG_STROBE_SOURCE_INTERNAL_SINGLE) {
-        return strobe_source_internal_single;
-    }
-    else if (config == CONFIG_STROBE_SOURCE_INTERNAL_RAPID) {
-        return strobe_source_internal_rapid;
-    }
-    // TODO: support for negative and positive
-    return strobe_source_disabled;
-}
-
 void STROBE_Update1ms(void) {
     if (strobe_source == strobe_source_disabled) {
         /* In case the source is disabled blinking should also be disabled */

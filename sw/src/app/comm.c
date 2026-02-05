@@ -5,7 +5,9 @@
 #include "line_api.h"
 #include "flash_line_api.h"
 #include "flash_line_diag.h"
-#include "bl/api.h"
+#include "uds_api.h"
+#include "uds_gen.h"
+
 #include "hal/dsu.h"
 #include "app/brake.h"
 #include "bsp/light_control.h"
@@ -46,7 +48,8 @@ LINE_Diag_PowerStatus_t* LINE_Diag_GetPowerStatus(void) {
 }
 
 uint32_t LINE_Diag_GetSerialNumber(void) {
-    return DSU_GetSerialNumber32();
+    //return DSU_GetSerialNumber32();
+    return 0x69696969;
 }
 
 LINE_Diag_SoftwareVersion_t* LINE_Diag_GetSoftwareVersion(void) {
@@ -66,6 +69,12 @@ void COMM_Initialize(void) {
     LINE_App_Init();
     LINE_Diag_SetAddress(LINE_NODE_RearLight_DIAG_ADDRESS);
     FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
+
+    UDS_Init();
+    UDS_LINE_Init();
+
+    // TODO: remove later
+    UDS_AppContainer.Brightness_Safety_Level = 300;
 
     comm_lightrequest_timer = SWTIMER_Create();
     comm_speedstatus_timer = SWTIMER_Create();
@@ -108,9 +117,9 @@ static bool comm_idle_request = false;
 uint8_t FLASH_BL_EnterBoot(void) {
 
     // TODO: when do we reject boot entry requests?
-    comm_bootrequest = true;
+    comm_bootrequest = false;
 
-    return FLASH_LINE_BOOT_ENTRY_SUCCESS;
+    return FLASH_LINE_BOOT_ENTRY_NO_BL_PRESENT;
 }
 
 bool COMM_BootRequest(void) {
@@ -185,31 +194,22 @@ static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
 }
 
 void COMM_UpdateSignals(void) {
-    // TODO: fix brake light status flag
-    /* Since the Brake light is rarely on we report ok status in most cases */
-    LINE_Request_RearLightStatus_data.fields.BrakeLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
-    
     /* Tail light state equals the diagnostic state if there were errors, otherwise it's ok when off, and off when brightness is 0 */
-    lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_tail_segment);
-    if (tail_state != lightcontrol_feature_state_ok) {
-        LINE_Request_RearLightStatus_data.fields.TailLightStatus = COMM_EncodeLightStatus(tail_state);
-    } else if (LIGHTCONTROL_GetBrightness(lightcontrol_feature_tail_segment) > LIGHTCONTROL_BRIGHTNESS_MIN) {
-        LINE_Request_RearLightStatus_data.fields.TailLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
-    }
-    else {
-        LINE_Request_RearLightStatus_data.fields.TailLightStatus = LINE_ENCODER_LightStatusEncoder_Off;
-    }
+    // lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState();
+    LINE_Request_RearLightStatus_data.fields.TailLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
+    LINE_Request_RearLightStatus_data.fields.BrakeLightStatus = LINE_ENCODER_LightStatusEncoder_Ok;
 
     /* Turn Signal light is not present in Gen1.0 */
     LINE_Request_RearLightStatus_data.fields.TurnSignalLightStatus = LINE_ENCODER_LightStatusEncoder_Off;
 
     // TODO: measure MCU temp. and return accordingly
     LINE_Request_RearLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
+    UDS_AppContainer.Brightness_Emergency_Level = 100;
 }
 
 void COMM_UpdateDebugSignals(void) {
-    LINE_Request_RearLightDebug_data.fields.SensorErrorCode = (uint8_t) BRAKE_GetAccelerometerErrorCode();
+    // LINE_Request_RearLightDebug_data.fields.SensorErrorCode = (uint8_t) BRAKE_GetAccelerometerErrorCode();
 
     // TODO: use actual temperature measurement
-    LINE_Request_RearLightDebug_data.fields.EcuTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
+    // LINE_Request_RearLightDebug_data.fields.EcuTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
 }

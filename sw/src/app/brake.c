@@ -1,14 +1,5 @@
 #include "app/brake.h"
 #include "app/brightness.h"
-
-#include "bma456mm.h"
-
-#include "hal/sercom_spi.h"
-
-#include "hal/gpio.h"
-#include "bsp/pinout.h"
-
-#include "app/config.h"
 #include "app/comm.h"
 
 // Concept: use MM feature set
@@ -90,7 +81,6 @@ static void delayMicroseconds( uint32_t usec, void* ptr )
 }
 
 void BRAKE_Init(void) {
-    brake_signal_state = brake_signal_status_na;
 
     accel_conf.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
     accel_conf.range = BMA4_ACCEL_RANGE_4G;
@@ -225,13 +215,6 @@ void BRAKE_Update10ms(void) {
 // TODO: in safety mode we should ignore the external signal (assume that comms are bad)
 #if FEATURE_BRAKE_USE_EXTERNAL_SIGNAL == 1
     if (!COMM_SpeedStatusTimeout() && COMM_SpeedStatusBraking()) {
-        external_brake = true;
-    }
-#else
-
-#endif
-
-    if (internal_brake || external_brake) {
         BRIGHTNESS_SetBraking(true);
     }
     else {
