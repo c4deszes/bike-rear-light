@@ -21,31 +21,32 @@ set(CTEST_OUTPUT_ON_FAILURE ON)
 
 include(CTest)
 include(GoogleTest)
+include(tools/cmake/Pytest.cmake)
+
+pytest_discover_tests(
+    TEST_PREFIX "PYTEST_"
+    TEST_SUFFIX ""
+)
 
 samx21_hal(samd21e18a ATSAMD21E18A)
 
 line_codegen(
     TARGET protocol-stack-api
-    NETWORK ../customer/network.json
-    NODE RearLight
+    CONFIG tools/line/line_codegen.json
     ADAPTER
 )
 
 uds_codegen(
     TARGET uds-lib
-    PROFILE tools/line/uds_profile.json
+    CONFIG tools/line/uds_codegen.json
 )
 
-samx21_hal(samc21-hal ATSAMC21E18A)
-
-# add_library(
-#     bma456mm INTERFACE
-# )
-# target_sources(bma456mm INTERFACE
-#     lib/bma456/bma4.c
-#     lib/bma456/bma456mm.c
-# )
-# target_include_directories(bma456mm INTERFACE lib/bma456)
+add_library(bma456mm INTERFACE)
+target_sources(bma456mm INTERFACE
+    lib/bma456/bma4.c
+    lib/bma456/bma456mm.c
+)
+target_include_directories(bma456mm INTERFACE lib/bma456)
 
 set(APP_GENCODE_DIR ${CMAKE_CURRENT_BINARY_DIR}/gencode)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/app/metainfo.h.in
@@ -57,6 +58,7 @@ add_executable(
 
     src/app/brake.c
     src/app/brightness.c
+    src/app/config.c
     src/app/comm.c
     src/app/init.c
     src/app/main.c
@@ -71,6 +73,7 @@ add_executable(
 target_include_directories(application PRIVATE include ${APP_GENCODE_DIR})
 target_link_libraries(application PRIVATE   samd21e18a
                                             flash-line-api flash-line-sources
+                                            uds-lib
                                             protocol-stack-api
                                             uds-lib
                                             # bootloader-api
@@ -111,4 +114,5 @@ dump_size(application)
 
 add_custom_target(application-full
     DEPENDS application-hex application-lss application-memory
+            application-merge factory_header
 )

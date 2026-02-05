@@ -1,25 +1,50 @@
 #if !defined(APP_CONFIG_H_)
 #define APP_CONFIG_H_
 
-/* --------------- Features ------------------- */
-#define FEATURE_SYSTEM_TIME_INIT 1000
+#include "strobe.h"
+#include <stdint.h>
+#include <stdbool.h>
 
-#define FEATURE_LED_DRIVER_STARTUP_DELAY 500u        // Time to wait before enabling the driver
-#define FEATURE_LED_DRIVER_ENABLE_DELAY 100u         // Time to wait before driving the LED
+typedef struct {
+    bool AutomaticDiagnostics;
 
-#define FEATURE_COMM_ENABLE_DEBUG_SIGNALS 1
-#define FEATURE_COMM_LIGHTREQUEST_TIMEOUT 4000
-#define FEATURE_COMM_SPEEDSTATUS_TIMEOUT 500
+    uint16_t BrightnessCurve_Cutoff_X;
+    uint16_t BrightnessCurve_Cutoff_Y;
+    uint16_t BrightnessCurve_Max_X;
+    uint16_t BrightnessCurve_Max_Y;
 
-#define FEATURE_LED_DRIVER_PWM_FREQUENCY 1000u
+    uint16_t Brightness_LevelStandard;
+    uint16_t Brightness_LevelEmergency;
+    uint16_t Brightness_LevelSafety;
 
-/* --------------- Settings ------------------- */
-// Single strobe frequency: 6.25Hz
-#define CONFIG_BRIGHTNESS_STROBE_SINGLE_ON_TIME 160
-#define CONFIG_BRIGHTNESS_STROBE_SINGLE_OFF_TIME 160
+    uint16_t Brightness_BrakeLow;
+    uint16_t Brightness_BrakeHigh;
 
-// Rapid strobe pattern _______/¨\_/¨\_/¨\__
-#define CONFIG_BRIGHTNESS_STROBE_RAPID_OFF_TIME 200
-#define CONFIG_BRIGHTNESS_STROBE_RAPID_SWITCH_TIME 60
+    uint16_t Strobe_LevelLow;
+    uint16_t Strobe_LevelHigh;
+    uint16_t Strobe_LevelEmergency;
+    uint16_t Strobe_LevelSafety;
+
+    strobe_source_t Strobe_ModeDefault;
+    strobe_source_t Strobe_ModePrimary;
+    strobe_source_t Strobe_ModeEmergency;
+    strobe_source_t Strobe_ModeSafety;
+
+    uint16_t Strobe_SingleOnTime;
+    uint16_t Strobe_SingleOffTime;
+    uint16_t Strobe_RapidOnTime;
+    uint16_t Strobe_RapidOffTime;
+} config_properties_t;
+
+extern config_properties_t CONFIG_Props;
+
+/**
+ * @brief Loads properties from flash memory into the UDS container
+ */
+void CONFIG_LoadFlashProperties(void);
+
+void CONFIG_ReloadUdsProperties(void);
+
+void CONFIG_Save(void);
 
 #endif // APP_CONFIG_H_

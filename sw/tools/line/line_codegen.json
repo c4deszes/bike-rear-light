@@ -1,0 +1,17 @@
+{
+    "BicycleNetwork": {
+        "channel": 0,
+        "oneWire": true,
+        "network": "../../../customer/network.json",
+        "nodes": {
+            "RearLight": {
+                "enabled": true,
+                "diagnostics": {
+                    "channel": 0,
+                    "enabled": true,
+                    "initAddress": true
+                }
+            }
+        }
+    }
+}

@@ -5,9 +5,8 @@
 #include "line_api.h"
 #include "flash_line_api.h"
 #include "flash_line_diag.h"
-#include "uds_api.h"
+#include "app/feature.h"
 #include "uds_gen.h"
-
 #include "hal/dsu.h"
 #include "app/brake.h"
 #include "bsp/light_control.h"
@@ -23,9 +22,8 @@ RINGBUFFER_8(COMM_UsartBufferRx, 128);
 
 // TODO: data should be dynamic based on actual current figures 
 static LINE_Diag_PowerStatus_t power_status = {
-    .U_status = LINE_DIAG_POWER_STATUS_VOLTAGE_OK,
-    .BOD_status = LINE_DIAG_POWER_STATUS_BOD_NONE,
-    .I_operating = LINE_DIAG_POWER_STATUS_OP_CURRENT(100),
+    .U_measured = 120,
+    .I_operating = 100u,
     .I_sleep = LINE_DIAG_POWER_STATUS_SLEEP_CURRENT(100)
 };
 
@@ -38,37 +36,46 @@ static LINE_Diag_SoftwareVersion_t sw_version = {
 static swtimer_t* comm_lightrequest_timer;
 static swtimer_t* comm_speedstatus_timer;
 
-// TODO: support op. mode (error in case all drivers fail, warning if IMU or single segment fails)
-uint8_t LINE_Diag_GetOperationStatus(void) {
+static bool comm_bootrequest = false;
+static bool comm_shutdown_request = false;
+static bool comm_idle_request = false;
+
+void LINE_Diag_BicycleNetwork_RearLight_OnWakeup(void) {
+
+}
+void LINE_Diag_BicycleNetwork_RearLight_OnIdle(void) {
+    comm_idle_request = true;
+}
+void LINE_Diag_BicycleNetwork_RearLight_OnShutdown(void) {
+    comm_shutdown_request = true;
+}
+void LINE_Diag_BicycleNetwork_RearLight_OnConditionalChangeAddress(uint8_t old_address, uint8_t new_address) {
+
+}
+
+// TODO: op status should be dynamic based on device state
+uint8_t LINE_Diag_BicycleNetwork_RearLight_GetOperationStatus(void) {
     return LINE_DIAG_OP_STATUS_OK;
 }
-
-LINE_Diag_PowerStatus_t* LINE_Diag_GetPowerStatus(void) {
+LINE_Diag_PowerStatus_t* LINE_Diag_BicycleNetwork_RearLight_GetPowerStatus(void) {
     return &power_status;
 }
-
-uint32_t LINE_Diag_GetSerialNumber(void) {
-    //return DSU_GetSerialNumber32();
-    return 0x69696969;
+uint32_t LINE_Diag_BicycleNetwork_RearLight_GetSerialNumber(void) {
+    return DSU_GetSerialNumber32();
 }
-
-LINE_Diag_SoftwareVersion_t* LINE_Diag_GetSoftwareVersion(void) {
+LINE_Diag_SoftwareVersion_t* LINE_Diag_BicycleNetwork_RearLight_GetSoftwareVersion(void) {
     return &sw_version;
 }
 
-// TODO: remove later
-void LINE_Transport_WriteRequest(uint16_t request) {
-
-}
-
 void COMM_Initialize(void) {
-    USART_Initialize(LINE_NETWORK_BicycleNetwork1_BAUDRATE, &COMM_UsartBufferTx, &COMM_UsartBufferRx);
+    USART_Initialize(LINE_NETWORK_BicycleNetwork_BAUDRATE, &COMM_UsartBufferTx, &COMM_UsartBufferRx);
     USART_Enable();
 
-    LINE_Transport_Init(true);
     LINE_App_Init();
-    LINE_Diag_SetAddress(LINE_NODE_RearLight_DIAG_ADDRESS);
-    FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
+    UDS_Init();
+
+    // TODO: change channel number
+    FLASH_LINE_Init(0, FLASH_LINE_APPLICATION_MODE);
 
     UDS_Init();
     UDS_LINE_Init();
@@ -84,12 +91,13 @@ void COMM_UpdatePhy(void) {
     uint8_t length = USART_Available();
     while (length > 0) {
         uint8_t data = USART_Read();
-        LINE_Transport_Receive(data);
+        LINE_Transport_Receive(LINE_CHANNEL_BicycleNetwork, data);
         length--;
     }
 
-    LINE_Transport_Update(1);
+    LINE_Transport_Update(LINE_CHANNEL_BicycleNetwork, 1);
 
+    // TODO: also timeout if setpoint is invalid for a long time
     if (LINE_Request_LightSynchronization_flag() || LINE_Request_RearLightSetting_flag()) {
         SWTIMER_Setup(comm_lightrequest_timer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
     }
@@ -99,7 +107,7 @@ void COMM_UpdatePhy(void) {
     }
 }
 
-void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checksum) {
+void LINE_Transport_WriteResponse(uint8_t channel, uint8_t size, uint8_t* payload, uint8_t checksum) {
     uint8_t fix = 69;
     USART_WriteData(&size, sizeof(uint8_t));
     // TODO: fix for skipped 3rd byte
@@ -110,58 +118,65 @@ void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checks
     USART_FlushOutput();
 }
 
-static bool comm_bootrequest = false;
-static bool comm_shutdown_request = false;
-static bool comm_idle_request = false;
-
-uint8_t FLASH_BL_EnterBoot(void) {
-
+fl_BootEntryResponse_t FLASH_BL_EnterBoot(void) {
+    fl_BootEntryResponse_t response;
+    
     // TODO: when do we reject boot entry requests?
     comm_bootrequest = false;
 
-    return FLASH_LINE_BOOT_ENTRY_NO_BL_PRESENT;
+    response.entry_status = FLASH_LINE_BOOT_ENTRY_SUCCESS;
+    response.serial_number = LINE_Diag_BicycleNetwork_RearLight_GetSerialNumber();
+
+    return response;
 }
 
 bool COMM_BootRequest(void) {
+    // TODO: clear flag before returning
     return comm_bootrequest;
 }
 
 bool COMM_ShutdownRequest(void) {
+    // TODO: clear flag before returning
     return comm_shutdown_request;
 }
 
 bool COMM_IdleRequest(void) {
-    comm_idle_request = true;
-}
-
-void COMM_ClearPendingRequests(void) {
-    comm_bootrequest = false;
-    comm_shutdown_request = false;
-    comm_idle_request = false;
-}
-
-void LINE_Diag_OnIdle(void) {
-    comm_idle_request = true;
-}
-
-void LINE_Diag_OnShutdown(void) {
-    comm_shutdown_request = true;
+    // TODO: clear flag before returning
+    return comm_idle_request;
 }
 
 uint16_t COMM_GetTargetBrightness(void) {
     return LINE_Request_LightSynchronization_data.fields.TargetBrightness * 10U;
 }
 
+brightness_mode_t COMM_LightMode(void) {
+    if (LINE_Request_LightSynchronization_data.fields.LightMode == LINE_ENCODER_LightModeEncoder_Adaptive) {
+        return brightness_mode_adaptive;
+    }
+    else if (LINE_Request_LightSynchronization_data.fields.LightMode == LINE_ENCODER_LightModeEncoder_Standard) {
+        return brightness_mode_standard;
+    }
+    else if (LINE_Request_LightSynchronization_data.fields.LightMode == LINE_ENCODER_LightModeEncoder_Emergency) {
+        return brightness_mode_emergency;
+    }
+    else if (LINE_Request_LightSynchronization_data.fields.LightMode == LINE_ENCODER_LightModeEncoder_Off) {
+        return brightness_mode_off;
+    }
+    return brightness_mode_safety;
+}
+
+strobe_source_t COMM_LightBehavior(void) {
+    if (LINE_Request_RearLightSetting_data.fields.Behavior == LINE_ENCODER_LightBehaviorEncoder_Default) {
+        return CONFIG_Props.Strobe_ModeDefault;
+    }
+    else if (LINE_Request_RearLightSetting_data.fields.Behavior == LINE_ENCODER_LightBehaviorEncoder_Blink) {
+        return CONFIG_Props.Strobe_ModePrimary;
+    }
+    return strobe_source_disabled;
+}
+
 bool COMM_LightRequestTimeout(void) {
     return SWTIMER_Elapsed(comm_lightrequest_timer);
-}
-
-uint8_t COMM_LightMode(void) {
-    return LINE_Request_LightSynchronization_data.fields.LightMode;
-}
-
-uint8_t COMM_LightBehavior(void) {
-    return LINE_Request_RearLightSetting_data.fields.Behavior;
 }
 
 bool COMM_SpeedStatusTimeout(void) {
@@ -169,11 +184,10 @@ bool COMM_SpeedStatusTimeout(void) {
 }
 
 bool COMM_SpeedStatusBraking(void) {
-    if (LINE_Request_SpeedStatus_data.fields.GlobalSpeedState == LINE_ENCODER_GlobalSpeedStateEncoder_Ok) {
-        if (LINE_Request_SpeedStatus_data.fields.BrakeState == LINE_ENCODER_BrakeStateEncoder_Braking) {
-            return true;
-        }
-        return false;
+    if (   LINE_Request_SpeedStatus_data.fields.SpeedState == LINE_ENCODER_SpeedStateEncoder_Ok
+        && LINE_Request_SpeedStatus_data.fields.BrakeState == LINE_ENCODER_BrakeStateEncoder_Braking) {
+
+        return true;
     }
     return false;
 }
@@ -208,8 +222,16 @@ void COMM_UpdateSignals(void) {
 }
 
 void COMM_UpdateDebugSignals(void) {
-    // LINE_Request_RearLightDebug_data.fields.SensorErrorCode = (uint8_t) BRAKE_GetAccelerometerErrorCode();
+    // TODO: use brightness from driver
+    LINE_Request_RearLightBrightnessDebug_data.fields.Brightness = 0;
 
     // TODO: use actual temperature measurement
-    // LINE_Request_RearLightDebug_data.fields.EcuTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
+    LINE_Request_RearLightTemperatureDebug_data.fields.EcuTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
+    LINE_Request_RearLightTemperatureDebug_data.fields.DriveTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
+
+    // TODO: update with data from accelerometer
+    LINE_Request_RearLightMotionDebug_data.fields.aX = 0;
+    LINE_Request_RearLightMotionDebug_data.fields.aY = 0;
+    LINE_Request_RearLightMotionDebug_data.fields.aZ = 0;
+    LINE_Request_RearLightMotionDebug_data.fields.Braking = 0;
 }

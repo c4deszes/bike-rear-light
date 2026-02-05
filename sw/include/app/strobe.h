@@ -13,6 +13,11 @@ typedef enum {
 
 void STROBE_Init(void);
 
+/**
+ * @brief Sets the source of the strobe signal
+ * 
+ * @param source The source of the strobe signal
+ */
 void STROBE_SetSource(strobe_source_t source);
 
 /**

@@ -1,7 +1,7 @@
 #include "app/sys_state.h"
 #include "common/swtimer.h"
 #include "app/config.h"
-
+#include "app/feature.h"
 #include "app/brightness.h"
 #include "app/strobe.h"
 #include "app/comm.h"
@@ -88,59 +88,32 @@ void SYSSTATE_Update10ms(void) {
         }
     }
     else if (sys_state == sys_state_normal) {
-        uint8_t light_behavior = COMM_LightBehavior();
-        if (light_behavior == LINE_ENCODER_LightBehaviorEncoder_Default) {
-            STROBE_SetSource(sys_config_default_strobe);
-        }
-        else if (light_behavior == LINE_ENCODER_LightBehaviorEncoder_Blink) {
-            STROBE_SetSource(sys_config_primary_strobe);
-        }
-        else {
-            STROBE_SetSource(strobe_source_disabled);
-        }
-
-        uint8_t light_mode = COMM_LightMode();
-        if (light_mode == LINE_ENCODER_LightModeEncoder_Adaptive) {
-            BRIGHTNESS_SetMode(brightness_mode_adaptive);
-        }
-        else if (light_mode == LINE_ENCODER_LightModeEncoder_Standard) {
-            BRIGHTNESS_SetMode(brightness_mode_standard);
-        }
-        else if (light_mode == LINE_ENCODER_LightModeEncoder_Emergency) {
-            BRIGHTNESS_SetMode(brightness_mode_emergency);
-        }
-        else if (light_mode == LINE_ENCODER_LightModeEncoder_Off) {
-            BRIGHTNESS_SetMode(brightness_mode_off);
-        }
-        else {
-            BRIGHTNESS_SetMode(brightness_mode_standard);
-        }
-
+        STROBE_SetSource(COMM_LightBehavior());
+        BRIGHTNESS_SetMode(COMM_LightMode());
         BRIGHTNESS_SetTarget(COMM_GetTargetBrightness());
 
-        if (COMM_LightRequestTimeout() && COMM_LightMode() != LINE_ENCODER_LightModeEncoder_Emergency) {
-            /* If the master's last instruction was emergency mode then we don't transition out  */
-            sys_state = sys_state_safety;
-        }
-
+        // Critical state transitions
         if (COMM_ShutdownRequest()) {
             sys_state = sys_state_goto_sleep;
         }
         else if (COMM_BootRequest()) {
-            // sys_state = sys_state_goto_boot;
+            sys_state = sys_state_goto_boot;
         }
         else if (COMM_IdleRequest()) {
             // TODO: either safety mode or emergency mode
         }
+
+        // Transition to safety state
+        if (COMM_LightRequestTimeout() && COMM_LightMode() != brightness_mode_emergency) {
+            /* If the master's last instruction was emergency mode then we don't transition out  */
+            sys_state = sys_state_safety;
+        }
     }
     else if (sys_state == sys_state_safety) {
-        STROBE_SetSource(sys_config_safety_strobe);
+        STROBE_SetSource(CONFIG_Props.Strobe_ModeSafety);
         BRIGHTNESS_SetMode(brightness_mode_safety);
 
-        if (!COMM_LightRequestTimeout()) {
-            sys_state = sys_state_normal;
-        }
-
+        // Critical state transitions
         if (COMM_ShutdownRequest()) {
             sys_state = sys_state_goto_sleep;
         }
@@ -152,10 +125,15 @@ void SYSSTATE_Update10ms(void) {
         }
     }
     else if (sys_state == sys_state_goto_boot) {
-        //SYSSTATE_BootEntry();
+        // TODO: reenable once bootloader is implemented
+        SYSSTATE_BootEntry();
+
         while(1);
     }
     else if (sys_state == sys_state_goto_sleep) {
+        // TODO: optional save config call
+        CONFIG_Save();
+
         USART_GoToSleep();
 
         while(1);

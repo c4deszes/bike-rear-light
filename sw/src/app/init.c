@@ -1,26 +1,28 @@
-#include "bsp/board.h"
+#include "app/init.h"
+
 #include "hal/rtc.h"
 #include "hal/wdt.h"
 #include "hal/nvic.h"
+#include "hal/nvmctrl.h"
 #include "hal/tcc.h"
-
 #include "common/scheduler.h"
 
+#include "bsp/board.h"
 #include "bsp/light_control.h"
 
-#include "app/comm.h"
-#include "app/strobe.h"
-#include "app/brightness.h"
 #include "app/brake.h"
+#include "app/brightness.h"
+#include "app/comm.h"
+#include "app/config.h"
+#include "app/strobe.h"
 #include "app/sys_state.h"
-
-#include <stddef.h>
 
 void APP_Initialize() {
     // Low level init
+    NVMCTRL_SetAutoPageWrite(false);
     BSP_ClockInitialize();
+    // TODO: enable watchdog
     //WDT_InitializeNormal(&wdt_config);
-    //EIC_Initialize(NULL);
     LIGHTCONTROL_Init();
 
     // Initializing communication
@@ -32,7 +34,14 @@ void APP_Initialize() {
     STROBE_Init();
     BRAKE_Init();
 
+    // Initializing communication
+    COMM_Initialize();
+
+    CONFIG_LoadFlashProperties();
+    CONFIG_ReloadUdsProperties();
+
     // Setting up scheduler
+    // TODO: replace with SysTick
     SCH_Init();
     TCC_Reset(TCC0);
     TCC_SetupTrigger(TCC0, 1000);   // 1000us period
