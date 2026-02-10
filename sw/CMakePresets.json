@@ -1,5 +1,5 @@
 {
-    "version": 2,
+    "version": 6,
     "cmakeMinimumRequired": {
         "major": 3,
         "minor": 20,
@@ -7,7 +7,7 @@
     },
     "configurePresets": [
         {
-            "name": "armgcc-default",
+            "name": "conf-armgcc-default",
             "binaryDir": "${sourceDir}/_build/${presetName}",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/armgcc-toolchain.cmake"
@@ -15,87 +15,122 @@
             "hidden": true
         },
         {
-            "name": "armgcc-release-unix",
-            "inherits": "armgcc-default",
+            "name": "conf-armgcc-release-unix",
+            "inherits": "conf-armgcc-default",
             "generator": "Unix Makefiles",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {
-            "name": "armgcc-release-mingw",
-            "inherits": "armgcc-default",
-            "generator": "MinGW Makefiles",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        },
-        {
-            "name": "armgcc-debug-unix",
-            "inherits": "armgcc-default",
+            "name": "conf-armgcc-debug-unix",
+            "inherits": "conf-armgcc-default",
             "generator": "Unix Makefiles",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-            "name": "armgcc-debug-mingw",
-            "inherits": "armgcc-default",
-            "generator": "MinGW Makefiles",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "mingw-default",
-            "generator": "MinGW Makefiles",
-            "binaryDir": "${sourceDir}/_build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/mingw-toolchain.cmake"
-            },
-            "hidden": true
-        },
-        {
-            "name": "mingw-debug",
-            "inherits": [ "mingw-default" ],
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "gcc-default",
+            "name": "conf-gcc-default",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/_build/${presetName}",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/gcc-toolchain.cmake"
-            },
-            "hidden": true
-        },
-        {
-            "name": "gcc-debug",
-            "inherits": [ "gcc-default" ],
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/gcc-toolchain.cmake",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "REAR_LIGHT_BUILD_UNITTESTS": "OFF",
+                "REAR_LIGHT_BUILD_SILTESTS": "ON",
+                "REAR_LIGHT_BUILD_FUNCTESTS": "OFF",
+                "REAR_LIGHT_BUILD_DOCS": "ON"
             }
         }
     ],
     "buildPresets": [
         {
-            "name": "build-app",
+            "name": "build-app-targets",
             "targets": [ "application-full"],
             "hidden": true
         },
         {
-            "name": "build-docs",
+            "name": "build-cov-targets",
+            "hidden": true,
+            "targets": [
+                "coverage_report"
+            ]
+        },
+        {
+            "name": "build-sil-targets",
+            "targets": [ "rear-light-server" ],
+            "hidden": true
+        },
+        {
+            "name": "build-docs-targets",
             "targets": [ "Sphinx" ],
             "hidden": true
         },
         {
-            "name": "build-app-unix",
-            "inherits": "build-app",
-            "configurePreset": "armgcc-release-unix"
+            "name": "build-app-release",
+            "inherits": "build-app-targets",
+            "configurePreset": "conf-armgcc-release-unix"
+        },
+        {
+            "name": "build-app-debug",
+            "inherits": "build-app-targets",
+            "configurePreset": "conf-armgcc-debug-unix"
+        },
+        {
+            "name": "build-cov-gcc",
+            "inherits": "build-cov-targets",
+            "configurePreset": "conf-gcc-default"
+        },
+        {
+            "name": "build-sil-gcc",
+            "inherits": "build-sil-targets",
+            "configurePreset": "conf-gcc-default"
+        },
+        {
+            "name": "build-docs-gcc",
+            "inherits": "build-docs-targets",
+            "configurePreset": "conf-gcc-default"
+        },
+        {
+            "name": "build-setup-tools",
+            "targets": [ "PythonSetup" ],
+            "hidden": true
+        },
+        {
+            "name": "build-setup-unix",
+            "inherits": "build-setup-tools",
+            "configurePreset": "conf-armgcc-release-unix"
         }
     ],
     "testPresets": [
+    ],
+    "workflowPresets": [
+        {
+            "name": "workflow-build",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "conf-armgcc-release-unix"
+                },
+                {
+                    "type": "build",
+                    "name": "build-app-release"
+                }
+            ]
+        },
+        {
+            "name": "workflow-docs",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "conf-gcc-default"
+                },
+                {
+                    "type": "build",
+                    "name": "build-docs-gcc"
+                }
+            ]
+        }
     ]
 }
