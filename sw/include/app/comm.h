@@ -25,10 +25,7 @@ void COMM_UpdateSignals(void);
  */
 void COMM_UpdateDebugSignals(void);
 
-/**
- * @brief Passes the bytes received from the physical layer to the transport layer
- */
-void COMM_UpdatePhy(void);
+void COMM_Update(void);
 
 /**
  * @brief Returns the target brightness scaled into the brightness range of the light control

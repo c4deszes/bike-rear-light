@@ -11,6 +11,7 @@
 #include "app/strobe.h"
 #include "app/sys_state.h"
 #include "bsp/light_control.h"
+#include "bsp/line_usart.h"
 
 #include "line_api.h"
 
@@ -19,7 +20,7 @@ void SCH_Task1ms(void) {
 
     STROBE_Update1ms();
 
-    COMM_UpdatePhy();
+    LINE_USART_Receive();
 }
 
 void SCH_Task10ms_A(void) {
@@ -33,6 +34,7 @@ void SCH_Task10ms_A(void) {
     // TODO: enable watchdog
     //WDT_Acknowledge();
 
+    COMM_Update();
     COMM_UpdateSignals();
 
 #if FEATURE_COMM_ENABLE_DEBUG_SIGNALS == 1

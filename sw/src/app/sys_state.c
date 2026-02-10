@@ -1,17 +1,19 @@
 #include "app/sys_state.h"
+
 #include "common/swtimer.h"
+#include "hal/nvic.h"
+
+#include "bsp/usart.h"
+
 #include "app/config.h"
 #include "app/feature.h"
 #include "app/brightness.h"
 #include "app/strobe.h"
 #include "app/comm.h"
-#include "bsp/usart.h"
 
-#include "uds_gen.h"
-
-#include "bl/api.h"
-#include "sam.h"
 #include "line_api.h"
+#include "uds_gen.h"
+#include "bl/api.h"
 
 typedef enum {
     sys_state_init,         /* When starting up */
@@ -32,15 +34,15 @@ strobe_source_t sys_config_emergency_strobe = strobe_source_disabled;
 
 static strobe_source_t ConvertOperationalStrobeSource(uint8_t value) {
     switch(value) {
-        case UDS_APP_PROPERTY_Strobe_DefaultMode_VALUE_DISABLED:
+        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_DISABLED:
             return strobe_source_disabled;
-        case UDS_APP_PROPERTY_Strobe_DefaultMode_VALUE_INTERNAL_SINGLE:
+        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_INTERNAL_SINGLE:
             return strobe_source_internal_single;
-        case UDS_APP_PROPERTY_Strobe_DefaultMode_VALUE_INTERNAL_RAPID:
+        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_INTERNAL_RAPID:
             return strobe_source_internal_rapid;
-        case UDS_APP_PROPERTY_Strobe_DefaultMode_VALUE_EXTERNAL_POS:
+        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_EXTERNAL_POS:
             return strobe_source_external_positive;
-        case UDS_APP_PROPERTY_Strobe_DefaultMode_VALUE_EXTERNAL_NEG:
+        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_EXTERNAL_NEG:
             return strobe_source_external_negative;
         default:
             return strobe_source_disabled;
@@ -49,11 +51,11 @@ static strobe_source_t ConvertOperationalStrobeSource(uint8_t value) {
 
 static strobe_source_t ConvertReserveStrobeSource(uint8_t value) {
     switch(value) {
-        case UDS_APP_PROPERTY_Strobe_SafetyMode_VALUE_DISABLED:
+        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_DISABLED:
             return strobe_source_disabled;
-        case UDS_APP_PROPERTY_Strobe_SafetyMode_VALUE_INTERNAL_SINGLE:
+        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_INTERNAL_SINGLE:
             return strobe_source_internal_single;
-        case UDS_APP_PROPERTY_Strobe_SafetyMode_VALUE_INTERNAL_RAPID:
+        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_INTERNAL_RAPID:
             return strobe_source_internal_rapid;
         default:
             return strobe_source_disabled;
@@ -61,10 +63,10 @@ static strobe_source_t ConvertReserveStrobeSource(uint8_t value) {
 }
 
 void SYSSTATE_LoadConfig(void) {
-    sys_config_default_strobe = ConvertOperationalStrobeSource(UDS_AppContainer.Strobe_DefaultMode);
-    sys_config_primary_strobe = ConvertOperationalStrobeSource(UDS_AppContainer.Strobe_PrimaryMode);
-    sys_config_safety_strobe = ConvertReserveStrobeSource(UDS_AppContainer.Strobe_SafetyMode);
-    sys_config_emergency_strobe = ConvertReserveStrobeSource(UDS_AppContainer.Strobe_EmergencyMode);
+    sys_config_default_strobe = ConvertOperationalStrobeSource(UDS_Properties_RearLight.Strobe_ModeDefault);
+    sys_config_primary_strobe = ConvertOperationalStrobeSource(UDS_Properties_RearLight.Strobe_ModePrimary);
+    sys_config_safety_strobe = ConvertReserveStrobeSource(UDS_Properties_RearLight.Strobe_ModeSafety);
+    sys_config_emergency_strobe = ConvertReserveStrobeSource(UDS_Properties_RearLight.Strobe_ModeEmergency);
 }
 
 void SYSSTATE_Init(void) {
@@ -73,6 +75,13 @@ void SYSSTATE_Init(void) {
     SWTIMER_Setup(sys_transition_timer, FEATURE_SYSTEM_TIME_INIT);
 
     SYSSTATE_LoadConfig();
+}
+
+uint64_t boot_entry_key __attribute__((section(".bl_shared_ram")));
+static void SYSSTATE_BootEntry(void) {
+    boot_entry_key = BL_BOOT_ENTRY_MAGIC;
+
+    NVIC_Reset();
 }
 
 void SYSSTATE_Update10ms(void) {
@@ -110,7 +119,7 @@ void SYSSTATE_Update10ms(void) {
         }
     }
     else if (sys_state == sys_state_safety) {
-        STROBE_SetSource(CONFIG_Props.Strobe_ModeSafety);
+        STROBE_SetSource(sys_config_safety_strobe);
         BRIGHTNESS_SetMode(brightness_mode_safety);
 
         // Critical state transitions
@@ -123,6 +132,9 @@ void SYSSTATE_Update10ms(void) {
         else if (COMM_IdleRequest()) {
             // TODO: either safety mode or emergency mode
         }
+        else if (!COMM_LightRequestTimeout()) {
+            sys_state = sys_state_normal;
+        }
     }
     else if (sys_state == sys_state_goto_boot) {
         // TODO: reenable once bootloader is implemented
@@ -132,7 +144,7 @@ void SYSSTATE_Update10ms(void) {
     }
     else if (sys_state == sys_state_goto_sleep) {
         // TODO: optional save config call
-        CONFIG_Save();
+        //CONFIG_Save();
 
         USART_GoToSleep();
 

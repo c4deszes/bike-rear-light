@@ -5,6 +5,7 @@
 #include "hal/gpio.h"
 #include "common/swtimer.h"
 #include "app/config.h"
+#include "app/feature.h"
 
 #include "sam.h"
 
@@ -46,12 +47,12 @@ void LIGHTCONTROL_Init(void) {
 
     /* DAC setup */
     DAC_REGS->DAC_CTRLA = DAC_CTRLA_SWRST_Msk;
-    while((DAC_REGS->DAC_SYNCBUSY & DAC_SYNCBUSY_SWRST_Msk) != 0);
+    while((DAC_REGS->DAC_STATUS & DAC_STATUS_SYNCBUSY_Msk) != 0);
 
     DAC_REGS->DAC_CTRLB = DAC_CTRLB_REFSEL_AVCC | DAC_CTRLB_EOEN_Msk | DAC_CTRLB_LEFTADJ(0);
 
     DAC_REGS->DAC_CTRLA = DAC_CTRLA_ENABLE_Msk;
-    while((DAC_REGS->DAC_SYNCBUSY & DAC_SYNCBUSY_ENABLE_Msk) != 0);
+    while((DAC_REGS->DAC_STATUS & DAC_STATUS_SYNCBUSY_Msk) != 0);
 
     driver_state = tld509x_state_startup;
     transition_timer = SWTIMER_Create();

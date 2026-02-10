@@ -1,6 +1,5 @@
 #include "app/init.h"
 
-#include "hal/rtc.h"
 #include "hal/wdt.h"
 #include "hal/nvic.h"
 #include "hal/nvmctrl.h"
@@ -9,7 +8,10 @@
 
 #include "bsp/board.h"
 #include "bsp/light_control.h"
+#include "bsp/accel.h"
+#include "bsp/line_usart.h"
 
+#include "app/feature.h"
 #include "app/brake.h"
 #include "app/brightness.h"
 #include "app/comm.h"
@@ -24,8 +26,12 @@ void APP_Initialize() {
     // TODO: enable watchdog
     //WDT_InitializeNormal(&wdt_config);
     LIGHTCONTROL_Init();
+    #if FEATURE_BRAKE_ENABLE_SENSOR == 1
+    ACCEL_Initialize();
+    #endif
 
     // Initializing communication
+    LINE_USART_Init();
     COMM_Initialize();
 
     // Initializing application services

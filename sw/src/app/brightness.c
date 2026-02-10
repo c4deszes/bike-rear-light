@@ -1,9 +1,10 @@
 #include "app/brightness.h"
-#include "app/config.h"
 
+// Board support package
 #include "bsp/light_control.h"
-#include "uds_gen.h"
 
+// Application components
+#include "app/config.h"
 #include "uds_gen.h"
 
 static brightness_mode_t brightness_mode;
@@ -28,19 +29,19 @@ static uint16_t brightness_config_strobe_emergency;
 static uint16_t brightness_config_strobe_safety;
 
 void BRIGHTNESS_LoadConfig(void) {
-    brightness_config_cutoff_x = UDS_AppContainer.BrightnessCurve_Cutoff_X;
-    brightness_config_cutoff_y = UDS_AppContainer.BrightnessCurve_Cutoff_Y;
-    brightness_config_max_x = UDS_AppContainer.BrightnessCurve_Max_X;
-    brightness_config_max_y = UDS_AppContainer.BrightnessCurve_Max_Y;
-    brightness_config_standard_level = UDS_AppContainer.Brightness_Standard_Level;
-    brightness_config_emergency_level = UDS_AppContainer.Brightness_Emergency_Level;
-    brightness_config_safety_level = UDS_AppContainer.Brightness_Safety_Level;
-    brightness_config_brake_low = UDS_AppContainer.Brightness_BrakeLow;
-    brightness_config_brake_high = UDS_AppContainer.Brightness_BrakeHigh;
-    brightness_config_strobe_low = UDS_AppContainer.Strobe_LevelLow;
-    brightness_config_strobe_high = UDS_AppContainer.Strobe_LevelHigh;
-    brightness_config_strobe_emergency = UDS_AppContainer.Strobe_LevelEmergency;
-    brightness_config_strobe_safety = UDS_AppContainer.Strobe_LevelSafety;
+    brightness_config_cutoff_x = UDS_Properties_RearLight.BrightnessCurve_Cutoff_X;
+    brightness_config_cutoff_y = UDS_Properties_RearLight.BrightnessCurve_Cutoff_Y;
+    brightness_config_max_x = UDS_Properties_RearLight.BrightnessCurve_Max_X;
+    brightness_config_max_y = UDS_Properties_RearLight.BrightnessCurve_Max_Y;
+    brightness_config_standard_level = UDS_Properties_RearLight.Brightness_LevelStandard;
+    brightness_config_emergency_level = UDS_Properties_RearLight.Brightness_LevelEmergency;
+    brightness_config_safety_level = UDS_Properties_RearLight.Brightness_LevelSafety;
+    brightness_config_brake_low = UDS_Properties_RearLight.Brightness_BrakeLow;
+    brightness_config_brake_high = UDS_Properties_RearLight.Brightness_BrakeHigh;
+    brightness_config_strobe_low = UDS_Properties_RearLight.Strobe_LevelLow;
+    brightness_config_strobe_high = UDS_Properties_RearLight.Strobe_LevelHigh;
+    brightness_config_strobe_emergency = UDS_Properties_RearLight.Strobe_LevelEmergency;
+    brightness_config_strobe_safety = UDS_Properties_RearLight.Strobe_LevelSafety;
 }
 
 void BRIGHTNESS_Init(void) {
@@ -78,32 +79,6 @@ static uint16_t BRIGHTNESS_MapBrake(uint16_t target) {
     }
 }
 
-static uint16_t BRIGHTNESS_MapStrobe(uint16_t target) {
-    if (target <= LIGHTCONTROL_BRIGHTNESS_MIN) {
-        return CONFIG_Props.Strobe_LevelLow;
-    }
-    else if (target >= LIGHTCONTROL_BRIGHTNESS_MAX) {
-        return CONFIG_Props.Strobe_LevelHigh;
-    }
-    else {
-        return (target - LIGHTCONTROL_BRIGHTNESS_MIN) * (CONFIG_Props.Strobe_LevelHigh - CONFIG_Props.Strobe_LevelLow) /
-               (LIGHTCONTROL_BRIGHTNESS_MAX - LIGHTCONTROL_BRIGHTNESS_MIN) + CONFIG_Props.Strobe_LevelLow;
-    }
-}
-
-static uint16_t BRIGHTNESS_MapBrake(uint16_t target) {
-    if (target <= LIGHTCONTROL_BRIGHTNESS_MIN) {
-        return CONFIG_Props.Brightness_BrakeLow;
-    }
-    else if (target >= LIGHTCONTROL_BRIGHTNESS_MAX) {
-        return CONFIG_Props.Brightness_BrakeHigh;
-    }
-    else {
-        return (target - LIGHTCONTROL_BRIGHTNESS_MIN) * (CONFIG_Props.Brightness_BrakeHigh - CONFIG_Props.Brightness_BrakeLow) /
-               (LIGHTCONTROL_BRIGHTNESS_MAX - LIGHTCONTROL_BRIGHTNESS_MIN) + CONFIG_Props.Brightness_BrakeLow;
-    }
-}
-
 static uint16_t BRIGHTNESS_MapTargetAdaptive(uint16_t target) {
     if (target < CONFIG_Props.BrightnessCurve_Cutoff_X) {
         return LIGHTCONTROL_BRIGHTNESS_MIN;
@@ -120,7 +95,7 @@ static uint16_t BRIGHTNESS_MapTargetAdaptive(uint16_t target) {
 void BRIGHTNESS_Update10ms(void) {
     if (brightness_mode == brightness_mode_off) {
         /* And tail light is disabled as well */
-        LIGHTCONTROL_SetBrightness(lightcontrol_feature_tail_segment, LIGHTCONTROL_BRIGHTNESS_MIN);
+        LIGHTCONTROL_SetBrightness(LIGHTCONTROL_BRIGHTNESS_MIN);
 
         // TODO: brake light can actually come on
     }
@@ -149,7 +124,7 @@ void BRIGHTNESS_Update10ms(void) {
     }
     else if (brightness_mode == brightness_mode_emergency) {
         /* And tail light is set to emergency brightness */
-        LIGHTCONTROL_SetBrightness(lightcontrol_feature_tail_segment, CONFIG_Props.Brightness_LevelEmergency);
+        LIGHTCONTROL_SetBrightness(CONFIG_Props.Brightness_LevelEmergency);
     }
     else if (brightness_mode == brightness_mode_safety) {
         uint16_t tail_target = CONFIG_Props.Brightness_LevelSafety;
