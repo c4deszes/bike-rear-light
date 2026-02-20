@@ -1,8 +1,6 @@
 #if !defined(APP_STROBE_H_)
 #define APP_STROBE_H_
 
-#include <stdint.h>
-
 typedef enum {
     strobe_source_disabled,
     strobe_source_internal_single,
@@ -11,7 +9,15 @@ typedef enum {
     strobe_source_external_negative
 } strobe_source_t;
 
+/**
+ * @brief Initializes the strobe module, this should be called once at startup
+ */
 void STROBE_Init(void);
+
+/**
+ * @brief Loads the strobe settings from the configuration manager
+ */
+void STROBE_LoadConfig(void);
 
 /**
  * @brief Sets the source of the strobe signal

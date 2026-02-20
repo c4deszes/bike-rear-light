@@ -4,6 +4,10 @@
 #include "hal/dsu.h"
 #include "hal/nvmctrl.h"
 
+#include "app/brightness.h"
+#include "app/strobe.h"
+#include "app/sys_state.h"
+
 #define CONFIG_FLASH_ADDRESS 0x3F000u
 #define CONFIG_FLASH_SIZE (64u * 4u)
 
@@ -17,22 +21,22 @@ static config_memlayout_t* config_memory = (config_memlayout_t*)CONFIG_FLASH_ADD
 config_memlayout_t config_shadow __attribute__((aligned(4)));
 uint32_t config_calculatedCrc;
 
-void CONFIG_LoadFlashProperties(void) {
-    config_calculatedCrc = DSU_CalculateCRC32(0xFFFFFFFFUL,
-                                                (void*)CONFIG_FLASH_ADDRESS,
-                                                256u-4u);
+void CONFIG_LoadNvram(void) {
+    // config_calculatedCrc = DSU_CalculateCRC32(0xFFFFFFFFUL,
+    //                                             (void*)CONFIG_FLASH_ADDRESS,
+    //                                             256u-4u);
 
-    if (config_calculatedCrc == config_memory->crc32) {
-        UDS_Properties_RearLight = config_memory->properties;
-    }
-    else {
-        // TODO: handle config memory corruption
-    }
+    // if (config_calculatedCrc == config_memory->crc32) {
+    //     UDS_Properties_RearLight = config_memory->properties;
+    // }
+    // else {
+    //     // TODO: handle config memory corruption
+    // }
 }
 
 config_properties_t CONFIG_Props;
 
-static strobe_source_t STROBE_ConvertSource(uint8_t config) {
+static strobe_source_t CONFIG_ToStrobeSource(uint8_t config) {
     if (config == UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_DISABLED) {
         return strobe_source_disabled;
     }
@@ -42,11 +46,13 @@ static strobe_source_t STROBE_ConvertSource(uint8_t config) {
     else if (config == UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_INTERNAL_RAPID) {
         return strobe_source_internal_rapid;
     }
-    // TODO: support for negative and positive
+    // TODO: support for external negative and positive strobe sources
+
+    /* Safety reaction, strobe is disabled */
     return strobe_source_disabled;
 }
 
-void CONFIG_ReloadUdsProperties(void) {
+void CONFIG_Reload(void) {
     CONFIG_Props.AutomaticDiagnostics = UDS_Properties_RearLight.AutomaticDiagnostics;
     CONFIG_Props.BrightnessCurve_Cutoff_X = UDS_App_GetValidProperty_RearLight_BrightnessCurve_Cutoff_X();
     CONFIG_Props.BrightnessCurve_Cutoff_Y = UDS_App_GetValidProperty_RearLight_BrightnessCurve_Cutoff_Y();
@@ -61,16 +67,23 @@ void CONFIG_ReloadUdsProperties(void) {
     CONFIG_Props.Strobe_LevelHigh = UDS_App_GetValidProperty_RearLight_Strobe_LevelHigh();
     CONFIG_Props.Strobe_LevelEmergency = UDS_App_GetValidProperty_RearLight_Strobe_LevelEmergency();
     CONFIG_Props.Strobe_LevelSafety = UDS_App_GetValidProperty_RearLight_Strobe_LevelSafety();
-    CONFIG_Props.Strobe_ModeDefault = STROBE_ConvertSource(UDS_Properties_RearLight.Strobe_ModeDefault);
-    CONFIG_Props.Strobe_ModePrimary = STROBE_ConvertSource(UDS_Properties_RearLight.Strobe_ModePrimary);
-    CONFIG_Props.Strobe_ModeEmergency = STROBE_ConvertSource(UDS_Properties_RearLight.Strobe_ModeEmergency);
-    CONFIG_Props.Strobe_ModeSafety = STROBE_ConvertSource(UDS_Properties_RearLight.Strobe_ModeSafety);
+    CONFIG_Props.Strobe_ModeDefault = CONFIG_ToStrobeSource(UDS_Properties_RearLight.Strobe_ModeDefault);
+    CONFIG_Props.Strobe_ModePrimary = CONFIG_ToStrobeSource(UDS_Properties_RearLight.Strobe_ModePrimary);
+    CONFIG_Props.Strobe_ModeEmergency = CONFIG_ToStrobeSource(UDS_Properties_RearLight.Strobe_ModeEmergency);
+    CONFIG_Props.Strobe_ModeSafety = CONFIG_ToStrobeSource(UDS_Properties_RearLight.Strobe_ModeSafety);
     CONFIG_Props.Strobe_SingleOnTime = UDS_App_GetValidProperty_RearLight_Strobe_SingleOnTime();
     CONFIG_Props.Strobe_SingleOffTime = UDS_App_GetValidProperty_RearLight_Strobe_SingleOffTime();
     CONFIG_Props.Strobe_RapidOnTime = UDS_App_GetValidProperty_RearLight_Strobe_RapidOnTime();
     CONFIG_Props.Strobe_RapidOffTime = UDS_App_GetValidProperty_RearLight_Strobe_RapidOffTime();
 }
 
+void CONFIG_ReloadComponents(void) {
+    SYSSTATE_LoadConfig();
+    BRIGHTNESS_LoadConfig();
+    STROBE_LoadConfig();
+}
+
+// TODO: replace with DSU_SoftwareCRC32
 static uint32_t crc32(const uint8_t *data, uint32_t length) {
     uint32_t crc = 0xFFFFFFFF;
     for (uint32_t i = 0; i < length; i++) {
@@ -94,6 +107,7 @@ void CONFIG_Save(void) {
     NVMCTRL_EraseRow(CONFIG_FLASH_ADDRESS);
 
     // // TODO: don't hardcode page size
+    // TODO: replace with HAL call
     for (uint16_t i = 0; i < sizeof(config_memlayout_t) / 64u; i += 1) {
         NVMCTRL_PageBufferClear();
         for (uint16_t j = 0; j < 64u; j += 4) {

@@ -5,6 +5,6 @@
 
 extern struct bma4_dev ACCEL_BMA456_Device;
 
-void ACCEL_Initialize(void);
+void ACCEL_Init(void);
 
 #endif // BSP_ACCEL_H

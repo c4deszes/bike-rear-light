@@ -10,11 +10,6 @@
 // Sensor driver
 #include "bma456mm.h"
 
-static const gpio_pin_output_configuration output = {
-    .drive = NORMAL,
-    .input = false
-};
-
 static int8_t BMA456_ReadAdapter(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     GPIO_PinWrite(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, LOW);
@@ -78,9 +73,9 @@ struct bma4_dev ACCEL_BMA456_Device = {
     .perf_mode_status = BMA4_DISABLE,
 };
 
-void ACCEL_Initialize(void) {
+void ACCEL_Init(void) {
     GPIO_PinWrite(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, HIGH);
-    GPIO_SetupPinOutput(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, &output);
+    GPIO_SetupPinOutput(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, &GPIO_OUTPUT_DEFAULT_CONFIG);
 
     // TODO: consider pullup/pulldown on MISO, there's capacitive discharge at the end of transcations
     GPIO_EnableFunction(BMA456_SPI_MISO_PORT, BMA456_SPI_MISO_PIN, BMA456_SPI_MISO_PINMUX);

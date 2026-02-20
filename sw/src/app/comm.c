@@ -1,127 +1,63 @@
 #include "app/comm.h"
 
 // Hardware abstraction layer
-#include "hal/dsu.h"
 #include "common/swtimer.h"
 
+// Board support package
+#include "bsp/light_control.h"
+
+// Communication protocol
 #include "line_protocol.h"
 #include "line_api.h"
 #include "flash_line_api.h"
 #include "flash_line_diag.h"
 #include "uds_gen.h"
 
-#include "app/brake.h"
-#include "bsp/light_control.h"
-
-#include "app/config.h"
+// Application components
 #include "app/feature.h"
-#include "metainfo.h"
+#include "app/config.h"
+#include "app/brake.h"
+#include "app/temp.h"
 
+static swtimer_t* COMM_LightRequestTimer;
+static swtimer_t* COMM_SpeedStatusTimer;
 
-
-// TODO: data should be dynamic based on actual current figures 
-static LINE_Diag_PowerStatus_t power_status = {
-    .U_measured = 120,
-    .I_operating = 100u,
-    .I_sleep = LINE_DIAG_POWER_STATUS_SLEEP_CURRENT(100)
-};
-
-static LINE_Diag_SoftwareVersion_t sw_version = {
-    .major = APP_SW_MAJOR,
-    .minor = APP_SW_MINOR,
-    .patch = APP_SW_PATCH
-};
-
-static swtimer_t* comm_lightrequest_timer;
-static swtimer_t* comm_speedstatus_timer;
-
-static bool comm_bootrequest = false;
-static bool comm_shutdown_request = false;
-static bool comm_idle_request = false;
-
-void ld_BicycleNetwork_RearLight_OnWakeup(void) {
-
-}
-void ld_BicycleNetwork_RearLight_OnIdle(void) {
-    comm_idle_request = true;
-}
-void ld_BicycleNetwork_RearLight_OnShutdown(void) {
-    comm_shutdown_request = true;
-}
-void ld_BicycleNetwork_RearLight_OnConditionalChangeAddress(uint8_t old_address, uint8_t new_address) {
-
-}
-
-// TODO: op status should be dynamic based on device state
-uint8_t ld_BicycleNetwork_RearLight_GetOperationStatus(void) {
-    return LINE_DIAG_OP_STATUS_OK;
-}
-LINE_Diag_PowerStatus_t* ld_BicycleNetwork_RearLight_GetPowerStatus(void) {
-    return &power_status;
-}
-uint32_t ld_BicycleNetwork_RearLight_GetSerialNumber(void) {
-    return DSU_GetSerialNumber32();
-}
-LINE_Diag_SoftwareVersion_t* ld_BicycleNetwork_RearLight_GetSoftwareVersion(void) {
-    return &sw_version;
-}
-
-void COMM_Initialize(void) {
+void COMM_Init(void) {
     LINE_App_Init();
     UDS_Init();
     FLASH_LINE_Init(LD_RearLight_CHANNEL, FLASH_LINE_APPLICATION_MODE);
 
-    comm_lightrequest_timer = SWTIMER_Create();
-    comm_speedstatus_timer = SWTIMER_Create();
+    COMM_LightRequestTimer = SWTIMER_Create();
+    COMM_SpeedStatusTimer = SWTIMER_Create();
 }
 
-void COMM_Update(void) {
+void COMM_Update10ms(void) {
     // TODO: also timeout if setpoint is invalid for a long time
     if (l_flg_tst_LightSynchronization()) {
         l_flg_clr_LightSynchronization();
-        SWTIMER_Setup(comm_lightrequest_timer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
+        SWTIMER_Setup(COMM_LightRequestTimer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
     }
 
     if (l_flg_tst_RearLightSetting()) {
         l_flg_clr_RearLightSetting();
-        SWTIMER_Setup(comm_lightrequest_timer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
+        SWTIMER_Setup(COMM_LightRequestTimer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
     }
 
     if (l_flg_tst_SpeedStatus()) {
         l_flg_clr_SpeedStatus();
-        SWTIMER_Setup(comm_speedstatus_timer, FEATURE_COMM_SPEEDSTATUS_TIMEOUT);
+        SWTIMER_Setup(COMM_SpeedStatusTimer, FEATURE_COMM_SPEEDSTATUS_TIMEOUT);
     }
 }
 
-fl_BootEntryResponse_t FLASH_BL_EnterBoot(void) {
-    fl_BootEntryResponse_t response;
-    
-    // TODO: when do we reject boot entry requests?
-    comm_bootrequest = false;
-
-    response.entry_status = FLASH_LINE_BOOT_ENTRY_SUCCESS;
-    response.serial_number = ld_BicycleNetwork_RearLight_GetSerialNumber();
-
-    return response;
-}
-
-bool COMM_BootRequest(void) {
-    // TODO: clear flag before returning
-    return comm_bootrequest;
-}
-
-bool COMM_ShutdownRequest(void) {
-    // TODO: clear flag before returning
-    return comm_shutdown_request;
-}
-
-bool COMM_IdleRequest(void) {
-    // TODO: clear flag before returning
-    return comm_idle_request;
-}
-
 uint16_t COMM_GetTargetBrightness(void) {
-    return l_rd_LightSynchronization_TargetBrightness() * 10U;
+    uint16_t target = l_rd_LightSynchronization_TargetBrightness() * 10U;
+
+    /* Limit the target brightness */
+    if (target >= LIGHTCONTROL_BRIGHTNESS_MAX) {
+        target = LIGHTCONTROL_BRIGHTNESS_MAX;
+    }
+
+    return target;
 }
 
 brightness_mode_t COMM_LightMode(void) {
@@ -142,6 +78,7 @@ brightness_mode_t COMM_LightMode(void) {
 }
 
 strobe_source_t COMM_LightBehavior(void) {
+    // TODO: function should get config as arguments
     uint8_t behavior = l_rd_RearLightSetting_Behavior();
     if (behavior == L_LightBehaviorEncoder_Default) {
         return CONFIG_Props.Strobe_ModeDefault;
@@ -153,11 +90,11 @@ strobe_source_t COMM_LightBehavior(void) {
 }
 
 bool COMM_LightRequestTimeout(void) {
-    return SWTIMER_Elapsed(comm_lightrequest_timer);
+    return SWTIMER_Elapsed(COMM_LightRequestTimer);
 }
 
 bool COMM_SpeedStatusTimeout(void) {
-    return SWTIMER_Elapsed(comm_speedstatus_timer);
+    return SWTIMER_Elapsed(COMM_SpeedStatusTimer);
 }
 
 bool COMM_SpeedStatusBraking(void) {
@@ -179,34 +116,50 @@ static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
     else if(state == lightcontrol_feature_state_error) {
         return L_LightStatusEncoder_Error;
     }
-    else {
-        return L_LightStatusEncoder_Error;
-    }
+    return L_LightStatusEncoder_Error;
 }
 
 void COMM_UpdateSignals(void) {
-    /* Tail light state equals the diagnostic state if there were errors, otherwise it's ok when off, and off when brightness is 0 */
-    // lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState();
-    l_wr_RearLightStatus_TailLightStatus(L_LightStatusEncoder_Ok);
-    l_wr_RearLightStatus_BrakeLightStatus(L_LightStatusEncoder_Ok);
+    /* Tail light state equals the diagnostic state if there were errors */
+    lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState();
+    uint8_t tail_status = COMM_EncodeLightStatus(tail_state);
+    l_wr_RearLightStatus_TailLightStatus(tail_status);
+    l_wr_RearLightStatus_BrakeLightStatus(tail_status);     /* No separate brakelight on Gen1.0b */
 
     /* Turn Signal light is not present in Gen1.0 */
     l_wr_RearLightStatus_TurnSignalLightStatus(L_LightStatusEncoder_Off);
+
     // TODO: measure MCU temp. and return accordingly
     l_wr_RearLightStatus_ThermalStatus(L_ThermalStatusEncoder_NotMeasured);
+}
+
+uint8_t COMM_EncodeBrakeStatus(bool braking, brake_signal_status_t brake_signal_status) {
+    if(brake_signal_status == brake_signal_status_perm_error || brake_signal_status == brake_signal_status_na) {
+        return L_BrakeStateEncoder_Disabled;
+    }
+    else if (braking) {
+        return L_BrakeStateEncoder_Braking;
+    }
+    return L_BrakeStateEncoder_NotBraking;
 }
 
 void COMM_UpdateDebugSignals(void) {
     // TODO: use brightness from driver
     l_wr_RearLightBrightnessDebug_Brightness(0);
 
-    // TODO: use actual temperature measurement
-    l_wr_RearLightTemperatureDebug_EcuTemperature(L_TemperatureEncoder_Encode(25));
-    l_wr_RearLightTemperatureDebug_DriveTemperature(L_TemperatureEncoder_Encode(25));
+    uint8_t drive_temp = L_TemperatureEncoder_Encode(TEMP_GetDriveTemperature());
+    uint8_t mcu_temp = L_TemperatureEncoder_Encode(TEMP_GetMcuTemperature());
+    l_wr_RearLightTemperatureDebug_EcuTemperature(mcu_temp);
+    l_wr_RearLightTemperatureDebug_DriveTemperature(drive_temp);
 
-    // TODO: update with data from accelerometer
-    l_wr_RearLightMotionDebug_aX(0);
-    l_wr_RearLightMotionDebug_aY(0);
-    l_wr_RearLightMotionDebug_aZ(0);
-    l_wr_RearLightMotionDebug_Braking(0);
+    int16_t accel_x = BRAKE_GetAccelerationX();
+    int16_t accel_y = BRAKE_GetAccelerationY();
+    int16_t accel_z = BRAKE_GetAccelerationZ();
+
+    l_wr_RearLightMotionDebug_aX(accel_x);
+    l_wr_RearLightMotionDebug_aY(accel_y);
+    l_wr_RearLightMotionDebug_aZ(accel_z);
+
+    uint8_t brake_status = COMM_EncodeBrakeStatus(BRAKE_IsBraking(), BRAKE_GetBrakeSignalStatus());
+    l_wr_RearLightMotionDebug_Braking(brake_status);
 }

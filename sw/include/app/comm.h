@@ -12,7 +12,7 @@
  * - Transport layer
  * - Physical layer
  */
-void COMM_Initialize(void);
+void COMM_Init(void);
 
 /**
  * @brief Updates the signals that are published by this peripheral
@@ -25,7 +25,7 @@ void COMM_UpdateSignals(void);
  */
 void COMM_UpdateDebugSignals(void);
 
-void COMM_Update(void);
+void COMM_Update10ms(void);
 
 /**
  * @brief Returns the target brightness scaled into the brightness range of the light control
@@ -78,29 +78,5 @@ bool COMM_SpeedStatusTimeout(void);
  * @return false 
  */
 bool COMM_SpeedStatusBraking(void);
-
-/**
- * @brief Returns true if boot entry was requested via LINE Flash protocol, the flag is cleared after reading
- * 
- * @return true When boot entry is requested
- * @return false Otherwise
- */
-bool COMM_BootRequest(void);
-
-/**
- * @brief Returns true if shutdown was requested via LINE protocol, the flag is cleared after reading
- * 
- * @return true When shutdown is requested
- * @return false Otherwise
- */
-bool COMM_ShutdownRequest(void);
-
-/**
- * @brief Returns true if idle mode was requested via LINE protocol, the flag is cleared after reading
- * 
- * @return true When idle mode is requested
- * @return false Otherwise
- */
-bool COMM_IdleRequest(void);
 
 #endif // APP_COMM_H_

@@ -1,66 +1,84 @@
 #include "app/strobe.h"
-#include "app/brightness.h"
+
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "common/swtimer.h"
 
+#include "app/feature.h"
 #include "app/config.h"
+#include "app/brightness.h"
 
-#include <stdbool.h>
+static strobe_source_t STROBE_Source;
 
-static strobe_source_t strobe_source;
-static swtimer_t* strobe_internal_timer;
-static bool strobe_internal_flag;
-static uint8_t strobe_rapid_cycle;
+static bool STROBE_Flag;
+static swtimer_t* STROBE_Timer;
+static uint8_t STROBE_RapidCycle;
+
+static uint16_t STROBE_ConfSingleOnTime;
+static uint16_t STROBE_ConfSingleOffTime;
+static uint16_t STROBE_ConfRapidOnTime;
+static uint16_t STROBE_ConfRapidOffTime;
 
 void STROBE_Init(void) {
-    strobe_internal_flag = false;
-    strobe_rapid_cycle = 0;
-    strobe_source = strobe_source_disabled;
-    strobe_internal_timer = SWTIMER_Create();
-    SWTIMER_Setup(strobe_internal_timer, CONFIG_Props.Strobe_SingleOffTime);
+    STROBE_Source = strobe_source_disabled;
+    STROBE_Flag = false;
+    STROBE_Timer = SWTIMER_Create();
+    STROBE_RapidCycle = 0;
+
+    STROBE_LoadConfig();
+
+    SWTIMER_Setup(STROBE_Timer, STROBE_ConfSingleOffTime);
+}
+
+void STROBE_LoadConfig(void) {
+    STROBE_ConfSingleOnTime = CONFIG_Props.Strobe_SingleOnTime;
+    STROBE_ConfSingleOffTime = CONFIG_Props.Strobe_SingleOffTime;
+    STROBE_ConfRapidOnTime = CONFIG_Props.Strobe_RapidOnTime;
+    STROBE_ConfRapidOffTime = CONFIG_Props.Strobe_RapidOffTime;
 }
 
 void STROBE_SetSource(strobe_source_t source) {
-    strobe_source = source;
+    STROBE_Source = source;
 }
 
 void STROBE_Update1ms(void) {
-    if (strobe_source == strobe_source_disabled) {
+    if (STROBE_Source == strobe_source_disabled) {
         /* In case the source is disabled blinking should also be disabled */
-        BRIGHTNESS_Strobe(true);
+        BRIGHTNESS_SetStrobe(true);
     }
-    else if (strobe_source == strobe_source_internal_single) {
-        if (SWTIMER_Elapsed(strobe_internal_timer)) {
-            strobe_internal_flag = !strobe_internal_flag;
-            if (strobe_internal_flag) {
-                SWTIMER_Setup(strobe_internal_timer, CONFIG_Props.Strobe_SingleOnTime);
+    else if (STROBE_Source == strobe_source_internal_single) {
+        if (SWTIMER_Elapsed(STROBE_Timer)) {
+            STROBE_Flag = !STROBE_Flag;
+            if (STROBE_Flag) {
+                SWTIMER_Setup(STROBE_Timer, STROBE_ConfSingleOnTime);
             }
             else {
-                SWTIMER_Setup(strobe_internal_timer, CONFIG_Props.Strobe_SingleOffTime);
+                SWTIMER_Setup(STROBE_Timer, STROBE_ConfSingleOffTime);
             }
-            BRIGHTNESS_Strobe(strobe_internal_flag);
+            BRIGHTNESS_SetStrobe(STROBE_Flag);
         }
     }
-    else if (strobe_source == strobe_source_internal_rapid) {
-        if (SWTIMER_Elapsed(strobe_internal_timer)) {
+    else if (STROBE_Source == strobe_source_internal_rapid) {
+        if (SWTIMER_Elapsed(STROBE_Timer)) {
             /* Rapid cycles  _0_______/¨1¨\_2_/¨3¨\_4_/¨5¨\_ */
-            strobe_rapid_cycle++;
-            if (strobe_rapid_cycle > 5) {
-                strobe_rapid_cycle = 0;
+            STROBE_RapidCycle++;
+            if (STROBE_RapidCycle > FEATURE_STROBE_RAPID_CYCLES) {
+                STROBE_RapidCycle = 0;
             }
 
             uint8_t timer = 0;
-            if (strobe_rapid_cycle == 0) {
-                timer = CONFIG_Props.Strobe_RapidOffTime;
-                strobe_internal_flag = false;
+            if (STROBE_RapidCycle == 0) {
+                timer = STROBE_ConfRapidOffTime;
+                STROBE_Flag = false;
             }
             else {
-                timer = CONFIG_Props.Strobe_RapidOnTime;
-                strobe_internal_flag = !strobe_internal_flag;
+                timer = STROBE_ConfRapidOnTime;
+                STROBE_Flag = !STROBE_Flag;
             }
 
-            SWTIMER_Setup(strobe_internal_timer, timer);
-            BRIGHTNESS_Strobe(strobe_internal_flag);
+            SWTIMER_Setup(STROBE_Timer, timer);
+            BRIGHTNESS_SetStrobe(STROBE_Flag);
         }
     }
     // TODO: support for external positive and negative sources
@@ -68,6 +86,6 @@ void STROBE_Update1ms(void) {
     //       if that's the case the strobe shall self disable and set an error flag
     else {
         /* Same as disabled */
-        BRIGHTNESS_Strobe(true);
+        BRIGHTNESS_SetStrobe(true);
     }
 }

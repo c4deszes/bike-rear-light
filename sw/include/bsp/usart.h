@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "common/ringbuffer.h"
 
-void USART_Initialize(uint32_t baudrate, ringbuffer8_t* tx_buffer, ringbuffer8_t* rx_buffer);
+void USART_Init(uint32_t baudrate, ringbuffer8_t* tx_buffer, ringbuffer8_t* rx_buffer);
 
 void USART_Enable(void);
 

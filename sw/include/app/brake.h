@@ -2,6 +2,7 @@
 #define APP_BRAKE_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum {
     brake_signal_status_na,
@@ -12,6 +13,10 @@ typedef enum {
 void BRAKE_Init(void);
 
 void BRAKE_Update10ms(void);
+
+brake_signal_status_t BRAKE_GetBrakeSignalStatus(void);
+
+bool BRAKE_IsBraking(void);
 
 int8_t BRAKE_GetAccelerometerErrorCode(void);
 

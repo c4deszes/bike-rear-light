@@ -41,9 +41,11 @@ extern config_properties_t CONFIG_Props;
 /**
  * @brief Loads properties from flash memory into the UDS container
  */
-void CONFIG_LoadFlashProperties(void);
+void CONFIG_LoadNvram(void);
 
-void CONFIG_ReloadUdsProperties(void);
+void CONFIG_Reload(void);
+
+void CONFIG_ReloadComponents(void);
 
 void CONFIG_Save(void);
 

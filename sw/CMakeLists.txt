@@ -97,10 +97,14 @@ target_sources(application-api INTERFACE
     src/app/brightness.c
     src/app/config.c
     src/app/comm.c
+    src/app/current.c
+    src/app/diag.c
     src/app/init.c
     src/app/strobe.c
     src/app/sys_state.c
     src/app/tasks.c
+    src/app/temp.c
+    src/app/volt.c
 )
 target_include_directories(application-api INTERFACE include ${APP_GENCODE_DIR})
 target_link_libraries(application-api INTERFACE

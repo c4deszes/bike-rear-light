@@ -1,11 +1,13 @@
 #include "app/init.h"
 
+// Hardware abstraction layer
 #include "hal/wdt.h"
 #include "hal/nvic.h"
 #include "hal/nvmctrl.h"
 #include "hal/tcc.h"
 #include "common/scheduler.h"
 
+// Board support package
 #include "bsp/board.h"
 #include "bsp/light_control.h"
 #include "bsp/accel.h"
@@ -16,35 +18,48 @@
 #include "app/brightness.h"
 #include "app/comm.h"
 #include "app/config.h"
+#include "app/current.h"
+#include "app/diag.h"
 #include "app/strobe.h"
 #include "app/sys_state.h"
+#include "app/temp.h"
+#include "app/volt.h"
 
-void APP_Initialize() {
+void APP_Init() {
     // Low level init
     NVMCTRL_SetAutoPageWrite(false);
-    BSP_ClockInitialize();
+    NVMCTRL_SetReadWaitStates(0);
+
     // TODO: enable watchdog
     //WDT_InitializeNormal(&wdt_config);
+
+    BSP_ClockInitialize();
+
     LIGHTCONTROL_Init();
-    #if FEATURE_BRAKE_ENABLE_SENSOR == 1
-    ACCEL_Initialize();
-    #endif
+#if FEATURE_BRAKE_ENABLE_SENSOR == 1
+    ACCEL_Init();
+#endif
 
     // Initializing communication
     LINE_USART_Init();
-    COMM_Initialize();
+    COMM_Init();
+    DIAG_Init();
+
+#if FEATURE_CONFIG_LOAD_AT_STARTUP == 1
+    CONFIG_LoadNvram();
+#endif
+    CONFIG_Reload();
 
     // Initializing application services
     SYSSTATE_Init();
+
+    CURRENT_Init();
+    VOLT_Init();
+    TEMP_Init();
+
     BRIGHTNESS_Init();
     STROBE_Init();
     BRAKE_Init();
-
-    // Initializing communication
-    COMM_Initialize();
-
-    CONFIG_LoadFlashProperties();
-    CONFIG_ReloadUdsProperties();
 
     // Setting up scheduler
     // TODO: replace with SysTick

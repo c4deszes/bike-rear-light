@@ -1,11 +1,15 @@
 #include "app/brake.h"
 
-#include "bma456mm.h"
+// Board support package
 #include "bsp/accel.h"
 
+// Sensor library
+#include "bma4.h"
+#include "bma456mm.h"
+
 // Application components
-#include "app/config.h"
 #include "app/feature.h"
+#include "app/config.h"
 #include "app/brightness.h"
 #include "app/comm.h"
 
@@ -18,7 +22,6 @@
 // - Axis sensitivity depends on orientation, while in a climb, descent or a turn the
 //   the acceleration components will be different than on a flat
 // - Road bumps might cause inadvertent brake activation
-
 
 static struct bma4_accel_config accel_conf = { 0 };
 static int8_t sensor_init_code;
@@ -150,4 +153,13 @@ void BRAKE_Update10ms(void) {
         BRIGHTNESS_SetBraking(false);
     }
 #endif
+}
+
+bool BRAKE_IsBraking(void) {
+    // TODO: implement
+    return false;
+}
+
+brake_signal_status_t BRAKE_GetBrakeSignalStatus(void) {
+    return brake_signal_state;
 }

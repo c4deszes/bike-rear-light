@@ -10,8 +10,7 @@ Initialization
 The component sets up the TCC1 peripheral to output a 1kHz PWM signal with variable duty cycle.
 The outputs are inverted because the drivers use an active low signal.
 
-Initially PWM output is set to the maximum for the taillight and minimum for the brakelight,
-this conforms to the hardware default state.
+Initially PWM output is set to the maximum for the taillight this conforms to the hardware default state.
 
 Operation
 ---------
@@ -22,8 +21,14 @@ Component is updated every 10ms, in this call:
 * Output stage errors are detected
 * Diagnosis requests are handled
 
-Diagnosis
----------
+Diagnosis (ILD8150)
+-------------------
+
+Diagnosis (TLD509x)
+-------------------
+
+Diagnosis (TLD2xxx)
+-------------------
 
 Tail light
 ~~~~~~~~~~

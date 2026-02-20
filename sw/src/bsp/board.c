@@ -4,11 +4,10 @@
 #include "hal/gclk.h"
 #include "hal/pm.h"
 
+// TODO: remove direct register access and replace with HAL calls
 #include "sam.h"
 
 void BSP_ClockInitialize (void) {
-    NVMCTRL_REGS->NVMCTRL_CTRLB |= NVMCTRL_CTRLB_RWS_HALF_Val ;
-
     SYSCTRL_EnableInternalOSC32K();
 
     GCLK_Reset();
@@ -38,6 +37,7 @@ void BSP_ClockInitialize (void) {
                     PM_APBBSEL_APBBDIV_DIV1,
                     PM_APBCSEL_APBCDIV_DIV1);
 
+    // TODO: replace with HAL calls
     /* Configure the APBC Bridge Clocks */
     PM_REGS->PM_APBCMASK = PM_APBCMASK_EVSYS_Msk |
                            PM_APBCMASK_DAC_Msk |

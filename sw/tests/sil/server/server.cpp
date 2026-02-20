@@ -31,7 +31,7 @@ public:
         auto params = context.getParams();
         auto results = context.getResults();
 
-        APP_Initialize();
+        APP_Init();
 
         return kj::READY_NOW;
     }

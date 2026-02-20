@@ -10,7 +10,7 @@ RINGBUFFER_8(COMM_UsartBufferTx, 128);
 RINGBUFFER_8(COMM_UsartBufferRx, 128);
 
 void LINE_USART_Init(void) {
-    USART_Initialize(LT_BicycleNetwork_BAUDRATE, &COMM_UsartBufferTx, &COMM_UsartBufferRx);
+    USART_Init(LT_BicycleNetwork_BAUDRATE, &COMM_UsartBufferTx, &COMM_UsartBufferRx);
     USART_Enable();
 }
 

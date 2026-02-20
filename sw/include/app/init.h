@@ -4,6 +4,6 @@
 /**
  * @brief Initializes the application components
  */
-void APP_Initialize(void);
+void APP_Init(void);
 
 #endif // APP_INIT_H_

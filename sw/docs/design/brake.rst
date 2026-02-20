@@ -25,3 +25,6 @@ Operation
 
 During operation if the sensor initialized correctly then the acceleration data is polled and is
 used by an algorithm to detect braking.
+
+The internal signal is merged with the signal coming from the RotorSensor peripheral, if available,
+to determine the overall braking condition. The brake signal status is forwarded to brightness control.

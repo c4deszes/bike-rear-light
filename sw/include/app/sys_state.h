@@ -3,6 +3,8 @@
 
 void SYSSTATE_Init(void);
 
+void SYSSTATE_LoadConfig(void);
+
 void SYSSTATE_Update10ms(void);
 
 #endif // APP_SYS_STATE_H_

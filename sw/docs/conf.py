@@ -1,26 +1,35 @@
 import sys, os
 
+project = "rear-light"
+copyright = "Balazs Eszes, 2026"
+author = "Balazs Eszes"
 version = '0.1'
 sys.path.append(os.path.abspath("./_ext"))
 
 extensions = [
-    "sphinx_needs",
-    "sphinx_rtd_theme",
-    'jupyter_sphinx',
-    'sphinx.ext.mathjax',
-    'matplotlib.sphinxext.mathmpl',
-    'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.intersphinx',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.doctest',
-    'sphinxcontrib.mermaid',
+    "sphinx_rtd_theme",
+    "breathe",
+    'jupyter_sphinx',
+    'sphinx.ext.mathjax',
+    'matplotlib.sphinxext.mathmpl',
+    'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.kroki',
-    'linuxdoc.rstFlatTable',
     'sphinxcontrib.drawio',
 ]
 
 autosectionlabel_prefix_document = True
+
+# Drawio configuration
+drawio_no_sandbox=True
+
+# Breathe configuration
+breathe_default_project = "rear-light"
+breathe_projects = {}
+breathe_show_define_initializer = False
 
 # Sphinx configuration
 html_static_path = ['_static']
@@ -30,70 +39,6 @@ html_theme_options = {
     "collapse_navigation" : False
 }
 html_js_files = ["https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"]
+
 source_suffix = '.rst'
 master_doc = 'index'
-
-needs_build_json = True
-needs_autoexport = True
-needs_builder_filter = "True"
-needs_external_needs = [
-]
-needs_id_required = True
-needs_id_regex = "^[a-zA-Z0-9_]{3,}"
-needs_template_folder = "_templates"
-needs_types = [
-    dict(directive="req-sw", title="Software Requirement", prefix="REQ_SW_", color="#BFD8D2", style="node"),
-    dict(directive="drs-sw", title="Design Requirement", prefix="DRS_SW_", color="#BFD8D2", style="node"),
-    dict(directive="fmea", title="Failure mode", prefix="FMEA_SW_", color="#DF744A", style="node"),
-    dict(directive="test", title="Software Test Case", prefix="TC_SW_", color="#DCB239", style="node"),
-    dict(directive="param-sw", title="Software Parameter", prefix="PARAM_SW_", color="#DCB239", style="node"),
-]
-# needs_statuses = [
-#     dict(name="draft", description="Still under work or waiting for review"),
-#     dict(name="reviewed", description="Requirement is valid"),
-#     dict(name="accepted", description="Requirement will be taken into account")
-# ]
-needs_tags = [
-    dict(name="security", description="tag for security requirements"),
-    dict(name="safety", description="tag for safety requirements")
-]
-needs_extra_options = [
-    # FMEA entry options
-    "probability",      # valid values: none, remote, occasional, frequent
-    "severity",         # valid values: none, minor, critical, catastrophic
-    "detection",        # valid values: always, high, low, undetected,
-    "mitigation",       # free text
-
-    # Software parameter options
-    "variable",         # variable type, e.g.: uint16, uint32
-    "unit",             # physical unit, e.g.: ms, mv/A
-    "range",            # format: x-y
-    "control",          # build, signal, eeprom
-]
-needs_extra_links = [
-    {
-        "option": "satisfies",
-        "incoming": "is satisfied by",
-        "outgoing": "satisfies"
-    },
-    {
-        "option": "implements",
-        "incoming": "is implemented by",
-        "outgoing": "implements"
-    },
-    {
-        "option": "tests",
-        "incoming": "is tested by",
-        "outgoing": "tests"
-    },
-    {
-        "option": "relates",
-        "incoming": "is related to",
-        "outgoing": "relates"
-    },
-    {
-        "option": "affects",
-        "incoming": "is affected by",
-        "outgoing": "affects"
-    }
-]
