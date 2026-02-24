@@ -28,6 +28,7 @@ void BSP_ClockInitialize (void) {
 
     GCLK_SelectGenerator(GCLK_CLKCTRL_ID_TCC2_TC3_Val, GCLK_GEN4);          // Scheduler
     GCLK_SelectGenerator(GCLK_CLKCTRL_ID_TCC0_TCC1_Val, GCLK_GEN4);         // Light PWM control
+    GCLK_SelectGenerator(GCLK_CLKCTRL_ID_ADC_Val, GCLK_GEN4);               // ADC for analog measurements
     GCLK_SelectGenerator(GCLK_CLKCTRL_ID_SERCOM3_CORE_Val, GCLK_GEN3);      // LIN Trans.
     GCLK_SelectGenerator(GCLK_CLKCTRL_ID_SERCOM1_CORE_Val, GCLK_GEN3);      // Acc. SPI
     GCLK_SelectGenerator(GCLK_CLKCTRL_ID_DAC_Val, GCLK_GEN3);               // DAC for Light control
@@ -40,6 +41,7 @@ void BSP_ClockInitialize (void) {
     // TODO: replace with HAL calls
     /* Configure the APBC Bridge Clocks */
     PM_REGS->PM_APBCMASK = PM_APBCMASK_EVSYS_Msk |
+                           PM_APBCMASK_ADC_Msk |
                            PM_APBCMASK_DAC_Msk |
                            PM_APBCMASK_TCC0_Msk |
                            PM_APBCMASK_TCC1_Msk |

@@ -18,8 +18,6 @@ brake_signal_status_t BRAKE_GetBrakeSignalStatus(void);
 
 bool BRAKE_IsBraking(void);
 
-int8_t BRAKE_GetAccelerometerErrorCode(void);
-
 int16_t BRAKE_GetAccelerationX(void);
 
 int16_t BRAKE_GetAccelerationY(void);

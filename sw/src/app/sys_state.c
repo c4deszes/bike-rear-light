@@ -106,7 +106,7 @@ void SYSSTATE_Update10ms(void) {
         }
     }
     else if (SYSSTATE_State == sys_state_normal) {
-        STROBE_SetSource(COMM_LightBehavior());
+        STROBE_SetSource(COMM_LightBehavior(SYSSTATE_ConfStrobeDefault, SYSSTATE_ConfStrobePrimary));
         BRIGHTNESS_SetMode(COMM_LightMode());
         BRIGHTNESS_SetTarget(COMM_GetTargetBrightness());
 

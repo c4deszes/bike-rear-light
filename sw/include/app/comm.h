@@ -55,10 +55,12 @@ brightness_mode_t COMM_LightMode(void);
 
 /**
  * @brief Returns the strobe source requested by the master device
+ * @param default_source The strobe source to return if the behavior is set to default
+ * @param primary_source The strobe source to return if the behavior is set to blink
  * 
  * @return strobe_source_t Strobe source
  */
-strobe_source_t COMM_LightBehavior(void);
+strobe_source_t COMM_LightBehavior(strobe_source_t default_source, strobe_source_t primary_source);
 
 /**
  * @brief Returns true if the time since the last LINE frame has exceeded

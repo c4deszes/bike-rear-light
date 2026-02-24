@@ -7,6 +7,7 @@
 // Board support package
 #include "bsp/light_control.h"
 #include "bsp/line_usart.h"
+#include "bsp/tt_adc.h"
 
 #include "app/feature.h"
 #include "app/brake.h"
@@ -21,6 +22,8 @@
 
 void SCH_Task1ms(void) {
     SWTIMER_Update1ms();
+
+    TTADC_Trigger();
 
     STROBE_Update1ms();
 

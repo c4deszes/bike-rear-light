@@ -12,6 +12,7 @@
 #include "bsp/light_control.h"
 #include "bsp/accel.h"
 #include "bsp/line_usart.h"
+#include "bsp/tt_adc.h"
 
 #include "app/feature.h"
 #include "app/brake.h"
@@ -34,6 +35,8 @@ void APP_Init() {
     //WDT_InitializeNormal(&wdt_config);
 
     BSP_ClockInitialize();
+    ADC_SetupSingleShot();
+    TTADC_Init();
 
     LIGHTCONTROL_Init();
 #if FEATURE_BRAKE_ENABLE_SENSOR == 1

@@ -7,7 +7,8 @@
 // Board support package
 #include "bsp/pinout.h"
 
-// Sensor driver
+// Sensor library
+#include "bma4.h"
 #include "bma456mm.h"
 
 static int8_t BMA456_ReadAdapter(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
@@ -62,6 +63,8 @@ static void delayMicroseconds( uint32_t usec, void* ptr )
   // https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Volatile
 }
 
+static struct bma4_accel_config accel_conf = { 0 };
+
 struct bma4_dev ACCEL_BMA456_Device = {
     .intf = BMA4_SPI_INTF,
     .bus_read = BMA456_ReadAdapter,
@@ -87,4 +90,60 @@ void ACCEL_Init(void) {
                            sercom_spi_cpha_trailing, sercom_spi_cpol_idle_high,
                            SERCOM_SPI_MOSI_PAD0, SERCOM_SPI_MISO_PAD3);
     SERCOM_SPI_Enable(SERCOM1);
+}
+
+bool ACCEL_SetupSensor(void) {
+    accel_conf.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
+    accel_conf.range = BMA4_ACCEL_RANGE_4G;
+    accel_conf.bandwidth = BMA4_ACCEL_NORMAL_AVG4;
+    accel_conf.perf_mode = BMA4_CIC_AVG_MODE;
+
+    int8_t rslt;
+
+    /* Sensor initialization */
+    rslt = bma456mm_init(&ACCEL_BMA456_Device);
+
+    if (rslt != BMA4_OK) {
+        return false;
+    }
+
+    /* Upload the configuration file to enable the features of the sensor. */
+    rslt = bma456mm_write_config_file(&ACCEL_BMA456_Device);
+
+    if (rslt != BMA4_OK) {
+        return false;
+    }
+
+    /* Set the accel configurations */
+    rslt = bma4_set_accel_config(&accel_conf, &ACCEL_BMA456_Device);
+
+    if (rslt != BMA4_OK) {
+        return false;
+    }
+
+    /* NOTE : Enable accel after set of configurations */
+    rslt = bma4_set_accel_enable(BMA4_ENABLE, &ACCEL_BMA456_Device);
+
+    if (rslt != BMA4_OK) {
+        return false;
+    }
+
+    return true;
+}
+
+bool ACCEL_ReadData(accel_data_t* data)
+{
+    struct bma4_accel_data current_data = { 0 };
+
+    int8_t result = bma4_read_accel_xyz(&current_data, &ACCEL_BMA456_Device);
+
+    if (result != BMA4_OK) {
+        return false;
+    }
+
+    data->x = current_data.x;
+    data->y = current_data.y;
+    data->z = current_data.z;
+
+    return true;
 }

@@ -37,10 +37,10 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 
     COMMAND ${CMAKE_COMMAND} -E make_directory tools/python
-    COMMAND git clone -b ${BIKE_LINE_PROTOCOL_VERSION} https://github.com/c4deszes/bike-line-protocol tools/python/bike-line-protocol
+    #COMMAND git clone -b ${BIKE_LINE_PROTOCOL_VERSION} https://github.com/c4deszes/bike-line-protocol tools/python/bike-line-protocol
     COMMAND pip install -e tools/python/bike-line-protocol/python-lib
 
-    COMMAND git clone -b ${BIKE_UDS_TOOL_VERSION} https://github.com/c4deszes/bike-uds-tool tools/python/bike-uds-tool
+    #COMMAND git clone -b ${BIKE_UDS_TOOL_VERSION} https://github.com/c4deszes/bike-uds-tool tools/python/bike-uds-tool
     COMMAND pip install -e tools/python/bike-uds-tool/python-lib
 )
 
@@ -89,6 +89,40 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/app/metainfo.h.in
                ${APP_GENCODE_DIR}/metainfo.h)
 
 ################################################################################
+# Board configurations
+################################################################################
+add_subdirectory(config/gen1b-tld509x)
+
+add_library(bsp INTERFACE)
+target_link_libraries(bsp INTERFACE samd21e18a bsp-config)
+target_sources(bsp INTERFACE
+    src/bsp/board.c
+
+    src/bsp/usart.c
+    src/bsp/line_usart.c
+    src/bsp/tt_adc.c
+)
+
+# Sensor driver selection
+get_target_property(BSP_SENSOR_DRIVER bsp-config BSP_SENSOR_DRIVER)
+if (BSP_SENSOR_DRIVER STREQUAL "BMA456")
+    target_sources(bsp INTERFACE src/bsp/accel_bma456.c)
+    target_link_libraries(bsp INTERFACE bma456mm)
+elseif(BSP_SENSOR_DRIVER STREQUAL "NONE")
+    target_sources(bsp INTERFACE src/bsp/accel_none.c)
+else()
+    message(FATAL_ERROR "Unsupported BSP_SENSOR_DRIVER: ${BSP_SENSOR_DRIVER}")
+endif()
+
+# LED driver selection
+get_target_property(BSP_LED_DRIVER bsp-config BSP_LED_DRIVER)
+if (BSP_LED_DRIVER STREQUAL "TLD509x")
+    target_sources(bsp INTERFACE src/bsp/led_driver_tld509x.c)
+else()
+    message(FATAL_ERROR "Unsupported BSP_LED_DRIVER: ${BSP_LED_DRIVER}")
+endif()
+
+################################################################################
 # Application
 ################################################################################
 add_library(application-api INTERFACE)
@@ -117,16 +151,9 @@ add_executable(
     EXCLUDE_FROM_ALL
 
     src/app/main.c
-
-    src/bsp/board.c
-    src/bsp/led_driver_tld509x.c
-    src/bsp/accel_bma456.c
-    src/bsp/usart.c
-    src/bsp/line_usart.c
 )
 
-target_link_libraries(application PRIVATE   samd21e18a
-                                            bma456mm
+target_link_libraries(application PRIVATE   bsp
                                             protocol-stack-api
                                             application-api)
 
@@ -164,9 +191,19 @@ add_custom_target(application-merge
             -o ${CMAKE_CURRENT_BINARY_DIR}/application.hex -intel
 )
 
+add_custom_target(application-debug
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/app_header.hex ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex
+    BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/application-debug.hex
+    COMMAND srec_cat
+            ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex -intel
+            ${CMAKE_CURRENT_BINARY_DIR}/app_header.hex -intel
+            ${CMAKE_CURRENT_SOURCE_DIR}/tools/bootloader/bootloader_with_crc.hex -intel
+            -o ${CMAKE_CURRENT_BINARY_DIR}/application-debug.hex -intel
+)
+
 add_custom_target(application-full
     DEPENDS application-hex application-lss application-memory
-            application-merge factory_header
+            application-merge application-debug factory_header
 )
 
 ################################################################################

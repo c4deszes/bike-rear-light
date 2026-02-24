@@ -12,9 +12,9 @@
 #define FEATURE_CONFIG_SAVE_AT_SHUTDOWN 0       // When enabled, configuration is saved to NVRAM at shutdown
 
 /* Brake feature */
-#define FEATURE_BRAKE_ENABLE_SENSOR 0
+#define FEATURE_BRAKE_ENABLE_SENSOR 1
 #define FEATURE_BRAKE_USE_EXTERNAL_SIGNAL 1
-#define FEATURE_BRAKE_USE_INTERNAL_SIGNAL 0
+#define FEATURE_BRAKE_USE_INTERNAL_SIGNAL 1
 
 #define FEATURE_BRAKE_HOLDOFF_TIME 100       // After braking the brake lights are not activated for this long
 #define FEATURE_BRAKE_HOLDON_TIME 500        // After braking the brake lights are kept active for this long

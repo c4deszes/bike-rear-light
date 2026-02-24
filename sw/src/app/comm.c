@@ -15,7 +15,6 @@
 
 // Application components
 #include "app/feature.h"
-#include "app/config.h"
 #include "app/brake.h"
 #include "app/temp.h"
 
@@ -32,7 +31,6 @@ void COMM_Init(void) {
 }
 
 void COMM_Update10ms(void) {
-    // TODO: also timeout if setpoint is invalid for a long time
     if (l_flg_tst_LightSynchronization()) {
         l_flg_clr_LightSynchronization();
         SWTIMER_Setup(COMM_LightRequestTimer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
@@ -77,14 +75,13 @@ brightness_mode_t COMM_LightMode(void) {
     return brightness_mode_safety;
 }
 
-strobe_source_t COMM_LightBehavior(void) {
-    // TODO: function should get config as arguments
+strobe_source_t COMM_LightBehavior(strobe_source_t default_source, strobe_source_t primary_source) {
     uint8_t behavior = l_rd_RearLightSetting_Behavior();
     if (behavior == L_LightBehaviorEncoder_Default) {
-        return CONFIG_Props.Strobe_ModeDefault;
+        return default_source;
     }
     else if (behavior == L_LightBehaviorEncoder_Blink) {
-        return CONFIG_Props.Strobe_ModePrimary;
+        return primary_source;
     }
     return strobe_source_disabled;
 }

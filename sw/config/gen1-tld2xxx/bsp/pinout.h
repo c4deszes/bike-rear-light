@@ -8,31 +8,40 @@
 #include "sam.h"
 
 /** Tail light LED driver IC pins */
-#define TLD509x_PWMI_PORT PORT_GROUP_A
-#define TLD509x_PWMI_PIN 16
-#define TLD509x_PWMI_PINMUX MUX_PA16E_TCC2_WO0 MUX_PA16
-#define TLD509x_PWMI_WO 0
+#define TLD2331_ENABLE_PORT PORT_GROUP_A
+#define TLD2331_ENABLE_PIN 8
 
-#define TLD509x_ISET_PORT PORT_GROUP_A
-#define TLD509x_ISET_PIN 2
-#define TLD509x_ISET_PINMUX MUX_PA02B_DAC_VOUT
+#define TLD2331_ERROR_PORT PORT_GROUP_A
+#define TLD2331_ERROR_PIN 2
 
-// TODO: support, either interrupt or polling
-#define TLD509x_FAULT_PORT PORT_GROUP_A
-#define TLD509x_FAULT_PIN 19
-#define TLD509x_FAULT_PINMUX MUX_PA19A_EIC_EXTINT3
+#define TLD2331_PWMI_PORT PORT_GROUP_A
+#define TLD2331_PWMI_PIN 10
+#define TLD2331_PWMI_PINMUX MUX_PA10E_TCC1_WO0
+#define TLD2331_PWMI_WO 0
 
-// TODO: disabled for now, frequency set by resistor 4.7k -> Spread spectrum 188kHz
-// if TCC CC[1] is used to trigger ADC sampling then this cannot be used, TCC0 WO7 is available but
-// that's used by the scheduler (could be TCC1)
-#define TLD509x_FREQ_PORT PORT_GROUP_A
-#define TLD509x_FREQ_PIN 17
-#define TLD509x_FREQ_PINMUX MUX_PA17E_TCC2_WO1
-#define TLD509x_FREQ_WO 1
+#define TLD2331_INSET1_PORT PORT_GROUP_A
+#define TLD2331_INSET1_PIN 6
 
-#define BOARD_NTC_PORT PORT_GROUP_A
-#define BOARD_NTC_PIN 5
-#define BOARD_NTC_PINMUX MUX_PA05B_ADC0_AIN5
+#define TLD2331_INSET2_PORT PORT_GROUP_A
+#define TLD2331_INSET2_PIN 5
+
+#define TLD2331_INSET3_PORT PORT_GROUP_A
+#define TLD2331_INSET3_PIN 4
+
+/** Brake light LED driver IC pins */
+#define TLD2132_ENABLE_PORT PORT_GROUP_A
+#define TLD2132_ENABLE_PIN 9
+
+#define TLD2132_ERROR_PORT PORT_GROUP_A
+#define TLD2132_ERROR_PIN 3
+
+#define TLD2132_PWMI_PORT PORT_GROUP_A
+#define TLD2132_PWMI_PIN 11
+#define TLD2132_PWMI_PINMUX MUX_PA11E_TCC1_WO1
+#define TLD2132_PWMI_WO 1
+
+#define TLD2132_INSET1_PORT PORT_GROUP_A
+#define TLD2132_INSET1_PIN 7
 
 /** BMA456 3-axis accelerometer pins */
 #define BMA456_ACC1_INT_PORT PORT_GROUP_A
