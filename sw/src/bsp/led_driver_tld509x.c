@@ -12,6 +12,7 @@
 
 #include "app/feature.h"
 
+// TODO: frequency should be taken from board config
 #define TLD509x_PWM_PERIOD (1000000u / TLD509x_MODULATION_FREQUENCY)   /* PWM period in microseconds */
 #define TLD509x_PWM_SCALE(brightness) ((brightness) * TLD509x_PWM_PERIOD / LIGHTCONTROL_BRIGHTNESS_MAX)
 
@@ -105,22 +106,16 @@ static void TLD509x_UpdateBrightness(uint16_t brightness) {
     else {
         /* In PWM mode the enable pin needs to be on for a minimum time so that the driver doesn't
            power down */
+        // TODO: this does some funky things, there's still quite a lot of current passing through the device
         TCC_SetCompareCapture(TCC2, TLD509x_PWMI_WO, TLD509x_PWM_MINIMUM_ON_US);
     }
 #elif TLD509x_MODULATION_TYPE == TLD509x_MODULATION_TYPE_ANALOG
     /* In analog mode the brightness is scaled so that at 1000 increment the output
        voltage is ~1.6V, with a 10bit DAC using a reference of 3.3V that's achieved
        by 512 increment as the DAC input */
-    if (brightness > LIGHTCONTROL_BRIGHTNESS_MIN) {
-        DAC_SetValue(brightness / 2u);
-        GPIO_EnableFunction(TLD509x_ISET_PORT, TLD509x_ISET_PIN, TLD509x_ISET_PINMUX);
-    }
-    else {
-        /* In analog mode the LED is turned off by setting the ISET pin low, as the DAC
-           output would be higher than the switch off threshold */
-        GPIO_PinWrite(TLD509x_ISET_PORT, TLD509x_ISET_PIN, LOW);
-        GPIO_SetupPinOutput(TLD509x_ISET_PORT, TLD509x_ISET_PIN, &GPIO_OUTPUT_DEFAULT_CONFIG);      // TODO: this shouldn't be called very often
-    }
+    DAC_SetValue(brightness / 2u);
+    // TODO: LED current is not true zero at 0 brightness, the workaround of keeping the driver enabled
+    //       and setting the pin to output low doesn't seem to work. analog modulation is disabled
 #endif  
 }
 
@@ -134,6 +129,10 @@ static void TLD509x_FirstTimeSetup(uint16_t brightness) {
         LIGHTCONTROL_DriversSetup = true;
     }
     TLD509x_UpdateBrightness(brightness);
+
+    #if TLD509x_MODULATION_TYPE == TLD509x_MODULATION_TYPE_ANALOG
+    GPIO_EnableFunction(TLD509x_ISET_PORT, TLD509x_ISET_PIN, TLD509x_ISET_PINMUX);
+    #endif
 }
 
 void LIGHTCONTROL_Update10ms(void) {
