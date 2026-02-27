@@ -12,12 +12,25 @@ typedef enum {
     lightcontrol_feature_state_error
 } lightcontrol_feature_state_t;
 
+typedef enum {
+    lightcontrol_segment_tail,
+    lightcontrol_segment_brake,
+    lightcontrol_segment_turn_signal_left,
+    lightcontrol_segment_turn_signal_right
+} lightcontrol_segment_t;
+
 void LIGHTCONTROL_Init(void);
 
 void LIGHTCONTROL_Update10ms(void);
 
-void LIGHTCONTROL_SetBrightness(uint16_t brightness);
+/**
+ * @brief Set the brightness of a light segment.
+ * @param segment The light segment to set the brightness for.
+ * @param brightness The brightness value to set (0 to 1000).
+ * @note The brightness value is scaled to the range supported by the hardware.
+ */
+void LIGHTCONTROL_SetBrightness(lightcontrol_segment_t segment, uint16_t brightness);
 
-lightcontrol_feature_state_t LIGHTCONTROL_GetDiagnosticState();
+lightcontrol_feature_state_t LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_t segment);
 
 #endif // BSP_LIGHT_CONTROL_H_

@@ -97,7 +97,8 @@ void BRIGHTNESS_Update10ms(void) {
         if (!BRIGHTNESS_Brake) {
             brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
         }
-        LIGHTCONTROL_SetBrightness(brake_target);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, brake_target);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, brake_target);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_standard || BRIGHTNESS_Mode == brightness_mode_adaptive) {
         uint16_t tail_target = BRIGHTNESS_MapTargetAdaptive(BRIGHTNESS_Target);
@@ -120,11 +121,13 @@ void BRIGHTNESS_Update10ms(void) {
                 tail_target = strobe_target;
             }
         }
-        LIGHTCONTROL_SetBrightness(tail_target);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, tail_target);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, brake_target);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_emergency) {
         /* And tail light is set to emergency brightness */
-        LIGHTCONTROL_SetBrightness(BRIGHTNESS_ConfLevelEmergency);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, BRIGHTNESS_ConfLevelEmergency);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, LIGHTCONTROL_BRIGHTNESS_MIN);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_safety) {
         uint16_t tail_target = BRIGHTNESS_ConfLevelSafety;
@@ -143,15 +146,18 @@ void BRIGHTNESS_Update10ms(void) {
             }
         }
 
-        LIGHTCONTROL_SetBrightness(tail_target);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, tail_target);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, brake_target);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_max) {
-        /* In max mode all segments are set to their hardware default level */
-        LIGHTCONTROL_SetBrightness(LIGHTCONTROL_BRIGHTNESS_MAX);
+        /* In max mode tail segments is set to maximum brightness, brake light is disabled */
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, LIGHTCONTROL_BRIGHTNESS_MAX);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, LIGHTCONTROL_BRIGHTNESS_MIN);
     }
     else {
         // Control should never reach this scenario
-        LIGHTCONTROL_SetBrightness(LIGHTCONTROL_BRIGHTNESS_MAX);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, LIGHTCONTROL_BRIGHTNESS_MAX);
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, LIGHTCONTROL_BRIGHTNESS_MIN);
     }
 }
 

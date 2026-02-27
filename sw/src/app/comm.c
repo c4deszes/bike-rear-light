@@ -118,10 +118,12 @@ static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
 
 void COMM_UpdateSignals(void) {
     /* Tail light state equals the diagnostic state if there were errors */
-    lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState();
+    lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_tail);
+    lightcontrol_feature_state_t brake_state = LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_brake);
     uint8_t tail_status = COMM_EncodeLightStatus(tail_state);
+    uint8_t brake_status = COMM_EncodeLightStatus(brake_state);
     l_wr_RearLightStatus_TailLightStatus(tail_status);
-    l_wr_RearLightStatus_BrakeLightStatus(tail_status);     /* No separate brakelight on Gen1.0b */
+    l_wr_RearLightStatus_BrakeLightStatus(brake_status);
 
     /* Turn Signal light is not present in Gen1.0 */
     l_wr_RearLightStatus_TurnSignalLightStatus(L_LightStatusEncoder_Off);

@@ -86,13 +86,16 @@ void DIAG_Update10ms(void) {
 
 void DIAG_Update100ms(void) {
     /* Update operation status */
-    if (LIGHTCONTROL_GetDiagnosticState() == lightcontrol_feature_state_ok) {
+    lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_tail);
+    lightcontrol_feature_state_t brake_state = LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_brake);
+
+    if (tail_state == lightcontrol_feature_state_ok && brake_state == lightcontrol_feature_state_ok) {
         DIAG_OperationStatus = LINE_DIAG_OP_STATUS_OK;
     }
-    else if (LIGHTCONTROL_GetDiagnosticState() == lightcontrol_feature_state_partial_error) {
+    else if (tail_state == lightcontrol_feature_state_partial_error || brake_state == lightcontrol_feature_state_partial_error) {
         DIAG_OperationStatus = LINE_DIAG_OP_STATUS_WARN;
     }
-    else if (LIGHTCONTROL_GetDiagnosticState() == lightcontrol_feature_state_error) {
+    else if (tail_state == lightcontrol_feature_state_error || brake_state == lightcontrol_feature_state_error) {
         DIAG_OperationStatus = LINE_DIAG_OP_STATUS_ERROR;
     }
     else {
