@@ -829,7 +829,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "../../../ordering/rearlight/",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "rear-light.step",

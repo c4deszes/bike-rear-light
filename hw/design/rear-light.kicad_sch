@@ -5766,16 +5766,6 @@
 		)
 		(uuid "3bcb909d-f832-4643-8e9a-fcbed7f97156")
 	)
-	(text "TODO: resistor value"
-		(exclude_from_sim no)
-		(at 352.552 68.326 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "41d6bbe1-5077-4e32-9203-cdd07901778f")
-	)
 	(text "M08: Tail/Brake Light"
 		(exclude_from_sim no)
 		(at 208.28 25.4 0)
@@ -5885,16 +5875,6 @@
 		)
 		(uuid "6ea81584-abbb-474d-a84c-b206b594d1c9")
 	)
-	(text "TODO:\ncap value"
-		(exclude_from_sim no)
-		(at 265.43 52.578 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "744adb44-1083-4097-82d9-9da15916b82e")
-	)
 	(text "HW default ~30%"
 		(exclude_from_sim no)
 		(at 232.41 87.63 0)
@@ -5991,16 +5971,6 @@
 			(justify left bottom)
 		)
 		(uuid "c6d0a264-5bba-49f2-9fee-f357797e87e3")
-	)
-	(text "TODO:\ncap value"
-		(exclude_from_sim no)
-		(at 321.31 77.47 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "c8cf6fd6-790c-41e9-aea3-0333d41278dd")
 	)
 	(text "Vinth=5V"
 		(exclude_from_sim no)
@@ -11815,7 +11785,7 @@
 			)
 		)
 		(property "Value" "100k"
-			(at 227.965 69.85 0)
+			(at 227.33 69.596 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12106,7 +12076,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "0b51e7dc-97a7-4aa2-b3b5-b3752cdbd004")
 		(property "Reference" "R305"
 			(at 189.23 35.56 0)
@@ -14832,7 +14802,7 @@
 				)
 			)
 		)
-		(property "Value" "1.5k"
+		(property "Value" "1k"
 			(at 236.22 140.97 90)
 			(effects
 				(font
@@ -15146,7 +15116,7 @@
 				)
 			)
 		)
-		(property "Value" "1.5k"
+		(property "Value" "1k"
 			(at 237.49 193.04 90)
 			(effects
 				(font
@@ -15221,7 +15191,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "120k"
 			(at 347.345 64.77 0)
 			(effects
 				(font
@@ -15609,15 +15579,15 @@
 		(dnp no)
 		(uuid "45fdb308-3c5e-4566-8ef3-ba301357b15f")
 		(property "Reference" "C808"
-			(at 253.365 50.8 0)
+			(at 252.73 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "2.2u"
-			(at 253.365 52.705 0)
+		(property "Value" "1u"
+			(at 254 52.578 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15659,7 +15629,7 @@
 			)
 		)
 		(property "Rating" "6.3V"
-			(at 253.365 54.61 0)
+			(at 252.984 54.61 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16083,7 +16053,7 @@
 				)
 			)
 		)
-		(property "Value" "1.5k"
+		(property "Value" "1k"
 			(at 229.87 184.15 90)
 			(effects
 				(font
@@ -17543,7 +17513,7 @@
 				)
 			)
 		)
-		(property "Value" "290m"
+		(property "Value" "300m"
 			(at 334.01 36.83 90)
 			(effects
 				(font
@@ -18331,7 +18301,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "72a36694-48ba-4624-82f9-2f3a9b5d0840")
 		(property "Reference" "C828"
 			(at 346.71 43.942 0)
@@ -18881,7 +18851,7 @@
 				)
 			)
 		)
-		(property "Value" "1.5k"
+		(property "Value" "1k"
 			(at 236.22 143.51 90)
 			(effects
 				(font
@@ -21073,7 +21043,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "1k"
 			(at 340.36 66.04 90)
 			(effects
 				(font
@@ -21674,7 +21644,7 @@
 				)
 			)
 		)
-		(property "Value" "237k"
+		(property "Value" "200k"
 			(at 322.58 97.79 0)
 			(effects
 				(font
@@ -22489,7 +22459,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "bafcf83f-c248-4e92-b94d-ea745d65947d")
 		(property "Reference" "C826"
 			(at 326.39 72.39 0)
@@ -23245,7 +23215,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "27k"
 			(at 347.345 74.93 0)
 			(effects
 				(font
