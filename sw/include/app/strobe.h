@@ -32,4 +32,10 @@ void STROBE_SetSource(strobe_source_t source);
  */
 void STROBE_Update1ms(void);
 
+/**
+ * @brief Updates less important signals, such as:
+ *       - duty cycle value for current measurement
+ */
+void STROBE_Update100ms(void);
+
 #endif // APP_STROBE_H_

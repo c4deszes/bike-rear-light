@@ -29,8 +29,10 @@ void BSP_ClockInitialize (void) {
     GCLK_SelectGenerator(GCLK_CLKCTRL_ID_TCC2_TC3_Val, GCLK_GEN4);          // Scheduler
     GCLK_SelectGenerator(GCLK_CLKCTRL_ID_TCC0_TCC1_Val, GCLK_GEN4);         // Light PWM control
     GCLK_SelectGenerator(GCLK_CLKCTRL_ID_ADC_Val, GCLK_GEN4);               // ADC for analog measurements
-    GCLK_SelectGenerator(GCLK_CLKCTRL_ID_SERCOM3_CORE_Val, GCLK_GEN3);      // LIN Trans.
-    GCLK_SelectGenerator(GCLK_CLKCTRL_ID_SERCOM1_CORE_Val, GCLK_GEN3);      // Acc. SPI
+    GCLK_SelectGenerator(GCLK_CLKCTRL_ID_SERCOM0_CORE_Val, GCLK_GEN3);      // LINE
+    GCLK_SelectGenerator(GCLK_CLKCTRL_ID_SERCOM1_CORE_Val, GCLK_GEN3);      // Radar I2C
+    GCLK_SelectGenerator(GCLK_CLKCTRL_ID_SERCOM2_CORE_Val, GCLK_GEN3);      // Radar USART
+    GCLK_SelectGenerator(GCLK_CLKCTRL_ID_SERCOM3_CORE_Val, GCLK_GEN3);      // Acc. SPI
     GCLK_SelectGenerator(GCLK_CLKCTRL_ID_DAC_Val, GCLK_GEN3);               // DAC for Light control
 
     PM_SelectCpuDiv(PM_CPUSEL_CPUDIV_DIV1);
@@ -46,6 +48,8 @@ void BSP_ClockInitialize (void) {
                            PM_APBCMASK_TCC0_Msk |
                            PM_APBCMASK_TCC1_Msk |
                            PM_APBCMASK_TCC2_Msk |
-                           PM_APBCMASK_SERCOM3_Msk |
-                           PM_APBCMASK_SERCOM1_Msk;
+                           PM_APBCMASK_SERCOM0_Msk |
+                           PM_APBCMASK_SERCOM1_Msk |
+                           PM_APBCMASK_SERCOM2_Msk |
+                           PM_APBCMASK_SERCOM3_Msk;
 }

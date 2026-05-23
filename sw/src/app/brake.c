@@ -61,6 +61,7 @@ void BRAKE_Update10ms(void) {
     if (BRAKE_SignalState == brake_signal_status_ok) {
         bool result = ACCEL_ReadData(&BRAKE_Acceleration);
 
+        // TODO: implement brake detection logic based on acceleration data
     }
 #else
 
@@ -68,7 +69,6 @@ void BRAKE_Update10ms(void) {
 
     bool external_brake = false;
 
-// TODO: in safety mode we should ignore the external signal (assume that comms are bad)
 #if FEATURE_BRAKE_USE_EXTERNAL_SIGNAL == 1
     if (!COMM_SpeedStatusTimeout() && COMM_SpeedStatusBraking()) {
         BRIGHTNESS_SetBraking(true);

@@ -9,16 +9,17 @@
 
 // Sensor library
 #include "bma4.h"
+#include "bma4_defs.h"
 #include "bma456mm.h"
 
 static int8_t BMA456_ReadAdapter(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     GPIO_PinWrite(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, LOW);
-    SERCOM_SPI_TransferByte(SERCOM1, reg_addr);  // Read register address (driver sets the R/W bit)
+    SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, reg_addr);  // Read register address (driver sets the R/W bit)
     
     // Dummy byte is included by the driver
     for (uint32_t i=0;i<len;i++) {
-        uint8_t data = SERCOM_SPI_TransferByte(SERCOM1, 0xFF); // Read from slave
+        uint8_t data = SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, 0xFF); // Read from slave
 
         reg_data[i] = data;
     }
@@ -31,11 +32,11 @@ static int8_t BMA456_ReadAdapter(uint8_t reg_addr, uint8_t *reg_data, uint32_t l
 static int8_t BMA456_WriteAdapter(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     GPIO_PinWrite(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, LOW);
-    SERCOM_SPI_TransferByte(SERCOM1, reg_addr);  // Read register address (driver sets the R/W bit)
+    SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, reg_addr);  // Read register address (driver sets the R/W bit)
     
     // Dummy byte is included by the driver
     for (uint32_t i=0;i<len;i++) {
-        SERCOM_SPI_TransferByte(SERCOM1, reg_data[i]); // Read from slave
+        SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, reg_data[i]); // Read from slave
     }
 
     GPIO_PinWrite(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, HIGH);
@@ -85,11 +86,11 @@ void ACCEL_Init(void) {
     GPIO_EnableFunction(BMA456_SPI_SCK_PORT, BMA456_SPI_SCK_PIN, BMA456_SPI_SCK_PINMUX);
     GPIO_EnableFunction(BMA456_SPI_MOSI_PORT, BMA456_SPI_MOSI_PIN, BMA456_SPI_MOSI_PINMUX);
 
-    SERCOM_SPI_SetupMaster(SERCOM1, 8000000UL, 1000000UL,
+    SERCOM_SPI_SetupMaster(BMA456_SERCOM_INSTANCE, 8000000UL, 1000000UL,
                            sercom_spi_dataorder_msb,
                            sercom_spi_cpha_trailing, sercom_spi_cpol_idle_high,
                            SERCOM_SPI_MOSI_PAD0, SERCOM_SPI_MISO_PAD3);
-    SERCOM_SPI_Enable(SERCOM1);
+    SERCOM_SPI_Enable(BMA456_SERCOM_INSTANCE);
 }
 
 bool ACCEL_SetupSensor(void) {
@@ -133,7 +134,7 @@ bool ACCEL_SetupSensor(void) {
 
 bool ACCEL_ReadData(accel_data_t* data)
 {
-    struct bma4_accel_data current_data = { 0 };
+    struct bma4_accel current_data = { 0, 0, 0 };
 
     int8_t result = bma4_read_accel_xyz(&current_data, &ACCEL_BMA456_Device);
 

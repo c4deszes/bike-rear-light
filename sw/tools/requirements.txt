@@ -1,6 +1,9 @@
 # Build tools
 intelhex
 
+# Debug tools
+pyocd
+
 # Testing tools
 gcovr==8.4
 pytest==9.*

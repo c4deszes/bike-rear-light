@@ -47,7 +47,9 @@
     "buildPresets": [
         {
             "name": "build-app-targets",
-            "targets": [ "application-full"],
+            "targets": [
+                "application-full"
+        ],
             "hidden": true
         },
         {

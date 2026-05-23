@@ -103,8 +103,8 @@ void DIAG_Update100ms(void) {
     }
 
     /* Update power status */
-    DIAG_PowerStatus.U_measured = VOLT_GetVoltage();            // TODO: convert data
-    DIAG_PowerStatus.I_operating = CURRENT_GetCurrent();        // TODO: convert data
+    DIAG_PowerStatus.U_measured = VOLT_GetVoltage();
+    DIAG_PowerStatus.I_operating = CURRENT_GetCurrent();
     DIAG_PowerStatus.I_sleep = LINE_DIAG_POWER_STATUS_SLEEP_CURRENT(100);       // TODO: update based on HW measurement
 }
 

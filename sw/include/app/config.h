@@ -34,6 +34,13 @@ typedef struct {
     uint16_t Strobe_SingleOffTime;
     uint16_t Strobe_RapidOnTime;
     uint16_t Strobe_RapidOffTime;
+
+    uint16_t Driver_TailRefCurrent;
+    uint16_t Driver_BrakeRefCurrent;
+    uint8_t Driver_TailRefVoltage;
+    uint8_t Driver_BrakeRefVoltage;
+    uint8_t Driver_TailEfficiency;
+    uint8_t Driver_BrakeEfficiency;
 } config_properties_t;
 
 extern config_properties_t CONFIG_Props;

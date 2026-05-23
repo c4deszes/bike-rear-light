@@ -1,6 +1,7 @@
 #include "app/init.h"
 
 // Hardware abstraction layer
+#include "hal/adc.h"
 #include "hal/wdt.h"
 #include "hal/nvic.h"
 #include "hal/nvmctrl.h"
@@ -49,6 +50,7 @@ void APP_Init() {
     DIAG_Init();
 
 #if FEATURE_CONFIG_LOAD_AT_STARTUP == 1
+    /* This call needs to happen after UDS_Init */
     CONFIG_LoadNvram();
 #endif
     CONFIG_Reload();

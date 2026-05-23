@@ -17,6 +17,7 @@
 #include "app/feature.h"
 #include "app/brake.h"
 #include "app/temp.h"
+#include "app/current.h"
 
 static swtimer_t* COMM_LightRequestTimer;
 static swtimer_t* COMM_SpeedStatusTimer;
@@ -116,6 +117,19 @@ static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
     return L_LightStatusEncoder_Error;
 }
 
+static uint8_t COMM_EncodeThermalStatus(temp_status_t status) {
+    if (status == temp_status_not_measured) {
+        return L_ThermalStatusEncoder_NotMeasured;
+    }
+    else if (CURRENT_ThermalDeratingActive()) {
+        return L_ThermalStatusEncoder_Derating;
+    }
+
+    /* Right now there's no thermal shutdown reaction */
+
+    return L_ThermalStatusEncoder_Ok;
+}
+
 void COMM_UpdateSignals(void) {
     /* Tail light state equals the diagnostic state if there were errors */
     lightcontrol_feature_state_t tail_state = LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_tail);
@@ -128,8 +142,9 @@ void COMM_UpdateSignals(void) {
     /* Turn Signal light is not present in Gen1.0 */
     l_wr_RearLightStatus_TurnSignalLightStatus(L_LightStatusEncoder_Off);
 
-    // TODO: measure MCU temp. and return accordingly
-    l_wr_RearLightStatus_ThermalStatus(L_ThermalStatusEncoder_NotMeasured);
+    temp_status_t thermal_status = TEMP_GetStatus();
+    uint8_t encoded_thermal_status = COMM_EncodeThermalStatus(thermal_status);
+    l_wr_RearLightStatus_ThermalStatus(encoded_thermal_status);
 }
 
 uint8_t COMM_EncodeBrakeStatus(bool braking, brake_signal_status_t brake_signal_status) {
@@ -143,8 +158,7 @@ uint8_t COMM_EncodeBrakeStatus(bool braking, brake_signal_status_t brake_signal_
 }
 
 void COMM_UpdateDebugSignals(void) {
-    // TODO: use brightness from driver
-    l_wr_RearLightBrightnessDebug_Brightness(0);
+    l_wr_RearLightBrightnessDebug_Brightness(BRIGHTNESS_GetTarget());
 
     uint8_t drive_temp = L_TemperatureEncoder_Encode(TEMP_GetDriveTemperature());
     uint8_t mcu_temp = L_TemperatureEncoder_Encode(TEMP_GetMcuTemperature());

@@ -4,7 +4,27 @@ project(
     rear-light
     DESCRIPTION "Rear Light"
     LANGUAGES C CXX ASM
-    VERSION "1.0.0")
+    VERSION "2.0.0")
+
+################################################################################
+# Git info
+################################################################################
+set(PROJECT_GIT_SHA "unknown")
+set(PROJECT_GIT_DIRTY "1")
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE PROJECT_GIT_SHA
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+execute_process(
+    COMMAND git diff --quiet
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    RESULT_VARIABLE GIT_DIFF_RESULT
+)
+if(GIT_DIFF_RESULT EQUAL 0)
+    set(PROJECT_GIT_DIRTY "0")
+endif()
 
 ################################################################################
 # Options
@@ -89,9 +109,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/app/metainfo.h.in
                ${APP_GENCODE_DIR}/metainfo.h)
 
 ################################################################################
+# User configurations
+################################################################################
+add_subdirectory(config/data)
+
+################################################################################
 # Board configurations
 ################################################################################
-add_subdirectory(config/gen1b-tld509x)
+add_subdirectory(config/gen2-al8891)
 
 add_library(bsp INTERFACE)
 target_link_libraries(bsp INTERFACE samd21e18a bsp-config)
@@ -104,22 +129,30 @@ target_sources(bsp INTERFACE
 )
 
 # Sensor driver selection
-get_target_property(BSP_SENSOR_DRIVER bsp-config BSP_SENSOR_DRIVER)
-if (BSP_SENSOR_DRIVER STREQUAL "BMA456")
+get_target_property(BSP_IMU_DRIVER bsp-config BSP_IMU_DRIVER)
+if (BSP_IMU_DRIVER STREQUAL "BMA456")
     target_sources(bsp INTERFACE src/bsp/accel_bma456.c)
     target_link_libraries(bsp INTERFACE bma456mm)
-elseif(BSP_SENSOR_DRIVER STREQUAL "NONE")
+elseif(BSP_IMU_DRIVER STREQUAL "NONE")
     target_sources(bsp INTERFACE src/bsp/accel_none.c)
 else()
-    message(FATAL_ERROR "Unsupported BSP_SENSOR_DRIVER: ${BSP_SENSOR_DRIVER}")
+    message(FATAL_ERROR "Unsupported BSP_IMU_DRIVER: ${BSP_IMU_DRIVER}")
 endif()
 
 # LED driver selection
 get_target_property(BSP_LED_DRIVER bsp-config BSP_LED_DRIVER)
 if (BSP_LED_DRIVER STREQUAL "TLD509x")
     target_sources(bsp INTERFACE src/bsp/led_driver_tld509x.c)
+elseif (BSP_LED_DRIVER STREQUAL "AL8891")
+    target_sources(bsp INTERFACE src/bsp/led_driver_al8891.c)
 else()
     message(FATAL_ERROR "Unsupported BSP_LED_DRIVER: ${BSP_LED_DRIVER}")
+endif()
+
+# Default user configuration
+get_target_property(BSP_DEFAULT_USERCONFIG bsp-config BSP_DEFAULT_USERCONFIG)
+if (NOT BSP_DEFAULT_USERCONFIG)
+    message(FATAL_ERROR "BSP_DEFAULT_USERCONFIG not set in bsp-config")
 endif()
 
 ################################################################################
@@ -146,10 +179,7 @@ target_link_libraries(application-api INTERFACE
     uds-lib
     bootloader-api)
 
-add_executable(
-    application
-    EXCLUDE_FROM_ALL
-
+add_executable(application EXCLUDE_FROM_ALL
     src/app/main.c
 )
 
@@ -169,15 +199,17 @@ dump_size(application)
 ####################################################################################################
 # Bootloader
 ####################################################################################################
+get_target_property(BSP_BOOT_CONFIG bsp-config BSP_BOOT_CONFIG)
+
 bootloader_header(
     TARGET factory_header
-    CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/tools/bootloader/boot_config.json
+    CONFIG ${BSP_BOOT_CONFIG}
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/tools/openocd/factory_header.hex
 )
 
 bootloader_header(
     TARGET app_header
-    CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/tools/bootloader/boot_config.json
+    CONFIG ${BSP_BOOT_CONFIG}
     APPLICATION ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/app_header.hex
 )
@@ -195,9 +227,10 @@ add_custom_target(application-debug
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/app_header.hex ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex
     BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/application-debug.hex
     COMMAND srec_cat
-            ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex -intel
-            ${CMAKE_CURRENT_BINARY_DIR}/app_header.hex -intel
             ${CMAKE_CURRENT_SOURCE_DIR}/tools/bootloader/bootloader_with_crc.hex -intel
+            ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex -intel
+            ${BSP_DEFAULT_USERCONFIG} -intel
+            ${CMAKE_CURRENT_BINARY_DIR}/app_header.hex -intel
             -o ${CMAKE_CURRENT_BINARY_DIR}/application-debug.hex -intel
 )
 

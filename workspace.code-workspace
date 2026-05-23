@@ -1,0 +1,22 @@
+{
+    "folders": [
+        {
+            "path": ".devcontainer"
+        },
+        {
+            "path": ".github"
+        },
+        {
+            "path": "hw"
+        },
+        {
+            "path": "sw"
+        },
+        {
+            "path": "sys"
+        },
+        {
+            "path": "customer"
+        }
+    ]
+}

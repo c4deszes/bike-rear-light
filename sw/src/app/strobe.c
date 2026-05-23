@@ -11,10 +11,15 @@
 
 static strobe_source_t STROBE_Source;
 
+/* 1ms data */
 static bool STROBE_Flag;
 static swtimer_t* STROBE_Timer;
 static uint8_t STROBE_RapidCycle;
 
+/* 100ms data */
+static uint8_t STROBE_DutyCycle;
+
+/* Configuration data */
 static uint16_t STROBE_ConfSingleOnTime;
 static uint16_t STROBE_ConfSingleOffTime;
 static uint16_t STROBE_ConfRapidOnTime;
@@ -25,6 +30,8 @@ void STROBE_Init(void) {
     STROBE_Flag = false;
     STROBE_Timer = SWTIMER_Create();
     STROBE_RapidCycle = 0;
+
+    STROBE_DutyCycle = 0;
 
     STROBE_LoadConfig();
 
@@ -88,4 +95,24 @@ void STROBE_Update1ms(void) {
         /* Same as disabled */
         BRIGHTNESS_SetStrobe(true);
     }
+}
+
+uint8_t STROBE_CalculateDutyCycle(strobe_source_t source) {
+    if (source == strobe_source_internal_single) {
+        uint16_t on_time = STROBE_ConfSingleOnTime;
+        uint16_t off_time = STROBE_ConfSingleOffTime;
+        return (on_time * 100) / (on_time + off_time);
+    }
+    else if (source == strobe_source_internal_rapid) {
+        uint16_t on_time = STROBE_ConfRapidOnTime * FEATURE_STROBE_RAPID_CYCLES;
+        uint16_t off_time = STROBE_ConfRapidOffTime + STROBE_ConfRapidOnTime * (FEATURE_STROBE_RAPID_CYCLES - 1);
+        return (on_time * 100) / (on_time + off_time);
+    }
+    else {
+        return 100;
+    }
+}
+
+void STROBE_Update100ms(void) {
+    STROBE_DutyCycle = STROBE_CalculateDutyCycle(STROBE_Source);
 }

@@ -52,28 +52,28 @@ void BRIGHTNESS_Init(void) {
 }
 
 static uint16_t BRIGHTNESS_MapStrobe(uint16_t target) {
-    if (target <= LIGHTCONTROL_BRIGHTNESS_MIN) {
+    if (target <= BRIGHTNESS_ConfCutoffX) {
         return BRIGHTNESS_ConfStrobeLow;
     }
-    else if (target >= LIGHTCONTROL_BRIGHTNESS_MAX) {
+    else if (target >= BRIGHTNESS_ConfMaxX) {
         return BRIGHTNESS_ConfStrobeHigh;
     }
     else {
-        return (target - LIGHTCONTROL_BRIGHTNESS_MIN) * (BRIGHTNESS_ConfStrobeHigh - BRIGHTNESS_ConfStrobeLow) /
-               (LIGHTCONTROL_BRIGHTNESS_MAX - LIGHTCONTROL_BRIGHTNESS_MIN) + BRIGHTNESS_ConfStrobeLow;
+        return (target - BRIGHTNESS_ConfCutoffX) * (BRIGHTNESS_ConfStrobeHigh - BRIGHTNESS_ConfStrobeLow) /
+               (BRIGHTNESS_ConfMaxX - BRIGHTNESS_ConfCutoffX) + BRIGHTNESS_ConfStrobeLow;
     }
 }
 
 static uint16_t BRIGHTNESS_MapBrake(uint16_t target) {
-    if (target <= LIGHTCONTROL_BRIGHTNESS_MIN) {
+    if (target <= BRIGHTNESS_ConfCutoffX) {
         return BRIGHTNESS_ConfBrakeLow;
     }
-    else if (target >= LIGHTCONTROL_BRIGHTNESS_MAX) {
+    else if (target >= BRIGHTNESS_ConfMaxX) {
         return BRIGHTNESS_ConfBrakeHigh;
     }
     else {
-        return (target - LIGHTCONTROL_BRIGHTNESS_MIN) * (BRIGHTNESS_ConfBrakeHigh - BRIGHTNESS_ConfBrakeLow) /
-               (LIGHTCONTROL_BRIGHTNESS_MAX - LIGHTCONTROL_BRIGHTNESS_MIN) + BRIGHTNESS_ConfBrakeLow;
+        return (target - BRIGHTNESS_ConfCutoffX) * (BRIGHTNESS_ConfBrakeHigh - BRIGHTNESS_ConfBrakeLow) /
+               (BRIGHTNESS_ConfMaxX - BRIGHTNESS_ConfCutoffX) + BRIGHTNESS_ConfBrakeLow;
     }
 }
 
@@ -116,6 +116,7 @@ void BRIGHTNESS_Update10ms(void) {
         }
         else {
             brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+            uint16_t strobe_target = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
             // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
             if (!BRIGHTNESS_Strobe) {
                 tail_target = strobe_target;
@@ -125,8 +126,14 @@ void BRIGHTNESS_Update10ms(void) {
         LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, brake_target);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_emergency) {
-        /* And tail light is set to emergency brightness */
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, BRIGHTNESS_ConfLevelEmergency);
+        uint16_t tail_target = BRIGHTNESS_ConfLevelEmergency;
+        uint16_t strobe_target = BRIGHTNESS_ConfStrobeEmergency;
+
+        if (!BRIGHTNESS_Strobe) {
+            tail_target = strobe_target;
+        }
+
+        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, tail_target);
         LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, LIGHTCONTROL_BRIGHTNESS_MIN);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_safety) {
@@ -171,6 +178,11 @@ brightness_mode_t BRIGHTNESS_GetMode(void) {
 
 void BRIGHTNESS_SetTarget(uint16_t target) {
     BRIGHTNESS_Target = target;
+}
+
+uint16_t BRIGHTNESS_GetTarget(void) {
+    // TODO: this should return the tail target
+    return BRIGHTNESS_Target;
 }
 
 void BRIGHTNESS_SetBraking(bool brake) {

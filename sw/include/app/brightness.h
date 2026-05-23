@@ -45,6 +45,13 @@ brightness_mode_t BRIGHTNESS_GetMode(void);
 void BRIGHTNESS_SetTarget(uint16_t target);
 
 /**
+ * @brief Gets the current target brightness level
+ * 
+ * @return The current target brightness level
+ */
+uint16_t BRIGHTNESS_GetTarget(void);
+
+/**
  * @brief Sets the brake light state
  * 
  * @param brake Brake light is active or not

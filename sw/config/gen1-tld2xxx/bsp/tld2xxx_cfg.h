@@ -1,0 +1,6 @@
+#ifndef BSP_TLD2XXX_CFG_H
+#define BSP_TLD2XXX_CFG_H
+
+
+
+#endif // BSP_TLD2XXX_CFG_H

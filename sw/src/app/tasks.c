@@ -23,8 +23,6 @@
 void SCH_Task1ms(void) {
     SWTIMER_Update1ms();
 
-    TTADC_Trigger();
-
     STROBE_Update1ms();
 
     LINE_USART_Receive();
@@ -33,6 +31,8 @@ void SCH_Task1ms(void) {
 void SCH_Task10ms_A(void) {
     // TODO: enable watchdog
     //WDT_Acknowledge();
+
+    TTADC_Trigger();
 
     SYSSTATE_Update10ms();
 
@@ -55,6 +55,8 @@ void SCH_Task10ms_A(void) {
 }
 
 void SCH_Task100ms(void) {
+
+    STROBE_Update100ms();
 
     VOLT_Update100ms();
 
