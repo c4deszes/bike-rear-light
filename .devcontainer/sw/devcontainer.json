@@ -41,6 +41,6 @@
     "postCreateCommand": "bash .devcontainer/sw/setup.sh",
     "remoteUser": "root",
     "runArgs": [
-        "--device=/dev/bus/usb/011/003"
+        "--device=/dev/atmelice"
     ]
 }

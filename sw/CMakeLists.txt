@@ -172,6 +172,8 @@ target_sources(application-api INTERFACE
     src/app/tasks.c
     src/app/temp.c
     src/app/volt.c
+    src/app/calib.c
+    src/app/wake.c
 )
 target_include_directories(application-api INTERFACE include ${APP_GENCODE_DIR})
 target_link_libraries(application-api INTERFACE
@@ -190,6 +192,10 @@ target_link_libraries(application PRIVATE   bsp
 set_target_properties(application PROPERTIES SUFFIX ".elf")
 target_link_options(application PRIVATE -T${CMAKE_CURRENT_SOURCE_DIR}/ld/application.ld)
 target_link_options(application PRIVATE -Wl,-Map=application.map -Wl,--gc-sections)
+
+# Calibration
+add_subdirectory(config/calib)
+get_target_property(CALIB_DEFAULT_HEX calib-default HEX)
 
 # Post processing
 hexify(TARGET application HEX ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex)
@@ -224,12 +230,16 @@ add_custom_target(application-merge
 )
 
 add_custom_target(application-debug
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/app_header.hex ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/app_header.hex
+            ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex
+            ${BSP_DEFAULT_USERCONFIG}
+            calib-default
     BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/application-debug.hex
     COMMAND srec_cat
             ${CMAKE_CURRENT_SOURCE_DIR}/tools/bootloader/bootloader_with_crc.hex -intel
             ${CMAKE_CURRENT_BINARY_DIR}/application_noheader.hex -intel
             ${BSP_DEFAULT_USERCONFIG} -intel
+            ${CALIB_DEFAULT_HEX} -intel
             ${CMAKE_CURRENT_BINARY_DIR}/app_header.hex -intel
             -o ${CMAKE_CURRENT_BINARY_DIR}/application-debug.hex -intel
 )

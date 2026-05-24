@@ -187,6 +187,14 @@ uint16_t CURRENT_GetCurrent(void) {
     return CURRENT_Estimate;
 }
 
+current_estimate_state_t CURRENT_GetEstimateState(void) {
+    return CURRENT_EstimateState;
+}
+
 bool CURRENT_ThermalDeratingActive(void) {
     return CURRENT_TemperatureDerating < CURRENT_DERATING_NONE;
+}
+
+uint16_t CURRENT_GetDeratingFactor(void) {
+    return CURRENT_DeratingFactor;
 }

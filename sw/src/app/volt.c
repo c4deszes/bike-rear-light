@@ -5,6 +5,10 @@
 
 #include "app/feature.h"
 
+#define VOLT_CALIB_SLOPE 1099 // Calibration slope for voltage measurement
+#define VOLT_MEAS_REF 33 // Reference voltage
+#define VOLT_MEAS_RES 1024 // ADC resolution
+
 static uint16_t VOLT_VbatAdcValue;
 static uint16_t VOLT_Voltage;
 static volt_status_t VOLT_Status;
@@ -22,7 +26,7 @@ void VOLT_Update100ms(void) {
     if (TTADC_ResultReady(TTADC_CHANNEL_VBAT)) {
         VOLT_VbatAdcValue = TTADC_GetResult(TTADC_CHANNEL_VBAT);
         // TODO: convert adc value to voltage
-        VOLT_Voltage = VOLT_VbatAdcValue;
+        VOLT_Voltage = (VOLT_VbatAdcValue * VOLT_MEAS_REF * VOLT_CALIB_SLOPE) / (VOLT_MEAS_RES);
         VOLT_Status = volt_status_ok;
         VOLT_VbatTempTimeout = 0;
 

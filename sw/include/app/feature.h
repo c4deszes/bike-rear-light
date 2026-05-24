@@ -37,6 +37,10 @@
 #define FEATURE_BRIGHTNESS_BRAKE_IN_SAFETY_MODE 1
 #define FEATURE_BRIGHTNESS_BRAKE_IN_EMERGENCY_MODE 0
 
+/* Calibration feature */
+#define FEATURE_CALIB_ENABLE 1
+#define FEATURE_CALIB_LOAD_AT_STARTUP 1
+
 /* LED driver feature */
 #define FEATURE_LED_DRIVER_PWM_FREQUENCY 1000u
 #define FEATURE_LED_DRIVER_STARTUP_DELAY 500u        // Time to wait before enabling the driver

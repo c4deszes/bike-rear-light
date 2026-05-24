@@ -82,6 +82,16 @@ void DIAG_Init(void) {
 
 void DIAG_Update10ms(void) {
     // TODO: handle pending UDS service calls
+
+    if (UDS_App_HasPendingServiceRequest_RearLight_Config_Reload()) {
+        UDS_App_ClearPendingServiceRequest_RearLight_Config_Reload();
+        CONFIG_Reload();
+    }
+
+    if (UDS_App_HasPendingServiceRequest_RearLight_Config_Save()) {
+        UDS_App_ClearPendingServiceRequest_RearLight_Config_Save();
+        CONFIG_Save();
+    }
 }
 
 void DIAG_Update100ms(void) {
