@@ -54,4 +54,8 @@ int8_t TEMP_GetTemperature(void);
  */
 temp_status_t TEMP_GetStatus(void);
 
+uint16_t TEMP_GetDriveTemperatureAdc(void);
+
+uint16_t TEMP_GetMcuTemperatureAdc(void);
+
 #endif // APP_TEMP_H

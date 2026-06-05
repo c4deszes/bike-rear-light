@@ -24,6 +24,7 @@
 #include "app/calib.h"
 #include "app/current.h"
 #include "app/diag.h"
+#include "app/router.h"
 #include "app/strobe.h"
 #include "app/sys_state.h"
 #include "app/temp.h"
@@ -72,9 +73,11 @@ void APP_Init() {
     BRIGHTNESS_Init();
     STROBE_Init();
     BRAKE_Init();
+    ROUTER_Init();
 
     // Setting up scheduler
     SCH_Init();
+    // TODO: replace with BSP function to get actual CPU frequency
     SYSTICK_Setup(48000000u / 1000u);
 
     NVIC_Initialize();

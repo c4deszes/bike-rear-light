@@ -2,7 +2,8 @@
 
 #include "bsp/light_control.h"
 
-CONFIG_ATTR const config_memlayout_t config_default = {
+CONFIG_ATTR const config_layout_v1_t config_default = {
+    .version = 1,
     .properties = {
         .AutomaticDiagnostics = true,
 
@@ -22,10 +23,10 @@ CONFIG_ATTR const config_memlayout_t config_default = {
         .Strobe_LevelEmergency = 0,
         .Strobe_LevelSafety = 0,
 
-        .Strobe_ModeDefault = UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_DISABLED,
-        .Strobe_ModePrimary = UDS_APP_PROPERTY_RearLight_Strobe_ModePrimary_VALUE_INTERNAL_SINGLE,
-        .Strobe_ModeEmergency = UDS_APP_PROPERTY_RearLight_Strobe_ModeEmergency_VALUE_INTERNAL_SINGLE,
-        .Strobe_ModeSafety = UDS_APP_PROPERTY_RearLight_Strobe_ModeSafety_VALUE_INTERNAL_SINGLE,
+        .Strobe_ModeDefault = CONFIG_STROBE_MODE_DISABLED,
+        .Strobe_ModePrimary = CONFIG_STROBE_MODE_INTERNAL_SINGLE,
+        .Strobe_ModeEmergency = CONFIG_STROBE_MODE_INTERNAL_SINGLE,
+        .Strobe_ModeSafety = CONFIG_STROBE_MODE_INTERNAL_SINGLE,
 
         .Strobe_SingleOnTime = 160,
         .Strobe_SingleOffTime = 160,

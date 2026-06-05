@@ -73,6 +73,10 @@ strobe_source_t COMM_LightBehavior(strobe_source_t default_source, strobe_source
  */
 bool COMM_SpeedStatusTimeout(void);
 
+bool COMM_SpeedValid(void);
+
+uint16_t COMM_GetSpeed(void);
+
 /**
  * @brief Returns true if the speed status frame indicates that the bicycle is braking
  * 

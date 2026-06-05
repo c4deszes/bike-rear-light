@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define VOLT_CALIB_SLOPE_MAX 1200
+#define VOLT_CALIB_SLOPE_MIN 300
+
 typedef enum {
     volt_status_not_measured,   /**< Voltage has not been measured yet */
     volt_status_ok,             /**< Voltage is within the normal range */
@@ -19,6 +22,8 @@ void VOLT_Update100ms(void);
  * @return Voltage in 100mV steps (e.g. 120 = 12.0V)
  */
 uint16_t VOLT_GetVoltage(void);
+
+uint16_t VOLT_GetAdcRawValue(void);
 
 /**
  * @brief Get the current voltage measurement status

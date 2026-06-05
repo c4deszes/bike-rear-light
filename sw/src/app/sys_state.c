@@ -37,41 +37,11 @@ strobe_source_t SYSSTATE_ConfStrobePrimary = strobe_source_disabled;
 strobe_source_t SYSSTATE_ConfStrobeSafety = strobe_source_disabled;
 strobe_source_t SYSSTATE_ConfStrobeEmergency = strobe_source_disabled;
 
-static strobe_source_t ConvertOperationalStrobeSource(uint8_t value) {
-    switch(value) {
-        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_DISABLED:
-            return strobe_source_disabled;
-        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_INTERNAL_SINGLE:
-            return strobe_source_internal_single;
-        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_INTERNAL_RAPID:
-            return strobe_source_internal_rapid;
-        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_EXTERNAL_POS:
-            return strobe_source_external_positive;
-        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_EXTERNAL_NEG:
-            return strobe_source_external_negative;
-        default:
-            return strobe_source_disabled;
-    }
-}
-
-static strobe_source_t ConvertReserveStrobeSource(uint8_t value) {
-    switch(value) {
-        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_DISABLED:
-            return strobe_source_disabled;
-        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_INTERNAL_SINGLE:
-            return strobe_source_internal_single;
-        case UDS_APP_PROPERTY_RearLight_Strobe_ModeDefault_VALUE_INTERNAL_RAPID:
-            return strobe_source_internal_rapid;
-        default:
-            return strobe_source_disabled;
-    }
-}
-
 void SYSSTATE_LoadConfig(void) {
-    SYSSTATE_ConfStrobeDefault = ConvertOperationalStrobeSource(UDS_Properties_RearLight.Strobe_ModeDefault);
-    SYSSTATE_ConfStrobePrimary = ConvertOperationalStrobeSource(UDS_Properties_RearLight.Strobe_ModePrimary);
-    SYSSTATE_ConfStrobeSafety = ConvertReserveStrobeSource(UDS_Properties_RearLight.Strobe_ModeSafety);
-    SYSSTATE_ConfStrobeEmergency = ConvertReserveStrobeSource(UDS_Properties_RearLight.Strobe_ModeEmergency);
+    SYSSTATE_ConfStrobeDefault = CONFIG_Props.Strobe_ModeDefault;
+    SYSSTATE_ConfStrobePrimary = CONFIG_Props.Strobe_ModePrimary;
+    SYSSTATE_ConfStrobeSafety = CONFIG_Props.Strobe_ModeSafety;
+    SYSSTATE_ConfStrobeEmergency = CONFIG_Props.Strobe_ModeEmergency;
 }
 
 void SYSSTATE_Init(void) {
@@ -143,6 +113,7 @@ void SYSSTATE_Update10ms(void) {
     else if (SYSSTATE_State == sys_state_goto_sleep) {
 
 #if FEATURE_CONFIG_SAVE_AT_SHUTDOWN == 1
+        CONFIG_Reload();
         CONFIG_Save();
 #endif
 

@@ -6,47 +6,37 @@
 // Application components
 #include "app/feature.h"
 #include "app/config.h"
+#include "app/calib.h"
 #include "app/brightness.h"
 #include "app/comm.h"
 
-// Concept: use MM feature set
-// - configure High G detection
-// - configure range 2/4G
-// - Set high threshold to 0.25g, negative
-//
-// Potential problems:
-// - Axis sensitivity depends on orientation, while in a climb, descent or a turn the
-//   the acceleration components will be different than on a flat
-// - Road bumps might cause inadvertent brake activation
-
-
-static bool BRAKE_SensorSetup;
+static bool BRAKE_IsSensorSetup;
 static brake_signal_status_t BRAKE_SignalState;
-static accel_data_t BRAKE_Acceleration = { 0 };
+static accel_data_t BRAKE_Acceleration;
+static accel_data_t BRAKE_AccelerationCalib;
 
 void BRAKE_Init(void) {
-    BRAKE_SensorSetup = false;
+    BRAKE_IsSensorSetup = false;
     BRAKE_SignalState = brake_signal_status_na;
-}
 
-int16_t BRAKE_GetAccelerationX(void) {
-    return BRAKE_Acceleration.x;
-}
+    BRAKE_Acceleration.x = 0;
+    BRAKE_Acceleration.y = 0;
+    BRAKE_Acceleration.z = 0;
 
-int16_t BRAKE_GetAccelerationY(void) {
-    return BRAKE_Acceleration.y;
-}
+    BRAKE_AccelerationCalib.x = 0;
+    BRAKE_AccelerationCalib.y = 0;
+    BRAKE_AccelerationCalib.z = 0;
 
-int16_t BRAKE_GetAccelerationZ(void) {
-    return BRAKE_Acceleration.z;
+    // TODO: handle when calibration is not available
+    CALIB_GetImuAccelCalib(&BRAKE_AccelerationCalib.x, &BRAKE_AccelerationCalib.y, &BRAKE_AccelerationCalib.z);
 }
 
 void BRAKE_Update10ms(void) {
 #if FEATURE_BRAKE_ENABLE_SENSOR == 1
     if (BRAKE_SignalState == brake_signal_status_na) {
-        BRAKE_SensorSetup = ACCEL_SetupSensor();
+        BRAKE_IsSensorSetup = ACCEL_SetupSensor();
 
-        if (!BRAKE_SensorSetup) {
+        if (!BRAKE_IsSensorSetup) {
             BRAKE_SignalState = brake_signal_status_perm_error;
         }
         else {
@@ -79,11 +69,18 @@ void BRAKE_Update10ms(void) {
 #endif
 }
 
-bool BRAKE_IsBraking(void) {
+brake_signal_status_t BRAKE_GetInternalStatus(void) {
+    return BRAKE_SignalState;
+}
+
+bool BRAKE_GetInternalBraking(void) {
     // TODO: implement
     return false;
 }
 
-brake_signal_status_t BRAKE_GetBrakeSignalStatus(void) {
-    return BRAKE_SignalState;
+void BRAKE_GetAcceleration(int16_t* x, int16_t* y, int16_t* z) {
+    // TODO: validate pointers
+    *x = BRAKE_Acceleration.x;
+    *y = BRAKE_Acceleration.y;
+    *z = BRAKE_Acceleration.z;
 }

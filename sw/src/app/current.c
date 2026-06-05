@@ -135,7 +135,7 @@ void CURRENT_UpdateDeratingFactor(void) {
      */
     CURRENT_VoltageDerating = CURRENT_DERATING_MAX;
 
-    #if defined(TTADC_CHANNEL_VBAT)
+    #if FEATURE_VOLT_DERATE_ENABLE == 1
     /* If voltage measurement is available then determine the derating factor based on the voltage.
      * In case of an error in the voltage measurement, use maximum derating to be safe
      */
@@ -143,8 +143,13 @@ void CURRENT_UpdateDeratingFactor(void) {
     if (volt_status == volt_status_ok || volt_status == volt_status_low) {
         CURRENT_VoltageDerating = CURRENT_CalculateVoltageDerating(VOLT_GetVoltage()); // Convert to V
     }
-    else {
+    else if (volt_status == volt_status_error) {
+        /* In case of an measurement error disable lights */
         CURRENT_VoltageDerating = CURRENT_DERATING_MAX;
+    }
+    else {
+        /* In case of an unknown voltage status, use no derating (Gen1.0 / Gen1.0b behavior) */
+        CURRENT_VoltageDerating = CURRENT_DERATING_NONE;
     }
     #else
     /* In case the voltage measurement is not available, use no derating */
@@ -152,7 +157,8 @@ void CURRENT_UpdateDeratingFactor(void) {
     #endif
 
     CURRENT_TemperatureDerating = CURRENT_DERATING_MAX;
-    #if defined(TTADC_CHANNEL_TMCU) || defined(TTADC_CHANNEL_TDRV)
+
+    #if FEATURE_TEMP_DERATE_ENABLE == 1
     /* If temperature measurement is available then determine the derating factor based on the temperature.
      * In case of an error in the temperature measurement, use maximum derating to be safe
      */
@@ -160,8 +166,12 @@ void CURRENT_UpdateDeratingFactor(void) {
     if (temp_status == temp_status_ok) {
         CURRENT_TemperatureDerating = CURRENT_CalculateTemperatureDerating(TEMP_GetTemperature()); // Convert to °C
     }
-    else {
+    else if (temp_status == temp_status_error) {
         CURRENT_TemperatureDerating = CURRENT_DERATING_MAX;
+    }
+    else {
+        /* In case of an unknown temperature status, use no derating (Gen1.0 / Gen1.0b behavior) */
+        CURRENT_TemperatureDerating = CURRENT_DERATING_NONE;
     }
     #else
     /* In case the temperature measurement is not available, use no derating */

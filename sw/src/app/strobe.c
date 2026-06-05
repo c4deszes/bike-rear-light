@@ -74,7 +74,7 @@ void STROBE_Update1ms(void) {
                 STROBE_RapidCycle = 0;
             }
 
-            uint8_t timer = 0;
+            uint16_t timer = 0;
             if (STROBE_RapidCycle == 0) {
                 timer = STROBE_ConfRapidOffTime;
                 STROBE_Flag = false;

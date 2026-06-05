@@ -167,6 +167,7 @@ target_sources(application-api INTERFACE
     src/app/current.c
     src/app/diag.c
     src/app/init.c
+    src/app/router.c
     src/app/strobe.c
     src/app/sys_state.c
     src/app/tasks.c

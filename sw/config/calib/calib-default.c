@@ -1,19 +1,17 @@
 #include "app/calib_priv.h"
 
-CALIB_ATTR const calib_memlayout_t calib_default = {
-    .brightness_curve = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-        40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
-        50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-        60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
-        70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
-        80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
-        90, 91, 92, 93, 94, 95, 96, 97, 98, 99
+//#include "bsp/volt_cfg.h"
+
+CALIB_ATTR const calib_layout_v1_t calib_default = {
+    .Version = 1,
+    .Properties = {
+        .Voltage_Slope_Calib = 0, // Invalid calib value will trigger fallback to default behavior in voltage mapping
+        .Voltage_Slope_Offset = 0,
+        .Imu_Accel_Calib_X = 0,
+        .Imu_Accel_Calib_Y = 0,
+        .Imu_Accel_Calib_Z = 0
     },
-    .padding = {[0 ... sizeof(calib_default.padding) - 1] = 0xFF},
-    .crc32 = 0 // Will be calculated and filled in by the post-build step
+    .Padding = {[0 ... sizeof(calib_default.Padding) - 1] = 0xFF},
+    .Crc32 = 0 // Will be calculated and filled in by the post-build step
 };
 

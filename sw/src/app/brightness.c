@@ -5,7 +5,9 @@
 
 // Application components
 #include "app/config.h"
-#include "uds_gen.h"
+#include "app/calib.h"
+#include "app/feature.h"
+#include "app/current.h"
 
 static brightness_mode_t BRIGHTNESS_Mode;
 static uint16_t BRIGHTNESS_Target;
@@ -25,6 +27,10 @@ static uint16_t BRIGHTNESS_ConfStrobeLow;
 static uint16_t BRIGHTNESS_ConfStrobeHigh;
 static uint16_t BRIGHTNESS_ConfStrobeEmergency;
 static uint16_t BRIGHTNESS_ConfStrobeSafety;
+
+static uint16_t BRIGHTNESS_TailOutput;
+static uint16_t BRIGHTNESS_BrakeOutput;
+static uint16_t BRIGHTNESS_TurnOutput;
 
 void BRIGHTNESS_LoadConfig(void) {
     BRIGHTNESS_ConfCutoffX = CONFIG_Props.BrightnessCurve_Cutoff_X;
@@ -90,99 +96,133 @@ static uint16_t BRIGHTNESS_MapTargetAdaptive(uint16_t target) {
     }
 }
 
-void BRIGHTNESS_Update10ms(void) {
-    if (BRIGHTNESS_Mode == brightness_mode_off) {
-        uint16_t brake_target = BRIGHTNESS_MapBrake(LIGHTCONTROL_BRIGHTNESS_MIN);
-        
-        if (!BRIGHTNESS_Brake) {
-            brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+void BRIGHTNESS_OffMode(uint16_t* tail_target, uint16_t* brake_target, uint16_t* turn_target) {
+    uint16_t target = LIGHTCONTROL_BRIGHTNESS_MIN;
+
+    #if FEATURE_BRIGHTNESS_BRAKE_IN_OFF_MODE == 1
+    if (BRIGHTNESS_Brake) {
+        // TODO: in off mode target is ignored completely
+        target = BRIGHTNESS_MapBrake(LIGHTCONTROL_BRIGHTNESS_MIN);
+    }
+    #endif
+
+    *tail_target = target;
+    *brake_target = target;
+    *turn_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+}
+
+void BRIGHTNESS_NormalMode(uint16_t* tail_target, uint16_t* brake_target, uint16_t* turn_target) {
+    uint16_t temp_tail = BRIGHTNESS_MapTargetAdaptive(BRIGHTNESS_Target);
+    uint16_t temp_brake = BRIGHTNESS_MapBrake(BRIGHTNESS_Target);
+    uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
+
+    /* In standard mode the rear light is in daylight running mode */
+    if ((BRIGHTNESS_Mode == brightness_mode_standard || BRIGHTNESS_Brake) && temp_tail < BRIGHTNESS_ConfLevelStandard) {
+        temp_tail = BRIGHTNESS_ConfLevelStandard;
+    }
+
+    if (BRIGHTNESS_Brake) {
+        temp_tail = temp_brake;
+        temp_brake = temp_brake;
+    }
+    else {
+        temp_brake = LIGHTCONTROL_BRIGHTNESS_MIN;
+        uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
+        // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
+        if (!BRIGHTNESS_Strobe) {
+            temp_tail = temp_strobe;
         }
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, brake_target);
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, brake_target);
+    }
+    *tail_target = temp_tail;
+    *brake_target = temp_brake;
+    *turn_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+}
+
+void BRIGHTNESS_EmergencyMode(uint16_t* tail_target, uint16_t* brake_target, uint16_t* turn_target) {
+    uint16_t temp_tail = BRIGHTNESS_ConfLevelEmergency;
+    uint16_t temp_strobe = BRIGHTNESS_ConfStrobeEmergency;
+
+    // TODO: support for braking in emergency mode
+    if (!BRIGHTNESS_Strobe) {
+        temp_tail = temp_strobe;
+    }
+
+    *tail_target = temp_tail;
+    *brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+    *turn_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+}
+
+void BRIGHTNESS_SafetyMode(uint16_t* tail_target, uint16_t* brake_target, uint16_t* turn_target) {
+    uint16_t temp_tail = BRIGHTNESS_ConfLevelSafety;
+    uint16_t temp_brake = BRIGHTNESS_MapBrake(BRIGHTNESS_Target);
+    uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
+
+    // TODO: feature toggle FEATURE_BRIGHTNESS_BRAKE_IN_SAFETY_MODE
+    if (BRIGHTNESS_Brake) {
+        temp_tail = temp_brake;
+        temp_brake = temp_brake;
+    }
+    else {
+        temp_brake = LIGHTCONTROL_BRIGHTNESS_MIN;
+        // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
+        if (!BRIGHTNESS_Strobe) {
+            temp_tail = temp_strobe;
+        }
+    }
+
+    *tail_target = temp_tail;
+    *brake_target = temp_brake;
+    *turn_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+}
+
+void BRIGHTNESS_MaxMode(uint16_t* tail_target, uint16_t* brake_target, uint16_t* turn_target) {
+    *tail_target = LIGHTCONTROL_BRIGHTNESS_MAX;
+    *brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+    *turn_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+}
+
+void BRIGHTNESS_Update10ms(void) {
+
+    uint16_t temp_tail, temp_brake, temp_turn;
+
+    if (BRIGHTNESS_Mode == brightness_mode_off) {
+        BRIGHTNESS_OffMode(&temp_tail, &temp_brake, &temp_turn);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_standard || BRIGHTNESS_Mode == brightness_mode_adaptive) {
-        uint16_t tail_target = BRIGHTNESS_MapTargetAdaptive(BRIGHTNESS_Target);
-        uint16_t brake_target = BRIGHTNESS_MapBrake(BRIGHTNESS_Target);
-        uint16_t strobe_target = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
-
-        /* In standard mode the rear light is in daylight running mode */
-        if ((BRIGHTNESS_Mode == brightness_mode_standard || BRIGHTNESS_Brake) && tail_target < BRIGHTNESS_ConfLevelStandard) {
-            tail_target = BRIGHTNESS_ConfLevelStandard;
-        }
-
-        if (BRIGHTNESS_Brake) {
-            tail_target = brake_target;
-            brake_target = brake_target;
-        }
-        else {
-            brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
-            uint16_t strobe_target = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
-            // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
-            if (!BRIGHTNESS_Strobe) {
-                tail_target = strobe_target;
-            }
-        }
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, tail_target);
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, brake_target);
+        BRIGHTNESS_NormalMode(&temp_tail, &temp_brake, &temp_turn);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_emergency) {
-        uint16_t tail_target = BRIGHTNESS_ConfLevelEmergency;
-        uint16_t strobe_target = BRIGHTNESS_ConfStrobeEmergency;
-
-        if (!BRIGHTNESS_Strobe) {
-            tail_target = strobe_target;
-        }
-
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, tail_target);
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, LIGHTCONTROL_BRIGHTNESS_MIN);
+        BRIGHTNESS_EmergencyMode(&temp_tail, &temp_brake, &temp_turn);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_safety) {
-        uint16_t tail_target = BRIGHTNESS_ConfLevelSafety;
-        uint16_t brake_target = BRIGHTNESS_MapBrake(BRIGHTNESS_Target);
-        uint16_t strobe_target = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
-
-        if (BRIGHTNESS_Brake) {
-            tail_target = brake_target;
-            brake_target = brake_target;
-        }
-        else {
-            brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
-            // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
-            if (!BRIGHTNESS_Strobe) {
-                tail_target = strobe_target;
-            }
-        }
-
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, tail_target);
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, brake_target);
+        BRIGHTNESS_SafetyMode(&temp_tail, &temp_brake, &temp_turn);
     }
     else if (BRIGHTNESS_Mode == brightness_mode_max) {
         /* In max mode tail segments is set to maximum brightness, brake light is disabled */
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, LIGHTCONTROL_BRIGHTNESS_MAX);
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, LIGHTCONTROL_BRIGHTNESS_MIN);
+        BRIGHTNESS_MaxMode(&temp_tail, &temp_brake, &temp_turn);
     }
     else {
         // Control should never reach this scenario
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, LIGHTCONTROL_BRIGHTNESS_MAX);
-        LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, LIGHTCONTROL_BRIGHTNESS_MIN);
+        BRIGHTNESS_MaxMode(&temp_tail, &temp_brake, &temp_turn);
     }
+
+    // Calibrate
+    // TODO: implement
+
+    // Derate final output
+    uint16_t derating_factor = CURRENT_GetDeratingFactor();
+
+    BRIGHTNESS_BrakeOutput = ((uint32_t)temp_brake * derating_factor) / CURRENT_DERATING_NONE;
+    BRIGHTNESS_TailOutput = ((uint32_t)temp_tail * derating_factor) / CURRENT_DERATING_NONE;
+    BRIGHTNESS_TurnOutput = ((uint32_t)temp_turn * derating_factor) / CURRENT_DERATING_NONE;
 }
 
 void BRIGHTNESS_SetMode(brightness_mode_t mode) {
     BRIGHTNESS_Mode = mode;
 }
 
-brightness_mode_t BRIGHTNESS_GetMode(void) {
-    return BRIGHTNESS_Mode;
-}
-
 void BRIGHTNESS_SetTarget(uint16_t target) {
     BRIGHTNESS_Target = target;
-}
-
-uint16_t BRIGHTNESS_GetTarget(void) {
-    // TODO: this should return the tail target
-    return BRIGHTNESS_Target;
 }
 
 void BRIGHTNESS_SetBraking(bool brake) {
@@ -191,4 +231,18 @@ void BRIGHTNESS_SetBraking(bool brake) {
 
 void BRIGHTNESS_SetStrobe(bool strobe) {
     BRIGHTNESS_Strobe = strobe;
+}
+
+uint16_t BRIGHTNESS_GetOutput(brightness_output_t output)
+{
+    switch (output) {
+        case brightness_output_tail:
+            return BRIGHTNESS_TailOutput;
+        case brightness_output_brake:
+            return BRIGHTNESS_BrakeOutput;
+        case brightness_output_turn:
+            return BRIGHTNESS_TurnOutput;
+        default:
+            return LIGHTCONTROL_BRIGHTNESS_MIN;
+    }
 }

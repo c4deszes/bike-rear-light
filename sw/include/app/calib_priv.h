@@ -10,10 +10,24 @@
 #define CALIB_FLASH_SIZE (64u * 4u)
 
 typedef struct {
-    uint8_t brightness_curve[CALIB_BRIGHTNESS_RANGE];
-    uint16_t voltage_calib;
-    uint8_t padding[CALIB_FLASH_SIZE - CALIB_BRIGHTNESS_RANGE - sizeof(uint16_t) - sizeof(uint32_t)];
-    uint32_t crc32;
-} calib_memlayout_t;
+    uint16_t Voltage_Slope_Calib;
+    int16_t Voltage_Slope_Offset;
+    int16_t Imu_Accel_Calib_X;
+    int16_t Imu_Accel_Calib_Y;
+    int16_t Imu_Accel_Calib_Z;
+} calib_properties_v1_t __attribute__((packed));
+
+typedef struct {
+    uint8_t Version;
+    calib_properties_v1_t Properties;
+    uint8_t Padding[CALIB_FLASH_SIZE - sizeof(uint8_t) - sizeof(calib_properties_v1_t) - sizeof(uint32_t)];
+    uint32_t Crc32;
+} calib_layout_v1_t __attribute__((packed));
+
+typedef struct {
+    uint8_t Version;
+    uint8_t Padding[CALIB_FLASH_SIZE - sizeof(uint8_t) - sizeof(uint32_t)];
+    uint32_t Crc32;
+} calib_layout_generic_t __attribute__((packed));
 
 #endif // APP_CALIB_PRIV_H

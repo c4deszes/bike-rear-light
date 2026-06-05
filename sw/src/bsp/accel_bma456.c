@@ -15,11 +15,10 @@
 static int8_t BMA456_ReadAdapter(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     GPIO_PinWrite(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, LOW);
-    SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, reg_addr);  // Read register address (driver sets the R/W bit)
-    
-    // Dummy byte is included by the driver
+    SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, reg_addr);
+
     for (uint32_t i=0;i<len;i++) {
-        uint8_t data = SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, 0xFF); // Read from slave
+        uint8_t data = SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, 0xFF);
 
         reg_data[i] = data;
     }
@@ -32,11 +31,10 @@ static int8_t BMA456_ReadAdapter(uint8_t reg_addr, uint8_t *reg_data, uint32_t l
 static int8_t BMA456_WriteAdapter(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     GPIO_PinWrite(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, LOW);
-    SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, reg_addr);  // Read register address (driver sets the R/W bit)
-    
-    // Dummy byte is included by the driver
+    SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, reg_addr);
+
     for (uint32_t i=0;i<len;i++) {
-        SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, reg_data[i]); // Read from slave
+        SERCOM_SPI_TransferByte(BMA456_SERCOM_INSTANCE, reg_data[i]);
     }
 
     GPIO_PinWrite(BMA456_SPI_CS_PORT, BMA456_SPI_CS_PIN, HIGH);
@@ -94,6 +92,7 @@ void ACCEL_Init(void) {
 }
 
 bool ACCEL_SetupSensor(void) {
+    // TODO: move to configuration
     accel_conf.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
     accel_conf.range = BMA4_ACCEL_RANGE_4G;
     accel_conf.bandwidth = BMA4_ACCEL_NORMAL_AVG4;

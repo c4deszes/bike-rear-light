@@ -1,9 +1,11 @@
 #if !defined(APP_CONFIG_H_)
 #define APP_CONFIG_H_
 
-#include "strobe.h"
 #include <stdint.h>
 #include <stdbool.h>
+
+#include "strobe.h"
+#include "uds_api.h"
 
 typedef struct {
     bool AutomaticDiagnostics;
@@ -46,14 +48,23 @@ typedef struct {
 extern config_properties_t CONFIG_Props;
 
 /**
- * @brief Loads properties from flash memory into the UDS container
+ * @brief Loads properties from flash memory into the UDS container,
+ *        should only be called once at startup, but only after UDS Init
  */
 void CONFIG_LoadNvram(void);
 
+/**
+ * @brief Loads the current UDS properties into the active configuration
+ */
 void CONFIG_Reload(void);
 
+/**
+ * @brief Notifies application components about configuration changes. Should be called after CONFIG_Reload if the new configuration should be applied.
+ */
 void CONFIG_ReloadComponents(void);
 
 void CONFIG_Save(void);
+
+void CONFIG_NotifyPropertyChange(const uds_property_t* property);
 
 #endif // APP_CONFIG_H_

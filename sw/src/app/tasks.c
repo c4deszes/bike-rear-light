@@ -15,6 +15,7 @@
 #include "app/comm.h"
 #include "app/current.h"
 #include "app/diag.h"
+#include "app/router.h"
 #include "app/strobe.h"
 #include "app/sys_state.h"
 #include "app/temp.h"
@@ -41,6 +42,8 @@ void SCH_Task10ms_A(void) {
 #endif
 
     BRIGHTNESS_Update10ms();
+    ROUTER_Update10ms();
+
 
     LIGHTCONTROL_Update10ms();
 

@@ -29,6 +29,12 @@ void COMM_Init(void) {
 
     COMM_LightRequestTimer = SWTIMER_Create();
     COMM_SpeedStatusTimer = SWTIMER_Create();
+
+#if FEATURE_COMM_ENABLE_DEBUG_SIGNALS == 0
+    l_RearLightMotionDebug.enabled = false;
+    l_RearLightBrightnessDebug.enabled = false;
+    l_RearLightTemperatureDebug.enabled = false;
+#endif
 }
 
 void COMM_Update10ms(void) {
@@ -95,6 +101,15 @@ bool COMM_SpeedStatusTimeout(void) {
     return SWTIMER_Elapsed(COMM_SpeedStatusTimer);
 }
 
+bool COMM_SpeedValid(void) {
+    uint8_t speed_state = l_rd_SpeedStatus_SpeedState();
+    return (speed_state == L_SpeedStateEncoder_Ok || speed_state == L_SpeedStateEncoder_SlowResponse);
+}
+
+uint16_t COMM_GetSpeed(void) {
+    return l_rd_SpeedStatus_Speed();
+}
+
 bool COMM_SpeedStatusBraking(void) {
     if (   l_rd_SpeedStatus_SpeedState() == L_SpeedStateEncoder_Ok
         && l_rd_SpeedStatus_BrakeState() == L_BrakeStateEncoder_Braking) {
@@ -139,7 +154,7 @@ void COMM_UpdateSignals(void) {
     l_wr_RearLightStatus_TailLightStatus(tail_status);
     l_wr_RearLightStatus_BrakeLightStatus(brake_status);
 
-    /* Turn Signal light is not present in Gen1.0 */
+    /* Turn Signal light is not present in Gen1.0 / Gen1.0b / Gen2.0 */
     l_wr_RearLightStatus_TurnSignalLightStatus(L_LightStatusEncoder_Off);
 
     temp_status_t thermal_status = TEMP_GetStatus();
@@ -158,21 +173,24 @@ uint8_t COMM_EncodeBrakeStatus(bool braking, brake_signal_status_t brake_signal_
 }
 
 void COMM_UpdateDebugSignals(void) {
-    l_wr_RearLightBrightnessDebug_Brightness(BRIGHTNESS_GetTarget());
+    // TODO: implement
+    //l_wr_RearLightBrightnessDebug_Brightness(BRIGHTNESS_GetTarget());
 
     uint8_t drive_temp = L_TemperatureEncoder_Encode(TEMP_GetDriveTemperature());
     uint8_t mcu_temp = L_TemperatureEncoder_Encode(TEMP_GetMcuTemperature());
     l_wr_RearLightTemperatureDebug_EcuTemperature(mcu_temp);
     l_wr_RearLightTemperatureDebug_DriveTemperature(drive_temp);
 
-    int16_t accel_x = BRAKE_GetAccelerationX();
-    int16_t accel_y = BRAKE_GetAccelerationY();
-    int16_t accel_z = BRAKE_GetAccelerationZ();
+    int16_t accel_x;
+    int16_t accel_y;
+    int16_t accel_z;
+
+    BRAKE_GetAcceleration(&accel_x, &accel_y, &accel_z);
 
     l_wr_RearLightMotionDebug_aX(accel_x);
     l_wr_RearLightMotionDebug_aY(accel_y);
     l_wr_RearLightMotionDebug_aZ(accel_z);
 
-    uint8_t brake_status = COMM_EncodeBrakeStatus(BRAKE_IsBraking(), BRAKE_GetBrakeSignalStatus());
+    uint8_t brake_status = COMM_EncodeBrakeStatus(BRAKE_GetInternalBraking(), BRAKE_GetInternalStatus());
     l_wr_RearLightMotionDebug_Braking(brake_status);
 }
