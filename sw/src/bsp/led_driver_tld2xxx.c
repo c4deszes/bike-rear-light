@@ -125,24 +125,24 @@ void LIGHTCONTROL_Init() {
     DIAG_Init();
 }
 
-void LIGHTCONTROL_SetBrightness(lightcontrol_feature_t feature, uint16_t brightness) {
+void LIGHTCONTROL_SetBrightness(lightcontrol_segment_t feature, uint16_t brightness) {
     // TODO: clamp brightness, if needed disable PWM function and use high/low for 100% / 0%
     // TODO: check if PWM 0 and PWM 100% are achievable
 
     // TODO: might prefer this just being a setter function and doing the actual work in Update10ms
-    if (feature == lightcontrol_feature_tail_segment) {
+    if (feature == lightcontrol_segment_tail) {
         tail_brightness = brightness;
     }
-    else if(feature == lightcontrol_feature_brake_segment) {
+    else if(feature == lightcontrol_segment_brake) {
         brake_brightness = brightness;
     }
 }
 
-uint16_t LIGHTCONTROL_GetBrightness(lightcontrol_feature_t feature) {
-    if (feature == lightcontrol_feature_tail_segment) {
+uint16_t LIGHTCONTROL_GetBrightness(lightcontrol_segment_t feature) {
+    if (feature == lightcontrol_segment_tail) {
         return tail_brightness;
     }
-    else if(feature == lightcontrol_feature_brake_segment) {
+    else if(feature == lightcontrol_segment_brake) {
         return brake_brightness;
     }
     return LIGHTCONTROL_BRIGHTNESS_MIN;
@@ -235,7 +235,7 @@ static void LIGHTCONTROL_Taillight_DiagRun(void) {
             taillight_diag_state = lightcontrol_tail_diag_state_stopped;
 
             /* Restoring original state */
-            LIGHTCONTROL_SetBrightness(lightcontrol_feature_tail_segment, tail_brightness);
+            LIGHTCONTROL_SetBrightness(lightcontrol_segment_tail, tail_brightness);
 
             GPIO_PinWrite(TLD2331_PWMI_PORT, TLD2331_PWMI_PIN, LOW);
             GPIO_EnableFunction(TLD2331_PWMI_PORT, TLD2331_PWMI_PIN, TLD2331_PWMI_PINMUX);
@@ -277,7 +277,7 @@ static void LIGHTCONTROL_Brakelight_DiagRun(void) {
             brakelight_diag_state = lightcontrol_brake_diag_state_stopped;
 
             /* Restoring original state */
-            LIGHTCONTROL_SetBrightness(lightcontrol_feature_brake_segment, brake_brightness);
+            LIGHTCONTROL_SetBrightness(lightcontrol_segment_brake, brake_brightness);
 
             GPIO_PinWrite(TLD2132_PWMI_PORT, TLD2132_PWMI_PIN, HIGH);
             GPIO_EnableFunction(TLD2132_PWMI_PORT, TLD2132_PWMI_PIN, TLD2132_PWMI_PINMUX);
@@ -329,23 +329,23 @@ void LIGHTCONTROL_Update10ms(void) {
     }
 }
 
-void LIGHTCONTROL_RunDiagnostics(lightcontrol_feature_t feature) {
-    if (feature == lightcontrol_feature_tail_segment && taillight_diag_state == lightcontrol_tail_diag_state_stopped) {
+void LIGHTCONTROL_RunDiagnostics(lightcontrol_segment_t feature) {
+    if (feature == lightcontrol_segment_tail && taillight_diag_state == lightcontrol_tail_diag_state_stopped) {
         taillight_diag_state = lightcontrol_tail_diag_state_enable;
         SWTIMER_Setup(taillight_diag_timer, 0);
     }
-    else if (feature == lightcontrol_feature_brake_segment && brakelight_diag_state == lightcontrol_brake_diag_state_stopped) {
+    else if (feature == lightcontrol_segment_brake && brakelight_diag_state == lightcontrol_brake_diag_state_stopped) {
         brakelight_diag_state = lightcontrol_brake_diag_state_enable;
         SWTIMER_Setup(brakelight_diag_timer, 0);
     }
 }
 
-lightcontrol_feature_state_t LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_t feature) {
+lightcontrol_feature_state_t LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_t feature) {
     // TODO: return off when channels are off
-    if (feature == lightcontrol_feature_tail_segment) {
+    if (feature == lightcontrol_segment_tail) {
         return taillight_state;
     }
-    else if (feature == lightcontrol_feature_brake_segment) {
+    else if (feature == lightcontrol_segment_brake) {
         return brakelight_state;
     }
     else {

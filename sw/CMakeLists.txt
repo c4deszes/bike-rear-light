@@ -34,16 +34,20 @@ option(REAR_LIGHT_BUILD_SILTESTS "Enables integration test cases" OFF)
 option(REAR_LIGHT_BUILD_FUNCTESTS "Enables functional test cases" OFF)
 option(REAR_LIGHT_BUILD_DOCS "Enables documentation generation" OFF)
 
+if (NOT DEFINED REAR_LIGHT_BOARD_VARIANT)
+    message(FATAL_ERROR "REAR_LIGHT_BOARD_VARIANT not set. Please set it to a valid board variant (e.g. gen2-al8891).")
+endif()
+
 find_package(Python REQUIRED)
 include(tools/cmake/CPM.cmake)
 
 ################################################################################
 # Dependencies
 ################################################################################
-set(BIKE_LINE_PROTOCOL_VERSION feature/codegen-exec)
-set(BIKE_UDS_TOOL_VERSION feature/service-call-new)
+set(BIKE_LINE_PROTOCOL_VERSION v0.4.0)
+set(BIKE_UDS_TOOL_VERSION v0.3.0)
 
-CPMAddPackage("gh:c4deszes/samd21-hal#feature/sim-support")
+CPMAddPackage("gh:c4deszes/samd21-hal@0.5.0")
 CPMAddPackage("gh:c4deszes/bike-line-protocol#${BIKE_LINE_PROTOCOL_VERSION}")
 CPMAddPackage("gh:c4deszes/samd21-line-bootloader@0.4.0")
 CPMAddPackage("gh:c4deszes/bike-flash-tool@0.2.0")
@@ -116,7 +120,7 @@ add_subdirectory(config/data)
 ################################################################################
 # Board configurations
 ################################################################################
-add_subdirectory(config/gen2-al8891)
+add_subdirectory(config/${REAR_LIGHT_BOARD_VARIANT})
 
 add_library(bsp INTERFACE)
 target_link_libraries(bsp INTERFACE samd21e18a bsp-config)
@@ -143,6 +147,10 @@ endif()
 get_target_property(BSP_LED_DRIVER bsp-config BSP_LED_DRIVER)
 if (BSP_LED_DRIVER STREQUAL "TLD509x")
     target_sources(bsp INTERFACE src/bsp/led_driver_tld509x.c)
+elseif (BSP_LED_DRIVER STREQUAL "ILD8150")
+    target_sources(bsp INTERFACE src/bsp/led_driver_ild8150.c)
+elseif (BSP_LED_DRIVER STREQUAL "TLD2xxx")
+    target_sources(bsp INTERFACE src/bsp/led_driver_tld2xxx.c)
 elseif (BSP_LED_DRIVER STREQUAL "AL8891")
     target_sources(bsp INTERFACE src/bsp/led_driver_al8891.c)
 else()

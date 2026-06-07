@@ -2,9 +2,9 @@
 function(gen_user_config target_name source_file)
     add_executable(${target_name} EXCLUDE_FROM_ALL)
     target_sources(${target_name} PRIVATE ${source_file})
-    target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../include
+    target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../../include
                                                             ${CMAKE_BINARY_DIR}/uds-lib_gencode)
-    target_link_options(${target_name} PRIVATE -nostdlib -T${CMAKE_CURRENT_SOURCE_DIR}/config.ld)
+    target_link_options(${target_name} PRIVATE -nostdlib -T${CMAKE_CURRENT_FUNCTION_LIST_DIR}/config.ld)
     add_custom_command(
         TARGET ${target_name} POST_BUILD
         COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${target_name}> ${CMAKE_CURRENT_BINARY_DIR}/${target_name}.hex
@@ -14,6 +14,3 @@ function(gen_user_config target_name source_file)
     )
     set_target_properties(${target_name} PROPERTIES HEX ${CMAKE_CURRENT_BINARY_DIR}/${target_name}.hex)
 endfunction()
-
-gen_user_config(userconf-tld509x-default tld509x-default.c)
-gen_user_config(userconf-al8891-default al8891-default.c)

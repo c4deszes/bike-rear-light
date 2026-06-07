@@ -15,19 +15,39 @@
             "hidden": true
         },
         {
-            "name": "conf-armgcc-release-unix",
+            "name": "conf-build-gen1",
             "inherits": "conf-armgcc-default",
             "generator": "Unix Makefiles",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "REAR_LIGHT_BOARD_VARIANT": "gen1-tld2xxx"
             }
         },
         {
-            "name": "conf-armgcc-debug-unix",
+            "name": "conf-build-gen1b-tld509x",
             "inherits": "conf-armgcc-default",
             "generator": "Unix Makefiles",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "REAR_LIGHT_BOARD_VARIANT": "gen1b-tld509x"
+            }
+        },
+        {
+            "name": "conf-build-gen1b-ild8150",
+            "inherits": "conf-armgcc-default",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "REAR_LIGHT_BOARD_VARIANT": "gen1b-ild8150"
+            }
+        },
+        {
+            "name": "conf-build-gen2",
+            "inherits": "conf-armgcc-default",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "REAR_LIGHT_BOARD_VARIANT": "gen2-al8891"
             }
         },
         {
@@ -70,14 +90,24 @@
             "hidden": true
         },
         {
-            "name": "build-app-release",
+            "name": "build-app-gen1",
             "inherits": "build-app-targets",
-            "configurePreset": "conf-armgcc-release-unix"
+            "configurePreset": "conf-build-gen1"
         },
         {
-            "name": "build-app-debug",
+            "name": "build-app-gen1b-tld509x",
             "inherits": "build-app-targets",
-            "configurePreset": "conf-armgcc-debug-unix"
+            "configurePreset": "conf-build-gen1b-tld509x"
+        },
+        {
+            "name": "build-app-gen1b-ild8150",
+            "inherits": "build-app-targets",
+            "configurePreset": "conf-build-gen1b-ild8150"
+        },
+        {
+            "name": "build-app-gen2",
+            "inherits": "build-app-targets",
+            "configurePreset": "conf-build-gen2"
         },
         {
             "name": "build-cov-gcc",
@@ -93,31 +123,21 @@
             "name": "build-docs-gcc",
             "inherits": "build-docs-targets",
             "configurePreset": "conf-gcc-default"
-        },
-        {
-            "name": "build-setup-tools",
-            "targets": [ "PythonSetup" ],
-            "hidden": true
-        },
-        {
-            "name": "build-setup-unix",
-            "inherits": "build-setup-tools",
-            "configurePreset": "conf-armgcc-release-unix"
         }
     ],
     "testPresets": [
     ],
     "workflowPresets": [
         {
-            "name": "workflow-build",
+            "name": "workflow-build-gen1",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "conf-armgcc-release-unix"
+                    "name": "conf-build-gen1"
                 },
                 {
                     "type": "build",
-                    "name": "build-app-release"
+                    "name": "build-app-gen1"
                 }
             ]
         },
