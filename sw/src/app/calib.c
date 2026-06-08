@@ -20,6 +20,7 @@ static struct {
     uint8_t Reserved : 3;
 } CALIB_ErrorFlags;
 
+static bool CALIB_Changed;
 static uint16_t CALIB_VoltageSlopeCalib;
 static int16_t CALIB_VoltageOffsetCalib;
 static int16_t CALIB_ImuAccelXCalib;
@@ -64,7 +65,6 @@ static void CALIB_LoadNvram(void) {
                                               CALIB_FLASH_SIZE-sizeof(uint32_t));
 
     if (CALIB_CalculatedCrc == CALIB_Memory->Crc32) {
-        // TODO: load properties based on version
         if (CALIB_Memory->Version == 1) {
             CALIB_LoadCalibration_v1();
         }
@@ -87,9 +87,24 @@ void CALIB_Init(void) {
 #endif
 }
 
-bool CALIB_Save(void) {
-    // TODO: implement saving to flash with wear leveling and CRC calculation
-    return false;
+void CALIB_Save(void) {
+    if (CALIB_Changed) {
+        calib_layout_v1_t mem;
+        mem.Version = 1;
+        mem.Properties.Voltage_Slope_Calib = CALIB_VoltageSlopeCalib;
+        mem.Properties.Voltage_Slope_Offset = CALIB_VoltageOffsetCalib;
+        mem.Properties.Imu_Accel_Calib_X = CALIB_ImuAccelXCalib;
+        mem.Properties.Imu_Accel_Calib_Y = CALIB_ImuAccelYCalib;
+        mem.Properties.Imu_Accel_Calib_Z = CALIB_ImuAccelZCalib;
+
+        for (uint8_t i = 0; i < sizeof(mem.Padding); i++) {
+            mem.Padding[i] = 0xFF;
+        }
+        mem.Crc32 = DSU_SoftwareCRC32(DSU_CRC32_INITIAL, (void*)(&mem), sizeof(calib_layout_v1_t)-sizeof(uint32_t));
+
+        NVMCTRL_EraseRow(CALIB_FLASH_ADDRESS);
+        NVMCTRL_WritePages(CALIB_FLASH_ADDRESS, (uint8_t*)(&mem), sizeof(calib_layout_v1_t));
+    }
 }
 
 bool CALIB_GetVoltageCalib(uint16_t* slope_calib, int16_t* offset_calib)
@@ -104,6 +119,7 @@ bool CALIB_SetVoltageCalib(uint16_t slope_calib, int16_t offset_calib) {
     // TODO: validate calib values
     CALIB_VoltageSlopeCalib = slope_calib;
     CALIB_VoltageOffsetCalib = offset_calib;
+    CALIB_Changed = true;
     return true;
 }
 
@@ -122,14 +138,11 @@ bool CALIB_GetImuAccelCalib(int16_t* x_calib, int16_t* y_calib, int16_t* z_calib
 
 bool CALIB_SetImuAccelCalib(int16_t x_calib, int16_t y_calib, int16_t z_calib)
 {
-#if FEATURE_CALIB_IMU_ENABLE == 1
     // TODO: validate calib values
     CALIB_ImuAccelXCalib = x_calib;
     CALIB_ImuAccelYCalib = y_calib;
     CALIB_ImuAccelZCalib = z_calib;
+    CALIB_Changed = true;
     return true;
-#else
-    return false;
-#endif
 }
 

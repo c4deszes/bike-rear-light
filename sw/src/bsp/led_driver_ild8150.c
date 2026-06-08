@@ -5,7 +5,7 @@
 #include "hal/gpio.h"
 #include "common/swtimer.h"
 
-#include "bsp/config.h"
+#include "app/feature.h"
 
 #if LED_DRIVER_CONTROL_MODE != CONTROL_MODE_PWM
 #warning "ILD8150 only supports PWM control."

@@ -47,7 +47,7 @@ include(tools/cmake/CPM.cmake)
 set(BIKE_LINE_PROTOCOL_VERSION v0.4.0)
 set(BIKE_UDS_TOOL_VERSION v0.3.0)
 
-CPMAddPackage("gh:c4deszes/samd21-hal@0.5.0")
+CPMAddPackage("gh:c4deszes/samd21-hal@0.5.1")
 CPMAddPackage("gh:c4deszes/bike-line-protocol#${BIKE_LINE_PROTOCOL_VERSION}")
 CPMAddPackage("gh:c4deszes/samd21-line-bootloader@0.4.0")
 CPMAddPackage("gh:c4deszes/bike-flash-tool@0.2.0")

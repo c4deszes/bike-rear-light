@@ -73,15 +73,28 @@ strobe_source_t COMM_LightBehavior(strobe_source_t default_source, strobe_source
  */
 bool COMM_SpeedStatusTimeout(void);
 
+/**
+ * @brief Returns true if the speed status frame indicates that the speed is valid
+ *        (Ok or SlowResponse)
+ * 
+ * @return true when the speed status is valid
+ * @return false otherwise
+ */
 bool COMM_SpeedValid(void);
 
+/**
+ * @brief Returns the current speed as reported by the master device in the SpeedStatus frame
+ * 
+ * @return uint16_t Speed in 0.1 km/h increments (e.g. 1234 = 123.4 km/h)
+ */
 uint16_t COMM_GetSpeed(void);
 
 /**
- * @brief Returns true if the speed status frame indicates that the bicycle is braking
+ * @brief Returns true if the speed status frame indicates that the bicycle is braking,
+ *        not used under SlowResponse conditions
  * 
- * @return true 
- * @return false 
+ * @return true when the bicycle is braking
+ * @return false otherwise
  */
 bool COMM_SpeedStatusBraking(void);
 

@@ -9,7 +9,7 @@
 
 void CALIB_Init(void);
 
-bool CALIB_Save(void);
+void CALIB_Save(void);
 
 bool CALIB_GetVoltageCalib(uint16_t* slope_calib, int16_t* offset_calib);
 

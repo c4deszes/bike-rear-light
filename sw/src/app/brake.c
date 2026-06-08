@@ -15,6 +15,9 @@ static brake_signal_status_t BRAKE_SignalState;
 static accel_data_t BRAKE_Acceleration;
 static accel_data_t BRAKE_AccelerationCalib;
 
+static bool BRAKE_InternalBrakeActive;
+static bool BRAKE_ExternalBrakeActive;
+
 void BRAKE_Init(void) {
     BRAKE_IsSensorSetup = false;
     BRAKE_SignalState = brake_signal_status_na;
@@ -26,6 +29,9 @@ void BRAKE_Init(void) {
     BRAKE_AccelerationCalib.x = 0;
     BRAKE_AccelerationCalib.y = 0;
     BRAKE_AccelerationCalib.z = 0;
+
+    BRAKE_InternalBrakeActive = false;
+    BRAKE_ExternalBrakeActive = false;
 
     // TODO: handle when calibration is not available
     CALIB_GetImuAccelCalib(&BRAKE_AccelerationCalib.x, &BRAKE_AccelerationCalib.y, &BRAKE_AccelerationCalib.z);
@@ -45,28 +51,44 @@ void BRAKE_Update10ms(void) {
     }
 #endif
 
-    bool internal_brake = false;
+/* Internal brake signal */
+    BRAKE_InternalBrakeActive = false;
 
-#if FEATURE_BRAKE_USE_INTERNAL_SIGNAL == 1
+#if FEATURE_BRAKE_ENABLE_SENSOR == 1
     if (BRAKE_SignalState == brake_signal_status_ok) {
         bool result = ACCEL_ReadData(&BRAKE_Acceleration);
 
+        // TODO: implement sensor error handling
         // TODO: implement brake detection logic based on acceleration data
-    }
-#else
+        #if FEATURE_BRAKE_ENABLE_ALGORITHM
 
+        #endif
+    }
 #endif
 
-    bool external_brake = false;
+/* External brake signal */
+    BRAKE_ExternalBrakeActive = false;
+
+    if (!COMM_SpeedStatusTimeout() && COMM_SpeedStatusBraking()) {
+        BRAKE_ExternalBrakeActive = true;
+    }
+
+/* Final brake signal determination */
+    bool combined_brake = false;
 
 #if FEATURE_BRAKE_USE_EXTERNAL_SIGNAL == 1
-    if (!COMM_SpeedStatusTimeout() && COMM_SpeedStatusBraking()) {
-        BRIGHTNESS_SetBraking(true);
-    }
-    else {
-        BRIGHTNESS_SetBraking(false);
+    if (BRAKE_ExternalBrakeActive) {
+        combined_brake = true;
     }
 #endif
+
+#if FEATURE_BRAKE_USE_INTERNAL_SIGNAL == 1
+    if (BRAKE_InternalBrakeActive) {
+        combined_brake = true;
+    }
+#endif
+
+    BRIGHTNESS_SetBraking(combined_brake);
 }
 
 brake_signal_status_t BRAKE_GetInternalStatus(void) {
@@ -74,8 +96,7 @@ brake_signal_status_t BRAKE_GetInternalStatus(void) {
 }
 
 bool BRAKE_GetInternalBraking(void) {
-    // TODO: implement
-    return false;
+    return BRAKE_InternalBrakeActive;
 }
 
 void BRAKE_GetAcceleration(int16_t* x, int16_t* y, int16_t* z) {

@@ -14,6 +14,10 @@ static uint16_t BRIGHTNESS_Target;
 static bool BRIGHTNESS_Brake;
 static bool BRIGHTNESS_Strobe;
 
+static uint16_t BRIGHTNESS_TailOutput;
+static uint16_t BRIGHTNESS_BrakeOutput;
+static uint16_t BRIGHTNESS_TurnOutput;
+
 static uint16_t BRIGHTNESS_ConfCutoffX;
 static uint16_t BRIGHTNESS_ConfCutoffY;
 static uint16_t BRIGHTNESS_ConfMaxX;
@@ -27,10 +31,6 @@ static uint16_t BRIGHTNESS_ConfStrobeLow;
 static uint16_t BRIGHTNESS_ConfStrobeHigh;
 static uint16_t BRIGHTNESS_ConfStrobeEmergency;
 static uint16_t BRIGHTNESS_ConfStrobeSafety;
-
-static uint16_t BRIGHTNESS_TailOutput;
-static uint16_t BRIGHTNESS_BrakeOutput;
-static uint16_t BRIGHTNESS_TurnOutput;
 
 void BRIGHTNESS_LoadConfig(void) {
     BRIGHTNESS_ConfCutoffX = CONFIG_Props.BrightnessCurve_Cutoff_X;
@@ -53,6 +53,10 @@ void BRIGHTNESS_Init(void) {
     BRIGHTNESS_Target = LIGHTCONTROL_BRIGHTNESS_MAX;
     BRIGHTNESS_Brake = false;
     BRIGHTNESS_Strobe = true;
+
+    BRIGHTNESS_TailOutput = LIGHTCONTROL_BRIGHTNESS_MIN;
+    BRIGHTNESS_BrakeOutput = LIGHTCONTROL_BRIGHTNESS_MIN;
+    BRIGHTNESS_TurnOutput = LIGHTCONTROL_BRIGHTNESS_MIN;
 
     BRIGHTNESS_LoadConfig();
 }
@@ -154,24 +158,15 @@ void BRIGHTNESS_EmergencyMode(uint16_t* tail_target, uint16_t* brake_target, uin
 
 void BRIGHTNESS_SafetyMode(uint16_t* tail_target, uint16_t* brake_target, uint16_t* turn_target) {
     uint16_t temp_tail = BRIGHTNESS_ConfLevelSafety;
-    uint16_t temp_brake = BRIGHTNESS_MapBrake(BRIGHTNESS_Target);
-    uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
+    uint16_t temp_strobe = BRIGHTNESS_ConfStrobeSafety;
 
     // TODO: feature toggle FEATURE_BRIGHTNESS_BRAKE_IN_SAFETY_MODE
-    if (BRIGHTNESS_Brake) {
-        temp_tail = temp_brake;
-        temp_brake = temp_brake;
-    }
-    else {
-        temp_brake = LIGHTCONTROL_BRIGHTNESS_MIN;
-        // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
-        if (!BRIGHTNESS_Strobe) {
-            temp_tail = temp_strobe;
-        }
+    if (!BRIGHTNESS_Strobe) {
+        temp_tail = temp_strobe;
     }
 
     *tail_target = temp_tail;
-    *brake_target = temp_brake;
+    *brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
     *turn_target = LIGHTCONTROL_BRIGHTNESS_MIN;
 }
 

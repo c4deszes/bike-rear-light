@@ -164,14 +164,9 @@ void DIAG_Update10ms(void) {
         UDS_Service_RearLight_Calib_Save_RequestContext_t* request = UDS_RearLight_Calib_Save_GetPendingServiceRequest();
         UDS_Service_RearLight_Calib_Save_ResponseContext_t* response = UDS_RearLight_Calib_Save_GetPendingServiceResponse();
 
-        bool result = CALIB_Save();
+        CALIB_Save();
 
-        if (result) {
-            UDS_RearLight_Calib_Save_FinishServiceRequest(UDS_SERVICE_CALL_SUCCESS);
-        }
-        else {
-            UDS_RearLight_Calib_Save_FinishServiceRequest(UDS_SERVICE_CALL_GENERIC_FAILURE);
-        }
+        UDS_RearLight_Calib_Save_FinishServiceRequest(UDS_SERVICE_CALL_SUCCESS);
         #else
         UDS_RearLight_Calib_Save_FinishServiceRequest(UDS_SERVICE_CALL_NO_SUCH_SERVICE);
         #endif

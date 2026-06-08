@@ -10,7 +10,7 @@ CONFIG_ATTR const config_layout_v1_t config_default = {
         .BrightnessCurve_Cutoff_X = 50,
         .BrightnessCurve_Cutoff_Y = 50,
         .BrightnessCurve_Max_X = 900,
-        .BrightnessCurve_Max_Y = 800,
+        .BrightnessCurve_Max_Y = 1000,
         .Brightness_LevelStandard = 100,
         .Brightness_LevelEmergency = 200,
         .Brightness_LevelSafety = 300,
@@ -25,8 +25,8 @@ CONFIG_ATTR const config_layout_v1_t config_default = {
 
         .Strobe_ModeDefault = CONFIG_STROBE_MODE_DISABLED,
         .Strobe_ModePrimary = CONFIG_STROBE_MODE_INTERNAL_SINGLE,
-        .Strobe_ModeEmergency = CONFIG_STROBE_MODE_INTERNAL_SINGLE,
-        .Strobe_ModeSafety = CONFIG_STROBE_MODE_INTERNAL_SINGLE,
+        .Strobe_ModeEmergency = CONFIG_STROBE_MODE_DISABLED,
+        .Strobe_ModeSafety = CONFIG_STROBE_MODE_INTERNAL_RAPID,
 
         .Strobe_SingleOnTime = 160,
         .Strobe_SingleOffTime = 160,
@@ -44,4 +44,3 @@ CONFIG_ATTR const config_layout_v1_t config_default = {
     .padding = {[0 ... sizeof(config_default.padding) - 1] = 0xFF},
     .crc32 = 0 // Will be calculated and filled in by the post-build step
 };
-

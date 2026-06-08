@@ -13,6 +13,12 @@
 static config_layout_generic_t* CONFIG_Memory = (config_layout_generic_t*)CONFIG_FLASH_ADDRESS;
 static config_layout_generic_t CONFIG_Shadow;
 
+static struct {
+    bool CrcInvalid : 1;
+    bool VersionInvalid : 1;
+    uint8_t Reserved : 6;
+} CONFIG_ErrorFlags;
+
 static bool CONFIG_Changed;
 config_properties_t CONFIG_Props;
 
@@ -129,8 +135,7 @@ void CONFIG_CopyPropsToShadow_v1(void) {
     for (uint8_t i = 0; i < sizeof(mem->padding); i++) {
         mem->padding[i] = 0xFF;
     }
-    //mem->crc32 = 0xDEADBEEF;
-    mem->crc32 = DSU_SoftwareCRC32(DSU_CRC32_INITIAL, (void*)(&CONFIG_Shadow), CONFIG_FLASH_SIZE-4u) ^ 0xFFFFFFFFUL;
+    mem->crc32 = DSU_SoftwareCRC32(DSU_CRC32_INITIAL, (void*)(&CONFIG_Shadow), CONFIG_FLASH_SIZE-4u);
 }
 
 void CONFIG_LoadNvram(void) {
@@ -143,11 +148,11 @@ void CONFIG_LoadNvram(void) {
             CONFIG_LoadProperties_v1();
         }
         else {
-            // TODO: handle unsupported config version
+            CONFIG_ErrorFlags.VersionInvalid = 1;
         }
     }
     else {
-        // TODO: handle config memory corruption
+        CONFIG_ErrorFlags.CrcInvalid = 1;
     }
 }
 
