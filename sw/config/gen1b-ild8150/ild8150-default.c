@@ -19,8 +19,6 @@ CONFIG_ATTR const config_layout_v1_t config_default = {
 
         .Strobe_LevelLow = 0,
         .Strobe_LevelHigh = 100,
-        .Strobe_LevelEmergency = 50,
-        .Strobe_LevelSafety = 0,
 
         .Strobe_ModeDefault = CONFIG_STROBE_MODE_DISABLED,
         .Strobe_ModePrimary = CONFIG_STROBE_MODE_INTERNAL_SINGLE,

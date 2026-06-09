@@ -29,8 +29,6 @@ typedef struct __attribute__((packed)) {
 
     uint16_t Strobe_LevelLow;
     uint16_t Strobe_LevelHigh;
-    uint16_t Strobe_LevelEmergency;
-    uint16_t Strobe_LevelSafety;
 
     uint8_t Strobe_ModeDefault;
     uint8_t Strobe_ModePrimary;

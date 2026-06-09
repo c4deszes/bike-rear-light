@@ -24,8 +24,6 @@ typedef struct {
 
     uint16_t Strobe_LevelLow;
     uint16_t Strobe_LevelHigh;
-    uint16_t Strobe_LevelEmergency;
-    uint16_t Strobe_LevelSafety;
 
     strobe_source_t Strobe_ModeDefault;
     strobe_source_t Strobe_ModePrimary;

@@ -133,12 +133,6 @@ void DIAG_Update10ms(void) {
         #endif
     }
 
-    /* Calibrate brightness */
-    if (UDS_RearLight_Calib_Brightness_HasPendingServiceRequest()) {
-        // TODO: remove
-        UDS_RearLight_Calib_Brightness_FinishServiceRequest(UDS_SERVICE_CALL_NO_SUCH_SERVICE);
-    }
-
     /* Calibrate voltage */
     if (UDS_RearLight_Calib_Voltage_HasPendingServiceRequest()) {
         #if FEATURE_DIAG_CALIB_VOLTAGE_ENABLE == 1

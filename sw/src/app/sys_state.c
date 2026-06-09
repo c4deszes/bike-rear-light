@@ -47,6 +47,7 @@ void SYSSTATE_LoadConfig(void) {
 void SYSSTATE_Init(void) {
     SYSSTATE_State = sys_state_init;
     SYSSTATE_TransitionTimer = SWTIMER_Create();
+
     SWTIMER_Setup(SYSSTATE_TransitionTimer, FEATURE_SYSTEM_TIME_INIT);
 
     SYSSTATE_LoadConfig();

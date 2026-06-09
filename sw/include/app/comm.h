@@ -98,4 +98,6 @@ uint16_t COMM_GetSpeed(void);
  */
 bool COMM_SpeedStatusBraking(void);
 
+bool COMM_BrakeLightEnabled(void);
+
 #endif // APP_COMM_H_

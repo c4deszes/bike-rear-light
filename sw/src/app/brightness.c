@@ -29,8 +29,6 @@ static uint16_t BRIGHTNESS_ConfBrakeLow;
 static uint16_t BRIGHTNESS_ConfBrakeHigh;
 static uint16_t BRIGHTNESS_ConfStrobeLow;
 static uint16_t BRIGHTNESS_ConfStrobeHigh;
-static uint16_t BRIGHTNESS_ConfStrobeEmergency;
-static uint16_t BRIGHTNESS_ConfStrobeSafety;
 
 void BRIGHTNESS_LoadConfig(void) {
     BRIGHTNESS_ConfCutoffX = CONFIG_Props.BrightnessCurve_Cutoff_X;
@@ -44,8 +42,6 @@ void BRIGHTNESS_LoadConfig(void) {
     BRIGHTNESS_ConfBrakeHigh = CONFIG_Props.Brightness_BrakeHigh;
     BRIGHTNESS_ConfStrobeLow = CONFIG_Props.Strobe_LevelLow;
     BRIGHTNESS_ConfStrobeHigh = CONFIG_Props.Strobe_LevelHigh;
-    BRIGHTNESS_ConfStrobeEmergency = CONFIG_Props.Strobe_LevelEmergency;
-    BRIGHTNESS_ConfStrobeSafety = CONFIG_Props.Strobe_LevelSafety;
 }
 
 void BRIGHTNESS_Init(void) {
@@ -131,7 +127,6 @@ void BRIGHTNESS_NormalMode(uint16_t* tail_target, uint16_t* brake_target, uint16
     }
     else {
         temp_brake = LIGHTCONTROL_BRIGHTNESS_MIN;
-        uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
         // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
         if (!BRIGHTNESS_Strobe) {
             temp_tail = temp_strobe;
@@ -143,30 +138,60 @@ void BRIGHTNESS_NormalMode(uint16_t* tail_target, uint16_t* brake_target, uint16
 }
 
 void BRIGHTNESS_EmergencyMode(uint16_t* tail_target, uint16_t* brake_target, uint16_t* turn_target) {
-    uint16_t temp_tail = BRIGHTNESS_ConfLevelEmergency;
-    uint16_t temp_strobe = BRIGHTNESS_ConfStrobeEmergency;
+    uint16_t temp_tail = BRIGHTNESS_MapTargetAdaptive(BRIGHTNESS_ConfLevelEmergency);
+    uint16_t temp_brake = BRIGHTNESS_MapBrake(BRIGHTNESS_ConfLevelEmergency);
+    uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_ConfLevelEmergency);
 
-    // TODO: support for braking in emergency mode
-    if (!BRIGHTNESS_Strobe) {
-        temp_tail = temp_strobe;
+    if (temp_tail < BRIGHTNESS_ConfLevelStandard) {
+        temp_tail = BRIGHTNESS_ConfLevelStandard;
+    }
+
+    #if FEATURE_BRIGHTNESS_BRAKE_IN_EMERGENCY_MODE == 1
+    if (BRIGHTNESS_Brake) {
+        temp_tail = temp_brake;
+        temp_brake = temp_brake;
+    }
+    else
+    #endif
+    {
+        temp_brake = LIGHTCONTROL_BRIGHTNESS_MIN;
+        // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
+        if (!BRIGHTNESS_Strobe) {
+            temp_tail = temp_strobe;
+        }
     }
 
     *tail_target = temp_tail;
-    *brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+    *brake_target = temp_brake;
     *turn_target = LIGHTCONTROL_BRIGHTNESS_MIN;
 }
 
 void BRIGHTNESS_SafetyMode(uint16_t* tail_target, uint16_t* brake_target, uint16_t* turn_target) {
-    uint16_t temp_tail = BRIGHTNESS_ConfLevelSafety;
-    uint16_t temp_strobe = BRIGHTNESS_ConfStrobeSafety;
+    uint16_t temp_tail = BRIGHTNESS_MapTargetAdaptive(BRIGHTNESS_ConfLevelSafety);
+    uint16_t temp_brake = BRIGHTNESS_MapBrake(BRIGHTNESS_ConfLevelSafety);
+    uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_ConfLevelSafety);
 
-    // TODO: feature toggle FEATURE_BRIGHTNESS_BRAKE_IN_SAFETY_MODE
-    if (!BRIGHTNESS_Strobe) {
-        temp_tail = temp_strobe;
+    if (temp_tail < BRIGHTNESS_ConfLevelStandard) {
+        temp_tail = BRIGHTNESS_ConfLevelStandard;
+    }
+
+    #if FEATURE_BRIGHTNESS_BRAKE_IN_SAFETY_MODE == 1
+    if (BRIGHTNESS_Brake) {
+        temp_tail = temp_brake;
+        temp_brake = temp_brake;
+    }
+    else
+    #endif
+    {
+        temp_brake = LIGHTCONTROL_BRIGHTNESS_MIN;
+        // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
+        if (!BRIGHTNESS_Strobe) {
+            temp_tail = temp_strobe;
+        }
     }
 
     *tail_target = temp_tail;
-    *brake_target = LIGHTCONTROL_BRIGHTNESS_MIN;
+    *brake_target = temp_brake;
     *turn_target = LIGHTCONTROL_BRIGHTNESS_MIN;
 }
 

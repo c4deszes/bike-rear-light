@@ -23,6 +23,8 @@ current_estimate_state_t CURRENT_GetEstimateState(void);
 
 bool CURRENT_ThermalDeratingActive(void);
 
+bool CURRENT_ThermalShutdownActive(void);
+
 /**
  * @brief Gets the derating factor based on the temperature and voltage, this ranges from 0 (full derating)
  *        to 1000 (no derating)

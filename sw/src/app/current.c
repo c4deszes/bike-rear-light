@@ -205,6 +205,10 @@ bool CURRENT_ThermalDeratingActive(void) {
     return CURRENT_TemperatureDerating < CURRENT_DERATING_NONE;
 }
 
+bool CURRENT_ThermalShutdownActive(void) {
+    return CURRENT_TemperatureDerating == CURRENT_DERATING_MAX;
+}
+
 uint16_t CURRENT_GetDeratingFactor(void) {
     return CURRENT_DeratingFactor;
 }

@@ -22,6 +22,8 @@
 static swtimer_t* COMM_LightRequestTimer;
 static swtimer_t* COMM_SpeedStatusTimer;
 
+static bool COMM_RearLightSettingReceivedOnce;
+
 void COMM_Init(void) {
     LINE_App_Init();
     UDS_Init();
@@ -29,6 +31,8 @@ void COMM_Init(void) {
 
     COMM_LightRequestTimer = SWTIMER_Create();
     COMM_SpeedStatusTimer = SWTIMER_Create();
+
+    COMM_RearLightSettingReceivedOnce = false;
 
 #if FEATURE_COMM_ENABLE_DEBUG_SIGNALS == 0
     l_RearLightMotionDebug.enabled = false;
@@ -45,6 +49,11 @@ void COMM_Update10ms(void) {
 
     if (l_flg_tst_RearLightSetting()) {
         l_flg_clr_RearLightSetting();
+
+        if (!COMM_RearLightSettingReceivedOnce) {
+            COMM_RearLightSettingReceivedOnce = true;
+        }
+
         SWTIMER_Setup(COMM_LightRequestTimer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
     }
 
@@ -119,6 +128,10 @@ bool COMM_SpeedStatusBraking(void) {
     return false;
 }
 
+bool COMM_BrakeLightEnabled(void) {
+    return (COMM_RearLightSettingReceivedOnce && l_rd_RearLightSetting_BrakeLightMode() == L_GenericModeSwitchEncoder_Default);
+}
+
 static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
     if (state == lightcontrol_feature_state_ok) {
         return L_LightStatusEncoder_Ok;
@@ -136,12 +149,12 @@ static uint8_t COMM_EncodeThermalStatus(temp_status_t status) {
     if (status == temp_status_not_measured) {
         return L_ThermalStatusEncoder_NotMeasured;
     }
+    else if (CURRENT_ThermalShutdownActive()) {
+        return L_ThermalStatusEncoder_Shutdown;
+    }
     else if (CURRENT_ThermalDeratingActive()) {
         return L_ThermalStatusEncoder_Derating;
     }
-
-    /* Right now there's no thermal shutdown reaction */
-
     return L_ThermalStatusEncoder_Ok;
 }
 
@@ -173,9 +186,6 @@ uint8_t COMM_EncodeBrakeStatus(bool braking, brake_signal_status_t brake_signal_
 }
 
 void COMM_UpdateDebugSignals(void) {
-    // TODO: implement
-    //l_wr_RearLightBrightnessDebug_Brightness(BRIGHTNESS_GetTarget());
-
     uint8_t drive_temp = L_TemperatureEncoder_Encode(TEMP_GetDriveTemperature());
     uint8_t mcu_temp = L_TemperatureEncoder_Encode(TEMP_GetMcuTemperature());
     l_wr_RearLightTemperatureDebug_EcuTemperature(mcu_temp);

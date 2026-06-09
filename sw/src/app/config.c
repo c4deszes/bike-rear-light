@@ -1,4 +1,6 @@
 #include "app/config.h"
+#include "app/config_priv.h"
+
 #include "uds_gen.h"
 
 #include "hal/dsu.h"
@@ -8,7 +10,6 @@
 #include "app/strobe.h"
 #include "app/sys_state.h"
 #include "app/current.h"
-#include "app/config_priv.h"
 
 static config_layout_generic_t* CONFIG_Memory = (config_layout_generic_t*)CONFIG_FLASH_ADDRESS;
 static config_layout_generic_t CONFIG_Shadow;
@@ -82,8 +83,6 @@ void CONFIG_LoadProperties_v1(void) {
     UDS_RearLight_Properties.Brightness_BrakeHigh = mem->properties.Brightness_BrakeHigh;
     UDS_RearLight_Properties.Strobe_LevelLow = mem->properties.Strobe_LevelLow;
     UDS_RearLight_Properties.Strobe_LevelHigh = mem->properties.Strobe_LevelHigh;
-    UDS_RearLight_Properties.Strobe_LevelEmergency = mem->properties.Strobe_LevelEmergency;
-    UDS_RearLight_Properties.Strobe_LevelSafety = mem->properties.Strobe_LevelSafety;
     UDS_RearLight_Properties.Strobe_ModeDefault = CONFIG_ConvertStrobeConfigToUds(mem->properties.Strobe_ModeDefault);
     UDS_RearLight_Properties.Strobe_ModePrimary = CONFIG_ConvertStrobeConfigToUds(mem->properties.Strobe_ModePrimary);
     UDS_RearLight_Properties.Strobe_ModeEmergency = CONFIG_ConvertStrobeConfigToUds(mem->properties.Strobe_ModeEmergency);
@@ -115,8 +114,6 @@ void CONFIG_CopyPropsToShadow_v1(void) {
     mem->properties.Brightness_BrakeHigh = CONFIG_Props.Brightness_BrakeHigh;
     mem->properties.Strobe_LevelLow = CONFIG_Props.Strobe_LevelLow;
     mem->properties.Strobe_LevelHigh = CONFIG_Props.Strobe_LevelHigh;
-    mem->properties.Strobe_LevelEmergency = CONFIG_Props.Strobe_LevelEmergency;
-    mem->properties.Strobe_LevelSafety = CONFIG_Props.Strobe_LevelSafety;
     mem->properties.Strobe_ModeDefault = CONFIG_ConvertStrobeSourceToConfig(CONFIG_Props.Strobe_ModeDefault);
     mem->properties.Strobe_ModePrimary = CONFIG_ConvertStrobeSourceToConfig(CONFIG_Props.Strobe_ModePrimary);
     mem->properties.Strobe_ModeEmergency = CONFIG_ConvertStrobeSourceToConfig(CONFIG_Props.Strobe_ModeEmergency);
@@ -169,8 +166,6 @@ void CONFIG_Reload(void) {
     CONFIG_Props.Brightness_BrakeHigh = UDS_RearLight_Properties.Brightness_BrakeHigh;
     CONFIG_Props.Strobe_LevelLow = UDS_RearLight_Properties.Strobe_LevelLow;
     CONFIG_Props.Strobe_LevelHigh = UDS_RearLight_Properties.Strobe_LevelHigh;
-    CONFIG_Props.Strobe_LevelEmergency = UDS_RearLight_Properties.Strobe_LevelEmergency;
-    CONFIG_Props.Strobe_LevelSafety = UDS_RearLight_Properties.Strobe_LevelSafety;
     CONFIG_Props.Strobe_ModeDefault = CONFIG_ToStrobeSource(UDS_RearLight_Properties.Strobe_ModeDefault);
     CONFIG_Props.Strobe_ModePrimary = CONFIG_ToStrobeSource(UDS_RearLight_Properties.Strobe_ModePrimary);
     CONFIG_Props.Strobe_ModeEmergency = CONFIG_ToStrobeSource(UDS_RearLight_Properties.Strobe_ModeEmergency);
