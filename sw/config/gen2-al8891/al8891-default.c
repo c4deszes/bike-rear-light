@@ -10,13 +10,13 @@ CONFIG_ATTR const config_layout_v1_t config_default = {
         .BrightnessCurve_Cutoff_X = 50,
         .BrightnessCurve_Cutoff_Y = 50,
         .BrightnessCurve_Max_X = 900,
-        .BrightnessCurve_Max_Y = 1000,
+        .BrightnessCurve_Max_Y = 500,
         .Brightness_LevelStandard = 100,
         .Brightness_LevelEmergency = 200,
-        .Brightness_LevelSafety = 300,
+        .Brightness_LevelSafety = 600,
 
-        .Brightness_BrakeLow = 200,
-        .Brightness_BrakeHigh = LIGHTCONTROL_BRIGHTNESS_MAX,
+        .Brightness_BrakeLow = 600,
+        .Brightness_BrakeHigh = 1000,
 
         .Strobe_LevelLow = 0,
         .Strobe_LevelHigh = 0,
