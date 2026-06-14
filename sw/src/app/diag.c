@@ -195,6 +195,7 @@ void DIAG_Update10ms(void) {
     }
 
     /* Driver status */
+    // TODO: implement
 
     /* Adc Read */
     if (UDS_RearLight_Adc_Read_HasPendingServiceRequest()) {

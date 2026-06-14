@@ -6,6 +6,7 @@
 
 // Board Support Package
 #include "bsp/usart.h"
+#include "bsp/light_control.h"
 
 // Communication protocols and external libs
 #include "line_api.h"
@@ -19,11 +20,13 @@
 #include "app/strobe.h"
 #include "app/comm.h"
 #include "app/diag.h"
+#include "app/volt.h"
 
 typedef enum {
     sys_state_init,         /* When starting up */
     sys_state_normal,       /* When target signal is valid */
     sys_state_safety,       /* When communication issues occur */
+    sys_state_emergency,    /* When requested by master or the voltage is too low */
     sys_state_goto_boot,    /* When boot entry is requested */
     sys_state_goto_reset,   /* When reset is requested */
     sys_state_goto_sleep    /* When sleep is requested */
@@ -61,54 +64,110 @@ static void SYSSTATE_BootEntry(void) {
     NVIC_Reset();
 }
 
+static bool SYSSTATE_EmergencyCondition(void) {
+    /* Emergency mode is entered when requested by the master or when the voltage is too low,
+       for this second case a valid voltage calibration must be present and light request must
+       have timed out. */
+    if (COMM_LightMode() == brightness_mode_emergency) {
+        return true;
+    }
+    else if (COMM_LightRequestTimeout() && VOLT_GetStatus() == volt_status_low) {
+        return true;
+    }
+    return false;
+}
+
+static void SYSSTATE_InitTransition(void) {
+    if (DIAG_ShutdownRequest()) {
+        SYSSTATE_State = sys_state_goto_sleep;
+    }
+    else if (DIAG_BootRequest()) {
+        SYSSTATE_State = sys_state_goto_boot;
+    }
+    else if (SYSSTATE_EmergencyCondition()) {
+        SYSSTATE_State = sys_state_emergency;
+    }
+    else if (COMM_LightRequestTimeout()) {
+        SYSSTATE_State = sys_state_safety;
+    }
+    else {
+        SYSSTATE_State = sys_state_normal;
+    }
+}
+
+static void SYSSTATE_NormalMode(void) {
+    STROBE_SetSource(COMM_LightBehavior(SYSSTATE_ConfStrobeDefault, SYSSTATE_ConfStrobePrimary));
+    BRIGHTNESS_SetMode(COMM_LightMode());
+    BRIGHTNESS_SetTarget(COMM_GetTargetBrightness());
+
+    if (DIAG_ShutdownRequest()) {
+        SYSSTATE_State = sys_state_goto_sleep;
+    }
+    else if (DIAG_BootRequest()) {
+        SYSSTATE_State = sys_state_goto_boot;
+    }
+    else if (SYSSTATE_EmergencyCondition()) {
+        SYSSTATE_State = sys_state_emergency;
+    }
+    else if (COMM_LightRequestTimeout()) {
+        /* If the master's last instruction was emergency mode then we don't transition out  */
+        SYSSTATE_State = sys_state_safety;
+    }
+}
+
+static void SYSSTATE_EmergencyMode(void) {
+    STROBE_SetSource(SYSSTATE_ConfStrobeEmergency);
+    BRIGHTNESS_SetMode(brightness_mode_emergency);
+    BRIGHTNESS_SetTarget(LIGHTCONTROL_BRIGHTNESS_MAX);  /* Not used, set for safety */
+
+    if (DIAG_ShutdownRequest()) {
+        SYSSTATE_State = sys_state_goto_sleep;
+    }
+    else if (DIAG_BootRequest()) {
+        SYSSTATE_State = sys_state_goto_boot;
+    }
+    // TODO: exit conditions
+    else if (!SYSSTATE_EmergencyCondition()) {
+        SYSSTATE_State = sys_state_normal;
+    }
+}
+
+static void SYSSTATE_SafetyMode(void) {
+    STROBE_SetSource(SYSSTATE_ConfStrobeSafety);
+    BRIGHTNESS_SetMode(brightness_mode_safety);
+    BRIGHTNESS_SetTarget(LIGHTCONTROL_BRIGHTNESS_MAX);  /* Not used, set for safety */
+
+    if (DIAG_ShutdownRequest()) {
+        SYSSTATE_State = sys_state_goto_sleep;
+    }
+    else if (DIAG_BootRequest()) {
+        SYSSTATE_State = sys_state_goto_boot;
+    }
+    else if (SYSSTATE_EmergencyCondition()) {
+        SYSSTATE_State = sys_state_emergency;
+    }
+    else if (!COMM_LightRequestTimeout()) {
+        SYSSTATE_State = sys_state_normal;
+    }
+}
+
 void SYSSTATE_Update10ms(void) {
     if (SYSSTATE_State == sys_state_init && SWTIMER_Elapsed(SYSSTATE_TransitionTimer)) {
-        if (DIAG_ShutdownRequest()) {
-            SYSSTATE_State = sys_state_goto_sleep;
-        }
-        else if (DIAG_BootRequest()) {
-            SYSSTATE_State = sys_state_goto_boot;
-        }
-        else if (COMM_LightRequestTimeout()) {
-            SYSSTATE_State = sys_state_safety;
-        }
-        else {
-            SYSSTATE_State = sys_state_normal;
-        }
+        SYSSTATE_InitTransition();
     }
     else if (SYSSTATE_State == sys_state_normal) {
-        STROBE_SetSource(COMM_LightBehavior(SYSSTATE_ConfStrobeDefault, SYSSTATE_ConfStrobePrimary));
-        BRIGHTNESS_SetMode(COMM_LightMode());
-        BRIGHTNESS_SetTarget(COMM_GetTargetBrightness());
-
-        if (DIAG_ShutdownRequest()) {
-            SYSSTATE_State = sys_state_goto_sleep;
-        }
-        else if (DIAG_BootRequest()) {
-            SYSSTATE_State = sys_state_goto_boot;
-        }
-        else if (COMM_LightRequestTimeout() && COMM_LightMode() != brightness_mode_emergency) {
-            /* If the master's last instruction was emergency mode then we don't transition out  */
-            SYSSTATE_State = sys_state_safety;
-        }
+        SYSSTATE_NormalMode();
     }
     else if (SYSSTATE_State == sys_state_safety) {
-        STROBE_SetSource(SYSSTATE_ConfStrobeSafety);
-        BRIGHTNESS_SetMode(brightness_mode_safety);
-
-        if (DIAG_ShutdownRequest()) {
-            SYSSTATE_State = sys_state_goto_sleep;
-        }
-        else if (DIAG_BootRequest()) {
-            SYSSTATE_State = sys_state_goto_boot;
-        }
-        else if (!COMM_LightRequestTimeout()) {
-            SYSSTATE_State = sys_state_normal;
-        }
+        SYSSTATE_SafetyMode();
+    }
+    else if (SYSSTATE_State == sys_state_emergency) {
+        SYSSTATE_EmergencyMode();
     }
     else if (SYSSTATE_State == sys_state_goto_boot) {
         SYSSTATE_BootEntry();
 
+        /* Control should never reach here */
         while(1);
     }
     else if (SYSSTATE_State == sys_state_goto_sleep) {
@@ -120,6 +179,7 @@ void SYSSTATE_Update10ms(void) {
 
         USART_GoToSleep();
 
+        /* Control should never reach here */
         while(1);
     }
 }
