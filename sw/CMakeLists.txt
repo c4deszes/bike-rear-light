@@ -47,7 +47,7 @@ include(tools/cmake/CPM.cmake)
 set(BIKE_LINE_PROTOCOL_VERSION v0.4.0)
 set(BIKE_UDS_TOOL_VERSION v0.3.0)
 
-CPMAddPackage("gh:c4deszes/samd21-hal@0.5.1")
+CPMAddPackage("gh:c4deszes/samd21-hal#feature/i2c-driver")
 CPMAddPackage("gh:c4deszes/bike-line-protocol#${BIKE_LINE_PROTOCOL_VERSION}")
 CPMAddPackage("gh:c4deszes/samd21-line-bootloader@0.4.0")
 CPMAddPackage("gh:c4deszes/bike-flash-tool@0.2.0")
@@ -94,6 +94,8 @@ target_sources(bma456mm INTERFACE
 )
 target_link_libraries(bma456mm INTERFACE bma456mm-api)
 
+#add_subdirectory(xm125)
+
 ################################################################################
 # Code generation and application
 ################################################################################
@@ -130,6 +132,7 @@ target_sources(bsp INTERFACE
     src/bsp/usart.c
     src/bsp/line_usart.c
     src/bsp/tt_adc.c
+    src/bsp/xm125.c
 )
 
 # Sensor driver selection
@@ -175,6 +178,7 @@ target_sources(application-api INTERFACE
     src/app/current.c
     src/app/diag.c
     src/app/init.c
+    src/app/radar.c
     src/app/router.c
     src/app/strobe.c
     src/app/sys_state.c

@@ -15,6 +15,7 @@
 #include "app/comm.h"
 #include "app/current.h"
 #include "app/diag.h"
+#include "app/radar.h"
 #include "app/router.h"
 #include "app/strobe.h"
 #include "app/sys_state.h"
@@ -68,4 +69,6 @@ void SCH_Task100ms(void) {
     CURRENT_Update100ms();
 
     DIAG_Update100ms();
+
+    RADAR_Update100ms();
 }

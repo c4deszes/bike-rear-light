@@ -15,6 +15,7 @@
 #include "bsp/accel.h"
 #include "bsp/line_usart.h"
 #include "bsp/tt_adc.h"
+#include "bsp/xm125.h"
 
 #include "app/feature.h"
 #include "app/brake.h"
@@ -24,6 +25,7 @@
 #include "app/calib.h"
 #include "app/current.h"
 #include "app/diag.h"
+#include "app/radar.h"
 #include "app/router.h"
 #include "app/strobe.h"
 #include "app/sys_state.h"
@@ -44,6 +46,7 @@ void APP_Init() {
     BSP_ClockInitialize();
     ADC_SetupSingleShot();
     TTADC_Init();
+    XM125_Init();
 
     LIGHTCONTROL_Init();
 #if FEATURE_BRAKE_ENABLE_SENSOR == 1
@@ -74,6 +77,7 @@ void APP_Init() {
     STROBE_Init();
     BRAKE_Init();
     ROUTER_Init();
+    RADAR_Init();
 
     // Setting up scheduler
     SCH_Init();
