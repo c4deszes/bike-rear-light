@@ -94,7 +94,7 @@ target_sources(bma456mm INTERFACE
 )
 target_link_libraries(bma456mm INTERFACE bma456mm-api)
 
-#add_subdirectory(xm125)
+add_subdirectory(xm125)
 
 ################################################################################
 # Code generation and application
