@@ -43,6 +43,7 @@ static const acc_reg_protocol_t *reg_protocol_struct = NULL;
 static uint16_t                 reg_register_count   = 0;
 static acc_reg_protocol_state_t reg_state            = REG_STATE_WAIT_FOR_ADDRESS;
 static uint16_t                 reg_address          = REG_INVALID_ADDRESS;
+static size_t                   reg_length           = 0;
 static uint32_t                 reg_error_flags      = 0;
 
 
@@ -85,12 +86,23 @@ static void set_address(uint8_t *buffer)
 
 	if (reg != NULL)
 	{
-		reg_address = register_address;
+		if ((reg->length > 0U) && (reg->length <= ACC_REG_PROTOCOL_MAX_REGDATA_LENGTH))
+		{
+			reg_address = register_address;
+			reg_length  = reg->length;
+		}
+		else
+		{
+			reg_error_flags |= ACC_REG_ERROR_FLAG_PACKET_LENGTH_ERROR;
+			reg_address      = REG_INVALID_ADDRESS;
+			reg_length       = 0;
+		}
 	}
 	else
 	{
 		reg_error_flags |= ACC_REG_ERROR_FLAG_ADDRESS_ERROR;
 		reg_address      = REG_INVALID_ADDRESS;
+		reg_length       = 0;
 	}
 }
 
@@ -110,37 +122,45 @@ static bool register_is_writable(void)
  * @brief Read register at current register address and increase address
  *
  * @param[out] buffer The output data buffer
+ * @param[in] length The number of bytes to read
  */
-static void read_register(uint8_t *buffer)
+static void read_register(uint8_t *buffer, size_t length)
 {
-	uint32_t data = 0;
-
 	const acc_reg_protocol_t *reg = get_register_struct(reg_address);
 
 	if (reg != NULL)
 	{
 		if (reg->read != NULL)
 		{
-			reg->read(&data);
+			if (!reg->read(buffer, length))
+			{
+				reg_error_flags |= ACC_REG_ERROR_FLAG_PROTOCOL_STATE_ERROR;
+
+				for (size_t i = 0; i < length; i++)
+				{
+					buffer[i] = (REG_ERROR_READ_OF_WO_REG >> (8 * (3 - (i % 4)))) & 0xff;
+				}
+			}
 		}
 		else
 		{
 			/* Register read error, read a write only register */
-			data = REG_ERROR_READ_OF_WO_REG;
+			for (size_t i = 0; i < length; i++)
+			{
+				buffer[i] = (REG_ERROR_READ_OF_WO_REG >> (8 * (3 - (i % 4)))) & 0xff;
+			}
 		}
 	}
 	else
 	{
 		/* Register read outside of address space */
-		data = REG_ERROR_READ_ADDRESS;
+		for (size_t i = 0; i < length; i++)
+		{
+			buffer[i] = (REG_ERROR_READ_ADDRESS >> (8 * (3 - (i % 4)))) & 0xff;
+		}
 	}
 
-	buffer[0] = (data >> 24) & 0xff;
-	buffer[1] = (data >> 16) & 0xff;
-	buffer[2] = (data >> 8) & 0xff;
-	buffer[3] = (data >> 0) & 0xff;
-
-	/* Increase reg addess */
+	/* Increase reg address */
 	if (reg_address < REG_INVALID_ADDRESS)
 	{
 		reg_address++;
@@ -152,16 +172,11 @@ static void read_register(uint8_t *buffer)
  * @brief Write register at current register address and increase address
  *
  * @param[in] buffer The input data buffer
+ * @param[in] length The number of bytes to write
  */
-static bool write_register(uint8_t *buffer)
+static bool write_register(const uint8_t *buffer, size_t length)
 {
 	bool status = true;
-
-	uint32_t data =
-		(((uint32_t)buffer[0]) << 24) |
-		(((uint32_t)buffer[1]) << 16) |
-		(((uint32_t)buffer[2]) << 8) |
-		(((uint32_t)buffer[3]) << 0);
 
 	const acc_reg_protocol_t *reg = get_register_struct(reg_address);
 
@@ -169,7 +184,7 @@ static bool write_register(uint8_t *buffer)
 	{
 		if (reg->write != NULL)
 		{
-			if (!reg->write(data))
+			if (!reg->write(buffer, length))
 			{
 				reg_error_flags |= ACC_REG_ERROR_FLAG_WRITE_FAILED;
 				status           = false;
@@ -184,12 +199,12 @@ static bool write_register(uint8_t *buffer)
 	}
 	else
 	{
-		/* Register read outside of address space */
+		/* Register write outside of address space */
 		reg_error_flags |= ACC_REG_ERROR_FLAG_ADDRESS_ERROR;
 		status           = false;
 	}
 
-	/* Increase reg addess */
+	/* Increase reg address */
 	if (reg_address < REG_INVALID_ADDRESS)
 	{
 		reg_address++;
@@ -212,6 +227,7 @@ void acc_reg_protocol_reset(void)
 {
 	reg_state   = REG_STATE_WAIT_FOR_ADDRESS;
 	reg_address = REG_INVALID_ADDRESS;
+	reg_length  = 0;
 }
 
 
@@ -244,7 +260,7 @@ void acc_reg_protocol_data_in(uint8_t *buffer, size_t data_in_length)
 			{
 				/**
 				 * - Read only register
-				 * - No valid address, read is still possoble
+				 * - No valid address, read is still possible
 				 */
 				reg_state = REG_STATE_WAIT_FOR_READ;
 			}
@@ -256,12 +272,12 @@ void acc_reg_protocol_data_in(uint8_t *buffer, size_t data_in_length)
 			reg_state        = REG_STATE_NACK_NEXT_WRITE;
 		}
 	}
-	else if (data_in_length == ACC_REG_PROTOCOL_REGDATA_LENGTH)
+	else if (data_in_length == reg_length && reg_length > 0)
 	{
 		if ((reg_state == REG_STATE_WAIT_FOR_READ_OR_WRITE) ||
 		    (reg_state == REG_STATE_WAIT_FOR_WRITE))
 		{
-			if (write_register(buffer) && register_is_writable())
+			if (write_register(buffer, data_in_length) && register_is_writable())
 			{
 				/* OK: Another write is possible */
 				reg_state = REG_STATE_WAIT_FOR_WRITE;
@@ -298,9 +314,9 @@ void acc_reg_protocol_data_out(uint8_t *buffer, size_t data_out_length)
 	{
 		reg_state = REG_STATE_WAIT_FOR_READ;
 
-		if (data_out_length == ACC_REG_PROTOCOL_REGDATA_LENGTH)
+		if (data_out_length == reg_length && reg_length > 0)
 		{
-			read_register(buffer);
+			read_register(buffer, data_out_length);
 		}
 		else
 		{
@@ -324,6 +340,12 @@ uint32_t acc_reg_protocol_get_error_flags(void)
 	reg_error_flags = 0;
 
 	return error_flags;
+}
+
+
+size_t acc_reg_protocol_get_current_length(void)
+{
+	return reg_length;
 }
 
 

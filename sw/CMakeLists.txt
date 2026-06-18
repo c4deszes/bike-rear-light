@@ -133,6 +133,8 @@ target_sources(bsp INTERFACE
     src/bsp/line_usart.c
     src/bsp/tt_adc.c
     src/bsp/xm125.c
+
+    src/xm125/xm125_dev.c # TODO: move elsewhere
 )
 
 # Sensor driver selection
@@ -192,7 +194,8 @@ target_include_directories(application-api INTERFACE include ${APP_GENCODE_DIR})
 target_link_libraries(application-api INTERFACE
     flash-line-api flash-line-sources
     uds-lib
-    bootloader-api)
+    bootloader-api
+    xm125-api)
 
 add_executable(application EXCLUDE_FROM_ALL
     src/app/main.c

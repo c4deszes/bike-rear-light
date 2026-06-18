@@ -4,3 +4,6 @@
 [submodule "sw/lib/bma456"]
 	path = sw/lib/bma456
 	url = https://github.com/boschsensortec/BMA456_SensorAPI.git
+[submodule "sw/xm125/lib/STM32CubeL4"]
+	path = sw/xm125/lib/STM32CubeL4
+	url = https://github.com/STMicroelectronics/STM32CubeL4.git

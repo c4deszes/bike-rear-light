@@ -15,7 +15,7 @@
 #include "acc_reg_protocol.h"
 #include "i2c_application_system.h"
 
-#define I2C_SLAVE_BUFFER_SIZE           4
+#define I2C_SLAVE_BUFFER_SIZE           256U
 #define WAIT_FOR_IDLE_RETRIES           10U
 #define WAIT_FOR_IDLE_RETRY_INTERNAL_MS 10U
 #define GPIO_BANK_COUNT                 3U
@@ -486,11 +486,13 @@ static void wait_for_i2c_idle(void)
 
 static void prepare_register_data(I2C_HandleTypeDef *hi2c)
 {
+	size_t reg_length = acc_reg_protocol_get_current_length();
+
 	/* Read register and put in buffer */
-	acc_reg_protocol_data_out(i2c_slave_buffer, ACC_REG_PROTOCOL_REGDATA_LENGTH);
+	acc_reg_protocol_data_out(i2c_slave_buffer, reg_length);
 
 	/* Prepare buffer for transmit */
-	if (HAL_I2C_Slave_Seq_Transmit_IT(hi2c, i2c_slave_buffer, ACC_REG_PROTOCOL_REGDATA_LENGTH, I2C_NEXT_FRAME) != HAL_OK)
+	if (HAL_I2C_Slave_Seq_Transmit_IT(hi2c, i2c_slave_buffer, reg_length, I2C_NEXT_FRAME) != HAL_OK)
 	{
 		/**
 		 * Calling this function with wrong parameters will return HAL_ERROR
@@ -611,7 +613,7 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
 		/* Handle receive register address */
 		acc_reg_protocol_data_in(i2c_slave_buffer, input_length);
 	}
-	else if (input_length == ACC_REG_PROTOCOL_REGDATA_LENGTH)
+	else if (input_length == acc_reg_protocol_get_current_length() && input_length > 0)
 	{
 		/* Handle receive register data (write register) */
 		acc_reg_protocol_data_in(i2c_slave_buffer, input_length);
@@ -623,8 +625,15 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
 		__HAL_I2C_GENERATE_NACK(hi2c);
 	}
 
-	/* Prepare to receive register data (4 bytes) */
-	if (HAL_I2C_Slave_Seq_Receive_IT(hi2c, i2c_slave_buffer, ACC_REG_PROTOCOL_REGDATA_LENGTH, I2C_NEXT_FRAME) != HAL_OK)
+	/* Prepare to receive next data (either next register write or address) */
+	size_t next_length = acc_reg_protocol_get_current_length();
+	if (next_length == 0)
+	{
+		/* No valid register length, expect address next */
+		next_length = ACC_REG_PROTOCOL_ADDRESS_LENGTH;
+	}
+
+	if (HAL_I2C_Slave_Seq_Receive_IT(hi2c, i2c_slave_buffer, next_length, I2C_NEXT_FRAME) != HAL_OK)
 	{
 		/**
 		 * Calling this function with wrong parameters will return HAL_ERROR

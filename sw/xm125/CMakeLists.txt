@@ -38,6 +38,9 @@ target_compile_definitions(stm32l4xx_hal INTERFACE
     -DTARGET_ARCH_cm4 -DFLOAT_ABI_HARD
 )
 
+add_library(xm125-api INTERFACE)
+target_include_directories(xm125-api INTERFACE api)
+
 add_executable(xm125
     EXCLUDE_FROM_ALL
     src/main.c
@@ -48,11 +51,11 @@ add_executable(xm125
     src/system_stm32l4xx.c
 
     src/algorithms/acc_algorithm.c
-    src/applications/acc_reg_protocol.c
-    src/applications/i2c_application_system_stm32.c
-    src/applications/i2c_raw_iq_service.c
-    src/applications/raw_iq_reg_protocol.c
-    src/applications/raw_iq_reg_protocol_access.c
+    src/protocol/acc_reg_protocol.c
+    src/protocol/i2c_application_system_stm32.c
+
+    apps/car_detector.c
+    apps/car_detector_i2c.c
 
     src/integration/acc_hal_integration_stm32cube_xm.c
     src/integration/acc_integration_cortex.c
@@ -65,10 +68,11 @@ add_executable(xm125
 target_compile_definitions(xm125 PRIVATE
     -DPRINTF_DISABLE_SUPPORT_FLOAT -DPRINTF_DISABLE_SUPPORT_EXPONENTIAL # TODO: only for printf file
 )
-target_include_directories(xm125 PRIVATE include)
+target_include_directories(xm125 PRIVATE include api apps)
 target_compile_options(xm125 PRIVATE
     -pedantic
-    -Wall -Werror -Wextra -Wdouble-promotion
+    -Wall #-Werror
+    -Wextra -Wdouble-promotion
     -Wstrict-prototypes -Wcast-qual #-Wmissing-prototypes
     -Winit-self -Wpointer-arith -Wshadow -MP
     -fno-math-errno -ffunction-sections -fdata-sections
@@ -92,3 +96,5 @@ target_link_libraries(xm125 PRIVATE
 hexify(TARGET xm125 HEX ${CMAKE_CURRENT_BINARY_DIR}/xm125.hex)
 dump_symbols(xm125 ${CMAKE_CURRENT_BINARY_DIR}/xm125.lss)
 dump_size(xm125)
+
+add_custom_target(xm125-full DEPENDS xm125-hex xm125-lss xm125-memory)

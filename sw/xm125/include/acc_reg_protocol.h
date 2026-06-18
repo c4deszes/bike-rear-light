@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #define ACC_REG_PROTOCOL_ADDRESS_LENGTH (2U)
-#define ACC_REG_PROTOCOL_REGDATA_LENGTH (4U)
+#define ACC_REG_PROTOCOL_MAX_REGDATA_LENGTH (256U)
 
 #define ACC_REG_ERROR_FLAG_PROTOCOL_STATE_ERROR (1U << 0U)
 #define ACC_REG_ERROR_FLAG_PACKET_LENGTH_ERROR  (1U << 1U)
@@ -18,19 +18,22 @@
 #define ACC_REG_ERROR_FLAG_WRITE_TO_READ_ONLY   (1U << 4U)
 
 /**
- * @brief Function to read a register
+ * @brief Function to read a register with variable length
  *
- * @param[out] data The data to be read
- */
-typedef void (acc_reg_read_func_t)(uint32_t *data);
-
-/**
- * @brief Function to writes a register
- *
- * @param[in] data The data to be written
+ * @param[out] data The buffer to read data into
+ * @param[in] length The number of bytes to read
  * @return The access result OK/ERROR
  */
-typedef bool (acc_reg_write_func_t)(const uint32_t data);
+typedef bool (acc_reg_read_func_t)(uint8_t *data, size_t length);
+
+/**
+ * @brief Function to write a register with variable length
+ *
+ * @param[in] data The buffer containing data to be written
+ * @param[in] length The number of bytes to write
+ * @return The access result OK/ERROR
+ */
+typedef bool (acc_reg_write_func_t)(uint8_t *data, size_t length);
 
 /**
  * @brief Register access mode and functions struct
@@ -38,6 +41,7 @@ typedef bool (acc_reg_write_func_t)(const uint32_t data);
 typedef struct
 {
 	uint16_t             address;
+	size_t               length;  /*!< Length of register data in bytes */
 	acc_reg_read_func_t  *read;
 	acc_reg_write_func_t *write;
 } acc_reg_protocol_t;
@@ -77,10 +81,10 @@ void acc_reg_protocol_data_in(uint8_t *buffer, size_t data_in_length);
 
 
 /**
- * @brief Handle data input from the register protocol
+ * @brief Handle data output from the register protocol
  *
- * @param[in] buffer The data buffer to be filled with data
- * @param[in] data_out_length The byte length of the data to be read
+ * @param[out] buffer The data buffer to be filled with data
+ * @param[in] data_out_length The byte length of the data to be read (must match register length)
  */
 void acc_reg_protocol_data_out(uint8_t *buffer, size_t data_out_length);
 
@@ -108,6 +112,14 @@ void acc_reg_protocol_data_out(uint8_t *buffer, size_t data_out_length);
  * Return The protocol error flags
  */
 uint32_t acc_reg_protocol_get_error_flags(void);
+
+
+/**
+ * @brief Get the current register length
+ *
+ * @return The length in bytes of the current register
+ */
+size_t acc_reg_protocol_get_current_length(void);
 
 
 //
