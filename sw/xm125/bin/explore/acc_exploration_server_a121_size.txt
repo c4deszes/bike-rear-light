@@ -1,0 +1,3 @@
+   text	   data	    bss	    dec	    hex	filename
+ 108320	    928	  19328	 128576	  1f640	out/acc_exploration_server_a121.elf
+ 108320	    928	  19328	 128576	  1f640	(TOTALS)
