@@ -9,3 +9,4 @@ pip install -r sw/docs/requirements.txt
 
 echo "Installing debug tools..."
 pyocd pack install ATSAMD21E18A
+pyocd pack install STM32L431CBYx
