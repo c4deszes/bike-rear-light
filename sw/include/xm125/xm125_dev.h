@@ -36,6 +36,28 @@ typedef struct
 
 typedef struct
 {
+    uint32_t frame_counter;
+    uint16_t range_bins;
+    uint16_t speed_bins;
+    uint16_t map_chunk_count;
+    uint16_t point_stride;
+    int32_t range_start_mm;
+    uint32_t range_step_mm;
+    int32_t speed_start_mmps;
+    uint32_t speed_step_mmps;
+} xm125_frame_info_t;
+
+typedef struct
+{
+    uint32_t frame_counter;
+    uint32_t valid;
+    int32_t distance_mm;
+    int32_t speed_mmps;
+    uint32_t confidence;
+} xm125_target_info_t;
+
+typedef struct
+{
     xm125_version_t version;
     xm125_protocol_status_t protocol_status;
     xm125_app_status_t app_status;
@@ -62,5 +84,13 @@ bool xm125_dev_start(xm125_dev_t *dev);
 bool xm125_dev_stop(xm125_dev_t *dev);
 
 bool xm125_dev_get_next_frame(xm125_dev_t *dev);
+
+bool xm125_dev_get_frame_info(xm125_dev_t *dev, xm125_frame_info_t *frame_info);
+
+bool xm125_dev_get_target_info(xm125_dev_t *dev, xm125_target_info_t *target_info);
+
+bool xm125_dev_set_map_chunk_index(xm125_dev_t *dev, uint16_t chunk_index);
+
+bool xm125_dev_read_map_chunk(xm125_dev_t *dev, uint8_t *chunk_data, uint16_t len);
 
 #endif

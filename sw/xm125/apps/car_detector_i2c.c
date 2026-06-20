@@ -34,6 +34,24 @@ const acc_reg_protocol_t app_reg_protocol[CAR_DETECTOR_REG_REGISTER_COUNT] = {
         .write   = NULL,
     },
     {
+        .address = CAR_DETECTOR_READ_FRAME_INFO_REG,
+        .length  = CAR_DETECTOR_READ_FRAME_INFO_LEN,
+        .read    = car_detector_reg_read_frame_info,
+        .write   = NULL,
+    },
+    {
+        .address = CAR_DETECTOR_READ_TARGET_INFO_REG,
+        .length  = CAR_DETECTOR_READ_TARGET_INFO_LEN,
+        .read    = car_detector_reg_read_target_info,
+        .write   = NULL,
+    },
+    {
+        .address = CAR_DETECTOR_READ_RANGE_SPEED_MAP_CHUNK_REG,
+        .length  = CAR_DETECTOR_READ_RANGE_SPEED_MAP_CHUNK_LEN,
+        .read    = car_detector_reg_read_range_speed_map_chunk,
+        .write   = NULL,
+    },
+    {
         .address = CAR_DETECTOR_COMMAND_APPLY_CONFIGURATION,
         .length  = 4,
         .read    = NULL,
@@ -56,6 +74,12 @@ const acc_reg_protocol_t app_reg_protocol[CAR_DETECTOR_REG_REGISTER_COUNT] = {
         .length  = 4,
         .read    = NULL,
         .write   = car_detector_reg_get_next_frame,
+    },
+    {
+        .address = CAR_DETECTOR_WRITE_MAP_READOUT_CONTROL_REG,
+        .length  = CAR_DETECTOR_WRITE_MAP_READOUT_CONTROL_LEN,
+        .read    = NULL,
+        .write   = car_detector_reg_write_map_readout_control,
     },
 };
 
@@ -109,6 +133,21 @@ bool car_detector_reg_read_app_status(uint8_t *data, size_t length)
     return write_u32_be(data, length, car_detector_get_app_status());
 }
 
+bool car_detector_reg_read_frame_info(uint8_t *data, size_t length)
+{
+    return car_detector_get_frame_info(data, length);
+}
+
+bool car_detector_reg_read_target_info(uint8_t *data, size_t length)
+{
+    return car_detector_get_target_info(data, length);
+}
+
+bool car_detector_reg_read_range_speed_map_chunk(uint8_t *data, size_t length)
+{
+    return car_detector_get_map_chunk(data, length);
+}
+
 bool car_detector_reg_apply_configuration(uint8_t *data, size_t length)
 {
     return car_detector_push_command(CAR_DETECTOR_COMMAND_APPLY_CONFIGURATION);
@@ -124,4 +163,17 @@ bool car_detector_reg_stop(uint8_t *data, size_t length)
 bool car_detector_reg_get_next_frame(uint8_t *data, size_t length)
 {
     return car_detector_push_command(CAR_DETECTOR_COMMAND_GET_NEXT_FRAME);
+}
+
+bool car_detector_reg_write_map_readout_control(uint8_t *data, size_t length)
+{
+    if (length != CAR_DETECTOR_WRITE_MAP_READOUT_CONTROL_LEN)
+    {
+        return false;
+    }
+
+    uint16_t chunk_index = ((uint16_t)data[0] << 8) | (uint16_t)data[1];
+    car_detector_set_map_readout_chunk(chunk_index);
+
+    return true;
 }
