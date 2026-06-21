@@ -172,6 +172,8 @@ void SYSSTATE_Update10ms(void) {
     }
     else if (SYSSTATE_State == sys_state_goto_sleep) {
 
+        // TODO: delay sleep, if there's transport activity then revert to normal
+
 #if FEATURE_CONFIG_SAVE_AT_SHUTDOWN == 1
         CONFIG_Reload();
         CONFIG_Save();

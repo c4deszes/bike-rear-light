@@ -9,13 +9,13 @@
 /* Configuration feature */
 #define FEATURE_CONFIG_LOAD_AT_STARTUP 1        // When enabled, configuration is loaded from NVRAM at startup
 #define FEATURE_CONFIG_RELOAD_ON_CHANGE 0       // When enabled, configuration is reloaded as soon as a property is changed
-#define FEATURE_CONFIG_SAVE_AT_SHUTDOWN 0       // When enabled, configuration is saved to NVRAM at shutdown
+#define FEATURE_CONFIG_SAVE_AT_SHUTDOWN 1       // When enabled, configuration is saved to NVRAM at shutdown
 
 /* Brake feature */
 #define FEATURE_BRAKE_ENABLE_SENSOR 1
 #define FEATURE_BRAKE_USE_EXTERNAL_SIGNAL 1
-#define FEATURE_BRAKE_ENABLE_ALGORITHM 1
-#define FEATURE_BRAKE_USE_INTERNAL_SIGNAL 1
+#define FEATURE_BRAKE_ENABLE_ALGORITHM 0
+#define FEATURE_BRAKE_USE_INTERNAL_SIGNAL 0
 
 #define FEATURE_BRAKE_HOLDOFF_TIME 100       // After braking the brake lights are not activated for this long
 #define FEATURE_BRAKE_HOLDON_TIME 500        // After braking the brake lights are kept active for this long

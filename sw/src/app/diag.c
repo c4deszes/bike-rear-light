@@ -82,6 +82,11 @@ fl_BootEntryResponse_t FLASH_BL_EnterBoot(void) {
 
 void UDS_RearLight_OnPropertyChange(const uds_property_t* property) {
     CONFIG_NotifyPropertyChange(property);
+
+#if FEATURE_CONFIG_RELOAD_ON_CHANGE == 1
+    CONFIG_Reload();
+    CONFIG_ReloadComponents();
+#endif
 }
 
 void DIAG_Init(void) {
