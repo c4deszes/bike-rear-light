@@ -71,9 +71,9 @@ static bool SYSSTATE_EmergencyCondition(void) {
     if (COMM_LightMode() == brightness_mode_emergency) {
         return true;
     }
-    else if (COMM_LightRequestTimeout() && VOLT_GetStatus() == volt_status_low) {
-        return true;
-    }
+    // else if (COMM_LightRequestTimeout() && VOLT_GetStatus() == volt_status_low) {
+    //     return true;
+    // }
     return false;
 }
 
