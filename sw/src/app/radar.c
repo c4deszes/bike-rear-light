@@ -6,6 +6,8 @@
 #include "xm125/xm125_dev.h"
 #include "car_detector_i2c_protocol.h"
 
+#if 0
+
 #define RADAR_MAP_CHUNK_BYTES CAR_DETECTOR_READ_RANGE_SPEED_MAP_CHUNK_LEN
 #define RADAR_MAP_MAX_CHUNKS  32U
 #define RADAR_MAP_MAX_BYTES   (RADAR_MAP_CHUNK_BYTES * RADAR_MAP_MAX_CHUNKS)
@@ -29,6 +31,8 @@ enum {
     radar_state_running,
     radar_state_error
 } radar_state = radar_state_not_initialized;
+
+#endif
 
 void RADAR_Init(void)
 {

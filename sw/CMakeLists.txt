@@ -47,7 +47,7 @@ include(tools/cmake/CPM.cmake)
 set(BIKE_LINE_PROTOCOL_VERSION v0.4.0)
 set(BIKE_UDS_TOOL_VERSION v0.3.0)
 
-CPMAddPackage("gh:c4deszes/samd21-hal#feature/i2c-driver")
+CPMAddPackage("gh:c4deszes/samd21-hal@0.6.0")
 CPMAddPackage("gh:c4deszes/bike-line-protocol#${BIKE_LINE_PROTOCOL_VERSION}")
 CPMAddPackage("gh:c4deszes/samd21-line-bootloader@0.4.0")
 CPMAddPackage("gh:c4deszes/bike-flash-tool@0.2.0")
@@ -132,8 +132,6 @@ target_sources(bsp INTERFACE
     src/bsp/usart.c
     src/bsp/line_usart.c
     src/bsp/tt_adc.c
-    src/bsp/xm125.c
-
     src/xm125/xm125_dev.c # TODO: move elsewhere
 )
 
@@ -160,6 +158,16 @@ elseif (BSP_LED_DRIVER STREQUAL "AL8891")
     target_sources(bsp INTERFACE src/bsp/led_driver_al8891.c)
 else()
     message(FATAL_ERROR "Unsupported BSP_LED_DRIVER: ${BSP_LED_DRIVER}")
+endif()
+
+# Radar module selection
+get_target_property(BSP_RADAR_MODULE bsp-config BSP_RADAR_MODULE)
+if (BSP_RADAR_MODULE STREQUAL "XM125")
+    target_sources(bsp INTERFACE src/bsp/xm125.c)
+elseif (BSP_RADAR_MODULE STREQUAL "NONE")
+    target_sources(bsp INTERFACE src/bsp/xm125_none.c)
+else()
+    message(FATAL_ERROR "Unsupported BSP_RADAR_MODULE: ${BSP_RADAR_MODULE}")
 endif()
 
 # Default user configuration

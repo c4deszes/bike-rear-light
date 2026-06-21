@@ -34,9 +34,6 @@ static enum {
 static bool LIGHTCONTROL_DriversSetup;
 static uint16_t LIGHTCONTROL_DisableTimer;
 
-static uint16_t LIGHTCONTROL_AverageDutyData[10];
-static uint16_t LIGHTCONTROL_AverageDuty;
-
 void LIGHTCONTROL_Init(void) {
     LIGHTCONTROL_FirstSetpointReceived = false;
     LIGHTCONTROL_TailBrightness = LIGHTCONTROL_BRIGHTNESS_MIN;
@@ -62,7 +59,7 @@ void LIGHTCONTROL_Init(void) {
 #endif
 }
 
-uint16_t LIGHTCONTROL_GetCombinedBrightness() {
+static uint16_t LIGHTCONTROL_GetCombinedBrightness() {
     if (LIGHTCONTROL_BrakeBrightness > LIGHTCONTROL_TailBrightness) {
         return LIGHTCONTROL_BrakeBrightness;
     }

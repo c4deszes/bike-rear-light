@@ -1,6 +1,12 @@
 #ifndef BSP_ILD8150_CFG_H
 #define BSP_ILD8150_CFG_H
 
+#define ILD8150_HARDWARE_NOINIT 0
+#define ILD8150_HARDWARE_OFF 1
+#define ILD8150_HARDWARE_MAX_PWM 2
+
+#define ILD8150_HARDWARE_TYPE ILD8150_HARDWARE_NOINIT
+
 #define ILD8150_TURN_OFF_DELAY_MS 1           /* Disable delay = ~10ms (increased to 15ms) */
 #define ILD8150_TURN_ON_DELAY_MS 1            /* Enable delay = ~10ms (increased to 15ms) */
 
