@@ -45,6 +45,14 @@ void USART_GoToSleep(void) {
     GPIO_PinWrite(UART_CS_PORT, UART_CS_PIN, LOW);
 }
 
+#if UART_SERCOM_INSTANCE == SERCOM0
 void SERCOM0_Interrupt(void) {
     SERCOM_USART_InterruptHandler(UART_SERCOM_INSTANCE);
 }
+#elif UART_SERCOM_INSTANCE == SERCOM3
+void SERCOM3_Interrupt(void) {
+    SERCOM_USART_InterruptHandler(UART_SERCOM_INSTANCE);
+}
+#else
+#error "Unhandled SERCOM instance for USART"
+#endif
