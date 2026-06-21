@@ -103,7 +103,7 @@ void CALIB_Save(void) {
         mem.Crc32 = DSU_SoftwareCRC32(DSU_CRC32_INITIAL, (void*)(&mem), sizeof(calib_layout_v1_t)-sizeof(uint32_t));
 
         NVMCTRL_EraseRow(CALIB_FLASH_ADDRESS);
-        NVMCTRL_WritePages(CALIB_FLASH_ADDRESS, (uint8_t*)(&mem), sizeof(calib_layout_v1_t));
+        NVMCTRL_WritePages(CALIB_FLASH_ADDRESS, (uint8_t*)(&mem), CALIB_FLASH_SIZE / 64u);
     }
 }
 
