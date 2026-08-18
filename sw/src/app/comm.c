@@ -166,6 +166,12 @@ void COMM_UpdateSignals(void) {
     temp_status_t thermal_status = TEMP_GetStatus();
     uint8_t encoded_thermal_status = COMM_EncodeThermalStatus(thermal_status);
     l_wr_RearLightStatus_ThermalState(encoded_thermal_status);
+
+    int8_t mcu_temp = TEMP_GetMcuTemperature();
+    int8_t driver_temp = TEMP_GetDriveTemperature();
+
+    l_wr_RearLightStatus_McuTemperature(L_TemperatureEncoder_Encode(mcu_temp));
+    l_wr_RearLightStatus_DriveTemperature(L_TemperatureEncoder_Encode(driver_temp));
 }
 
 void COMM_UpdateDebugSignals(void) {
