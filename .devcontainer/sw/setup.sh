@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+echo "Installing local libraries..."
+pip install -e sw/tools/python/bike-line-protocol/python-lib
+pip install -e sw/tools/python/bike-uds-tool/python-lib
+
 echo "Installing development tools"
 pip install -r sw/tools/requirements.txt
 
